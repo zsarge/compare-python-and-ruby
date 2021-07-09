@@ -2,6 +2,18 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
+"""js
+// Urls can be found by copying the output of this script on this page
+// https://rosettacode.org/wiki/Category:Python
+
+list = [];
+document.querySelectorAll("#mw-pages a").forEach(e => {
+    list.push(e.href)
+    })
+    a = {"list" : list}
+}
+"""
+
 urls = []
 with open("urls.json") as f:
     urls = json.load(f)["list"]
