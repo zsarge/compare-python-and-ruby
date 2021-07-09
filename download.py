@@ -25,12 +25,14 @@ def save(url):
 
     result = ""
     for r in ruby:
-        result += "====RUBY====="
+        result += "====RUBY=====\n"
         result += r.get_text()
+        result += "\n\n"
 
     for p in python:
-        result += "====PYTHON====="
+        result += "====PYTHON=====\n"
         result += p.get_text()
+        result += "\n\n"
 
     f = open(f"downloads/{url.replace('/', '-')}.txt", "w")
     f.write(result)
