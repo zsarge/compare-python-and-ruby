@@ -1,5 +1,7 @@
 import json
+import os.path
 import requests
+from time import sleep, perf_counter
 from bs4 import BeautifulSoup
 
 """js
@@ -33,6 +35,14 @@ def download(url):
 
 
 def save(url):
+    name = f"downloads/{url.replace('/', '-')}.txt"
+
+    if (os.path.isfile(name)):
+        return
+
+    print("Sleeping...")
+    sleep(2) # don't abuse the server
+
     python, ruby = download(url)
 
     result = ""
@@ -46,9 +56,37 @@ def save(url):
         result += p.get_text()
         result += "\n\n"
 
-    f = open(f"downloads/{url.replace('/', '-')}.txt", "w")
+    f = open(name, "w")
     f.write(result)
     f.close()
 
+class Avg:
+    def __init__(self):
+        self.limit = 10
+        self.times = []
+        self.index = 0
+
+    def add(self, num):
+        self.index += 1
+
+        if self.index >= self.limit:
+            self.index = 0
+
+        if self.index >= len(self.times):
+            self.times.append(num)
+        else:
+            self.times[self.index] = num
+
+    def getAvg(self):
+        return sum(self.times) / len(self.times)
+
 if __name__ == "__main__":
-    save(urls[0])
+    avg = Avg()
+    for i, url in enumerate(urls):
+        start = perf_counter()
+        save(url)
+        stop = perf_counter()
+        avg.add(stop - start)
+        time_left = avg.getAvg() * (len(urls) - i + 1)
+        print(f"\tTime left: {(time_left) / 60:.2f} minutes")
+
