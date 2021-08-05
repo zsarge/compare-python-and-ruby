@@ -1,0 +1,60 @@
+====RUBY=====
+class String
+  def convert_base(from, to)
+    Integer(self, from).to_s(to)  
+    # self.to_i(from).to_s(to) #if you don't want exceptions
+  end
+end
+ 
+# first three taken from TCL
+p "12345".convert_base(10, 23) # => "107h"
+p "107h".convert_base(23, 7) # =>"50664"
+p "50664".convert_base(7, 10) # =>"12345"
+p "1038334289300125869792154778345043071467300".convert_base(10, 36) # =>"zombieseatingdeadvegetables"
+p "ff".convert_base(15, 10) # => ArgumentError
+
+====RUBY=====
+say 60272032366.base(36)    # convert number to string
+say Number("rosetta", 36)   # convert string to number
+
+====RUBY=====
+static to = [@|'0'..'9', @|'a'..'z']
+static from = Hash(to.pairs.map{@|_}.flip...)
+ 
+func base_to(n, b) {
+    var s = ""
+    while (n) {
+        s += to[n % b]
+        n //= b
+    }
+    s.reverse
+}
+ 
+func base_from(n, b) {
+    var t = 0
+    n.each { |c| t = (b*t + from{c}) }
+    t
+}
+ 
+say base_from("rosetta", 36)        # string to number
+say base_to(60272032366, 36)        # number to string
+
+====PYTHON=====
+i = int('1a',16)  # returns the integer 26
+
+====PYTHON=====
+digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+def baseN(num, b):
+    return digits[num] if num < b else baseN(num // b, b) + digits[num % b]
+
+====PYTHON=====
+digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+ 
+def baseN(num, b):
+    result = []
+    while num >= b:
+        num, d = divmod(num, b)
+        result.append(digits[d])
+    result.append(digits[num])
+    return ''.join(result[::-1])
+

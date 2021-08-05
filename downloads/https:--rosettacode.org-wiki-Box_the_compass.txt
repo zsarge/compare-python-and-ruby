@@ -1,0 +1,70 @@
+====RUBY=====
+Headings = %w(north east south west north).each_cons(2).flat_map do |a, b|
+  [a,
+  "#{a} by #{b}",
+  "#{a}-#{a}#{b}",
+  "#{a}#{b} by #{a}",
+  "#{a}#{b}", 
+  "#{a}#{b} by #{b}",
+  "#{b}-#{a}#{b}",
+  "#{b} by #{a}"]
+end
+Headings.prepend nil
+ 
+def heading(degrees)
+  i = degrees.quo(360).*(32).round.%(32).+(1)
+  [i, Headings[i]]
+end
+ 
+# an array of angles, in degrees
+angles = (0..32).map { |i| i * 11.25 + [0, 5.62, -5.62][i % 3] }
+ 
+angles.each do |degrees|
+  index, name = heading degrees
+  printf "%2d %20s %6.2f\n", index, name.center(20), degrees
+end
+
+====RUBY=====
+func point (index) {
+    var ix = (index % 32);
+    if    (ix & 1) { "#{point((ix + 1) & 28)} by #{point(((2 - (ix & 2)) * 4) + ix & 24)}" }
+    elsif (ix & 2) { "#{point((ix + 2) & 24)}-#{point((ix | 4) & 28)}" }
+    elsif (ix & 4) { "#{point((ix + 8) & 16)}#{point((ix | 8) & 24)}" }
+    else           { <north east south west>[ix / 8] }
+}
+ 
+func test_angle (ix) { ix * 11.25 + [0, 5.62, -5.62][ ix % 3 ] };
+func angle_to_point(𝜽) { (𝜽 / 360 * 32) + 0.5 -> floor };
+ 
+for ix in range(0, 32) {
+    var 𝜽 = test_angle(ix);
+    printf("  %2d %6.2f° %s\n", ix % 32 + 1, 𝜽, point(angle_to_point(𝜽)).tc);
+}
+
+====PYTHON=====
+majors   = 'north east south west'.split()
+majors   *= 2 # no need for modulo later
+quarter1 = 'N,N by E,N-NE,NE by N,NE,NE by E,E-NE,E by N'.split(',')
+quarter2 = [p.replace('NE','EN') for p in quarter1]
+ 
+def degrees2compasspoint(d):
+    d = (d % 360) + 360/64
+    majorindex, minor = divmod(d, 90.)
+    majorindex = int(majorindex)
+    minorindex  = int( (minor*4) // 45 )
+    p1, p2 = majors[majorindex: majorindex+2]
+    if p1 in {'north', 'south'}:
+        q = quarter1
+    else:
+        q = quarter2
+    return q[minorindex].replace('N', p1).replace('E', p2).capitalize()
+ 
+if __name__ == '__main__':
+    for i in range(33):
+        d = i * 11.25
+        m = i % 3
+        if   m == 1: d += 5.62
+        elif m == 2: d -= 5.62
+        n = i % 32 + 1
+        print( '%2i %-18s %7.2f°' % (n, degrees2compasspoint(d), d) )
+

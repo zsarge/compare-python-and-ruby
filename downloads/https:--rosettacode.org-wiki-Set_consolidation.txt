@@ -1,0 +1,176 @@
+====RUBY=====
+require 'set'
+ 
+tests = [[[:A,:B], [:C,:D]],
+         [[:A,:B], [:B,:D]],
+         [[:A,:B], [:C,:D], [:D,:B]],
+         [[:H,:I,:K], [:A,:B], [:C,:D], [:D,:B], [:F,:G,:H]]]
+tests.map!{|sets| sets.map(&:to_set)}
+ 
+tests.each do |sets|
+  until sets.combination(2).none?{|a,b| a.merge(b) && sets.delete(b) if a.intersect?(b)}
+  end
+  p sets
+end
+
+====RUBY=====
+func consolidate() { [] }
+func consolidate(this, *those) {
+    gather {
+        consolidate(those...).each { |that|
+            if (this & that) { this |= that }
+            else             { take that }
+        }
+        take this;
+    }
+}
+ 
+enum |A="A", B, C, D, _E, F, G, H, I, _J, K|;
+ 
+func format(ss) {
+    ss.map{ '(' + .join(' ') + ')' }.join(' ')
+}
+ 
+[
+    [[A,B], [C,D]],
+    [[A,B], [B,D]],
+    [[A,B], [C,D], [D,B]],
+    [[H,I,K], [A,B], [C,D], [D,B], [F,G,H]]
+].each { |ss|
+    say (format(ss), "\n\t==> ", format(consolidate(ss...)));
+}
+
+====PYTHON=====
+def consolidate(sets):
+    setlist = [s for s in sets if s]
+    for i, s1 in enumerate(setlist):
+        if s1:
+            for s2 in setlist[i+1:]:
+                intersection = s1.intersection(s2)
+                if intersection:
+                    s2.update(s1)
+                    s1.clear()
+                    s1 = s2
+    return [s for s in setlist if s]
+
+====PYTHON=====
+def conso(s):
+	if len(s) < 2: return s
+ 
+	r, b = [s[0]], conso(s[1:])
+	for x in b:
+		if r[0].intersection(x): r[0].update(x)
+		else: r.append(x)
+	return r
+
+====PYTHON=====
+def _test(consolidate=consolidate):
+ 
+    def freze(list_of_sets):
+        'return a set of frozensets from the list of sets to allow comparison'
+        return set(frozenset(s) for s in list_of_sets)
+ 
+    # Define some variables
+    A,B,C,D,E,F,G,H,I,J,K = 'A,B,C,D,E,F,G,H,I,J,K'.split(',')
+    # Consolidate some lists of sets
+    assert (freze(consolidate([{A,B}, {C,D}])) == freze([{'A', 'B'}, {'C', 'D'}]))
+    assert (freze(consolidate([{A,B}, {B,D}])) == freze([{'A', 'B', 'D'}]))
+    assert (freze(consolidate([{A,B}, {C,D}, {D,B}])) == freze([{'A', 'C', 'B', 'D'}]))
+    assert (freze(consolidate([{H,I,K}, {A,B}, {C,D}, {D,B}, {F,G,H}])) ==
+             freze([{'A', 'C', 'B', 'D'}, {'G', 'F', 'I', 'H', 'K'}]))
+    assert (freze(consolidate([{A,H}, {H,I,K}, {A,B}, {C,D}, {D,B}, {F,G,H}])) ==
+             freze([{'A', 'C', 'B', 'D', 'G', 'F', 'I', 'H', 'K'}]))
+    assert (freze(consolidate([{H,I,K}, {A,B}, {C,D}, {D,B}, {F,G,H}, {A,H}])) ==
+             freze([{'A', 'C', 'B', 'D', 'G', 'F', 'I', 'H', 'K'}]))
+    # Confirm order-independence
+    from copy import deepcopy
+    import itertools
+    sets = [{H,I,K}, {A,B}, {C,D}, {D,B}, {F,G,H}, {A,H}]
+    answer = consolidate(deepcopy(sets))
+    for perm in itertools.permutations(sets):
+            assert consolidate(deepcopy(perm)) == answer
+ 
+    assert (answer == [{'A', 'C', 'B', 'D', 'G', 'F', 'I', 'H', 'K'}])
+    assert (len(list(itertools.permutations(sets))) == 720)
+ 
+    print('_test(%s) complete' % consolidate.__name__)
+ 
+if __name__ == '__main__':
+    _test(consolidate)
+    _test(conso)
+
+====PYTHON=====
+'''Set consolidation'''
+ 
+from functools import (reduce)
+ 
+ 
+# consolidated :: Ord a => [Set a] -> [Set a]
+def consolidated(sets):
+    '''A consolidated list of sets.'''
+    def go(xs, s):
+        if xs:
+            h = xs[0]
+            return go(xs[1:], h.union(s)) if (
+                h.intersection(s)
+            ) else [h] + go(xs[1:], s)
+        else:
+            return [s]
+    return reduce(go, sets, [])
+ 
+ 
+# TESTS ---------------------------------------------------
+# main :: IO ()
+def main():
+    '''Illustrative consolidations.'''
+ 
+    print(
+        tabulated('Consolidation of sets of characters:')(
+            lambda x: str(list(map(compose(concat)(list), x)))
+        )(str)(
+            consolidated
+        )(list(map(lambda xs: list(map(set, xs)), [
+            ['ab', 'cd'],
+            ['ab', 'bd'],
+            ['ab', 'cd', 'db'],
+            ['hik', 'ab', 'cd', 'db', 'fgh']
+        ])))
+    )
+ 
+ 
+# DISPLAY OF RESULTS --------------------------------------
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# concat :: [String] -> String
+def concat(xs):
+    '''Concatenation of strings in xs.'''
+    return ''.join(xs)
+ 
+ 
+# tabulated :: String -> (a -> String) ->
+#                        (b -> String) ->
+#                        (a -> b) -> [a] -> String
+def tabulated(s):
+    '''Heading -> x display function -> fx display function ->
+          f -> value list -> tabular string.'''
+    def go(xShow, fxShow, f, xs):
+        w = max(map(compose(len)(xShow), xs))
+        return s + '\n' + '\n'.join([
+            xShow(x).rjust(w, ' ') + ' -> ' + fxShow(f(x)) for x in xs
+        ])
+    return lambda xShow: lambda fxShow: (
+        lambda f: lambda xs: go(
+            xShow, fxShow, f, xs
+        )
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,36 @@
+====RUBY=====
+#!/usr/bin/env ruby
+ 
+puts "Path: #{$PROGRAM_NAME}"  # or puts "Path: #{$0}"
+puts "Name: #{File.basename $0}"
+
+====RUBY=====
+say __MAIN__;
+if (__MAIN__ != __FILE__) {
+    say "This file has been included!";
+}
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+import sys
+ 
+def main():
+    program = sys.argv[0]
+    print("Program: %s" % program)
+ 
+if __name__ == "__main__":
+    main()
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+import inspect
+ 
+def main():
+    program = inspect.getfile(inspect.currentframe())
+    print("Program: %s" % program)
+ 
+if __name__ == "__main__":
+    main()
+

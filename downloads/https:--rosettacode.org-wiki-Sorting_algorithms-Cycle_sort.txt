@@ -1,0 +1,125 @@
+====RUBY=====
+def cycleSort!(array)
+  writes = 0
+ 
+  # Loop through the array to find cycles to rotate.
+  for cycleStart in 0 .. array.size-2
+    item = array[cycleStart]
+ 
+    # Find where to put the item.
+    pos = cycleStart
+    for i in cycleStart+1 ... array.size
+      pos += 1  if array[i] < item
+    end
+ 
+    # If the item is already there, this is not a cycle.
+    next  if pos == cycleStart
+ 
+    # Otherwise, put the item there or right after any duplicates.
+    pos += 1  while item == array[pos]
+    array[pos], item = item, array[pos]
+    writes += 1
+ 
+    # Rotate the rest of the cycle.
+    while pos != cycleStart
+ 
+      # Find where to put the item.
+      pos = cycleStart
+      for i in cycleStart+1 ... array.size
+        pos += 1  if array[i] < item
+      end
+ 
+      # Put the item there or right after any duplicates.
+      pos += 1  while item == array[pos]
+      array[pos], item = item, array[pos]
+      writes += 1
+    end
+  end
+  writes
+end 
+ 
+p a = [0, 1, 2, 2, 2, 2, 1, 9, 3.5, 5, 8, 4, 7, 0, 6]
+puts "writes : #{cycleSort!(a)}"
+p a
+
+====RUBY=====
+func cycle_sort (array) {
+    var (writes=0, pos=0)
+ 
+    func f(i, Ref item, bool=false) {
+        pos = (i + array.ft(i+1).count{ _ < *item })
+        return(false) if (bool && pos==i)
+        while (*item == array[pos]) { ++pos }
+        (array[pos], *item) = (*item, array[pos])
+        ++writes
+        return true
+    }
+ 
+    array.each_kv { |i, item|
+        f(i, \item, true) || next
+        while (pos != i) {
+            f(i, \item)
+        }
+    }
+ 
+    return writes
+}
+ 
+var a = %n(0 1 2 2 2 2 1 9 3.5 5 8 4 7 0 6)
+ 
+say a.join(' ')
+say ('writes ', cycle_sort(a))
+say a.join(' ')
+
+====PYTHON=====
+def cycleSort(vector):
+    "Sort a vector in place and return the number of writes."
+    writes = 0
+ 
+    # Loop through the vector to find cycles to rotate.
+    for cycleStart, item in enumerate(vector):
+ 
+        # Find where to put the item.
+        pos = cycleStart
+        for item2 in vector[cycleStart + 1:]:
+            if item2 < item:
+                pos += 1
+ 
+        # If the item is already there, this is not a cycle.
+        if pos == cycleStart:
+            continue
+ 
+        # Otherwise, put the item there or right after any duplicates.
+        while item == vector[pos]:
+            pos += 1
+        vector[pos], item = item, vector[pos]
+        writes += 1
+ 
+        # Rotate the rest of the cycle.
+        while pos != cycleStart:
+ 
+            # Find where to put the item.
+            pos = cycleStart
+            for item2 in vector[cycleStart + 1:]:
+                if item2 < item:
+                    pos += 1
+ 
+            # Put the item there or right after any duplicates.
+            while item == vector[pos]:
+                pos += 1
+            vector[pos], item = item, vector[pos]
+            writes += 1
+ 
+    return writes
+ 
+ 
+if __name__ == '__main__':
+    x = [0, 1, 2, 2, 2, 2, 1, 9, 3.5, 5, 8, 4, 7, 0, 6]
+    xcopy = x[::]
+    writes = cycleSort(xcopy)
+    if xcopy != sorted(x):
+        print('Wrong order!')
+    else:
+        print('%r\nIs correctly sorted using cycleSort to'
+              '\n%r\nUsing %i writes.' % (x, xcopy, writes))
+

@@ -1,0 +1,247 @@
+====RUBY=====
+#Upper, lower, and symetric Pascal Matrix - Nigel Galloway: May 3rd., 21015
+require 'pp'
+ 
+ng = (g = 0..4).collect{[]}
+g.each{|i| g.each{|j| ng[i][j] = i==0 ? 1 : j<i ? 0 : ng[i-1][j-1]+ng[i][j-1]}}
+pp ng; puts
+g.each{|i| g.each{|j| ng[i][j] = j==0 ? 1 : i<j ? 0 : ng[i-1][j-1]+ng[i-1][j]}}
+pp ng; puts
+g.each{|i| g.each{|j| ng[i][j] = (i==0 or j==0) ? 1 : ng[i-1][j  ]+ng[i][j-1]}}
+pp ng
+
+====RUBY=====
+require 'pp'
+ 
+def binomial_coeff(n,k) (1..k).inject(1){|res,i| res * (n-i+1) / i}             end
+ 
+def pascal_upper(n)     (0...n).map{|i| (0...n).map{|j| binomial_coeff(j,i)}}   end
+def pascal_lower(n)     (0...n).map{|i| (0...n).map{|j| binomial_coeff(i,j)}}   end
+def pascal_symmetric(n) (0...n).map{|i| (0...n).map{|j| binomial_coeff(i+j,j)}} end
+ 
+puts "Pascal upper-triangular matrix:"
+pp pascal_upper(5)
+ 
+puts "\nPascal lower-triangular matrix:"
+pp pascal_lower(5)
+ 
+puts "\nPascal symmetric matrix:"
+pp pascal_symmetric(5)
+
+====RUBY=====
+func grow_matrix(matrix, callback) {
+    var m = matrix
+    var s = m.len
+    m[s][0] = callback(0, m[s-1][0], 0)
+    m[0][s] = callback(m[0][s-1], 0, 0)
+    {|i| m[i+1][s] = callback(m[i+1][s-1], m[i][s], m[i][s-1])} * (s-1)
+    {|i| m[s][i+1] = callback(m[s][i], m[s-1][i+1], m[s-1][i])} * (s)
+    return m
+}
+ 
+func transpose(matrix) {
+    matrix[0].range.map{|i| matrix.map{_[i]} }
+}
+ 
+func madd_n_nw(m) { grow_matrix(m, ->(_, n, nw) { n + nw }) }
+func madd_w_nw(m) { grow_matrix(m, ->(w, _, nw) { w + nw }) }
+func madd_w_n(m)  { grow_matrix(m, ->(w, n, _)  { w + n  }) }
+ 
+var functions = [madd_n_nw, madd_w_nw, madd_w_n].map { |f|
+    func(n) {
+        var r = [[1]]
+        { f(r) } * n
+        transpose(r)
+    }
+}
+ 
+functions.map { |f|
+    f(4).map { .map{ '%2s' % _ }.join(' ') }.join("\n")
+}.join("\n\n").say
+
+====PYTHON=====
+from pprint import pprint as pp
+ 
+def pascal_upp(n):
+    s = [[0] * n for _ in range(n)]
+    s[0] = [1] * n
+    for i in range(1, n):
+        for j in range(i, n):
+            s[i][j] = s[i-1][j-1] + s[i][j-1]
+    return s
+ 
+def pascal_low(n):
+    # transpose of pascal_upp(n)
+    return [list(x) for x in zip(*pascal_upp(n))]
+ 
+def pascal_sym(n):
+    s = [[1] * n for _ in range(n)]
+    for i in range(1, n):
+        for j in range(1, n):
+            s[i][j] = s[i-1][j] + s[i][j-1]
+    return s
+ 
+ 
+if __name__ == "__main__":
+    n = 5
+    print("\nUpper:")
+    pp(pascal_upp(n))
+    print("\nLower:")
+    pp(pascal_low(n))
+    print("\nSymmetric:")
+    pp(pascal_sym(n))
+
+====PYTHON=====
+def binomialCoeff(n, k):
+    result = 1
+    for i in range(1, k+1):
+        result = result * (n-i+1) // i
+    return result
+ 
+def pascal_upp(n):
+    return [[binomialCoeff(j, i) for j in range(n)] for i in range(n)]
+ 
+def pascal_low(n):
+    return [[binomialCoeff(i, j) for j in range(n)] for i in range(n)]
+ 
+def pascal_sym(n):
+    return [[binomialCoeff(i+j, i) for j in range(n)] for i in range(n)]
+
+====PYTHON=====
+'''Pascal matrix generation'''
+ 
+from functools import reduce
+from itertools import chain
+from operator import add
+ 
+ 
+# pascalMatrix :: Int -> ((Int, Int) -> (Int, Int)) -> [[Int]]
+def pascalMatrix(n):
+    '''Pascal S-, L-, or U- matrix of order n.
+    '''
+    return lambda f: chunksOf(n)(list(map(
+        compose(binomialCoefficent, f),
+        tupleRange((0, 0), (n, n))
+    )))
+ 
+ 
+# binomialCoefficent :: (Int, Int) -> Int
+def binomialCoefficent(nk):
+    '''The binomial coefficient of the tuple (n, k).
+    '''
+    n, k = nk
+ 
+    def go(a, x):
+        return a * (n - x + 1) // x
+    return reduce(go, enumFromTo(1)(k), 1)
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Pascal S-, L-, and U- matrices of order 5.
+    '''
+    order = 5
+    for k, f in [
+            ('Symmetric', lambda ab: (add(*ab), ab[1])),
+            ('Lower', identity),
+            ('Upper', swap)
+    ]:
+        print(k + ':')
+        print(showMatrix(
+            pascalMatrix(order)(f)
+        ))
+        print()
+ 
+ 
+# --------------------REUSABLE GENERICS--------------------
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divible, the final list will be shorter than n.
+    '''
+    return lambda xs: reduce(
+        lambda a, i: a + [xs[i:n + i]],
+        range(0, len(xs), n), []
+    ) if 0 < n else []
+ 
+ 
+# compose :: ((a -> a), ...) -> (a -> a)
+def compose(*fs):
+    '''Composition, from right to left,
+       of a series of functions.
+    '''
+    return lambda x: reduce(
+        lambda a, f: f(a),
+        fs[::-1], x
+    )
+ 
+ 
+# enumFromTo :: Int -> Int -> [Int]
+def enumFromTo(m):
+    '''Enumeration of integer values [m..n]'''
+    return lambda n: range(m, 1 + n)
+ 
+ 
+# identity :: a -> a
+def identity(x):
+    '''The identity function.'''
+    return x
+ 
+ 
+# showMatrix :: [[Int]] -> String
+def showMatrix(xs):
+    '''String representation of xs
+       as a matrix.
+    '''
+    def go():
+        rows = [[str(x) for x in row] for row in xs]
+        w = max(map(len, chain.from_iterable(rows)))
+        return unlines(
+            unwords(k.rjust(w, ' ') for k in row)
+            for row in rows
+        )
+    return go() if xs else ''
+ 
+ 
+# swap :: (a, b) -> (b, a)
+def swap(tpl):
+    '''The swapped components of a pair.'''
+    return tpl[1], tpl[0]
+ 
+ 
+# tupleRange :: (Int, Int) -> (Int, Int) -> [(Int, Int)]
+def tupleRange(lowerTuple, upperTuple):
+    '''Range of (Int, Int) tuples from
+       lowerTuple to upperTuple.
+    '''
+    l1, l2 = lowerTuple
+    u1, u2 = upperTuple
+    return [
+        (i1, i2) for i1 in range(l1, u1)
+        for i2 in range(l2, u2)
+    ]
+ 
+ 
+# unlines :: [String] -> String
+def unlines(xs):
+    '''A single string formed by the intercalation
+       of a list of strings with the newline character.
+    '''
+    return '\n'.join(xs)
+ 
+ 
+# unwords :: [String] -> String
+def unwords(xs):
+    '''A space-separated string derived
+       from a list of words.
+    '''
+    return ' '.join(xs)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,84 @@
+====RUBY=====
+ 
+def settings
+  size(300, 300)
+end
+ 
+def setup
+  sketch_title 'Color Wheel'
+  background(0)
+  radius = width / 2.0
+  center = width / 2
+  grid(width, height) do |x, y|
+    rx = x - center
+    ry = y - center
+    sat = Math.hypot(rx, ry) / radius
+    if sat <= 1.0
+      hue = ((Math.atan2(ry, rx) / PI) + 1) / 2.0
+      color_mode(HSB)
+      col = color((hue * 255).to_i, (sat * 255).to_i, 255)
+      set(x, y, col)
+    end
+  end
+end
+ 
+
+====RUBY=====
+require('Imager')
+ 
+var (width, height) = (300, 300)
+var center = Complex(width/2 , height/2)
+ 
+var img = %O<Imager>.new(xsize => width, ysize => height)
+ 
+for y=(^height), x=(^width) {
+    var vector    = (center - x - y.i)
+    var magnitude = (vector.abs * 2 / width)
+    var direction = ((Num.pi + atan2(vector.real, vector.imag)) / Num.tau)
+    img.setpixel(x => x, y => y,
+        color => Hash(hsv => [360*direction, magnitude, magnitude < 1 ? 1 : 0])
+    )
+}
+ 
+img.write(file => 'color_wheel.png')
+
+====PYTHON=====
+size(300, 300)
+background(0)
+radius = min(width, height) / 2.0
+cx, cy = width / 2, width / 2
+for x in range(width):
+        for y in range(height):
+            rx = x - cx
+            ry = y - cy
+            s = sqrt(rx ** 2 + ry ** 2) / radius
+            if s <= 1.0:
+                h = ((atan2(ry, rx) / PI) + 1.0) / 2.0
+                colorMode(HSB)
+                c = color(int(h * 255), int(s * 255), 255)
+                set(x, y, c) # note set() used as Processing set() not as Python set()
+
+====PYTHON=====
+from PIL import Image
+import colorsys
+import math
+ 
+if __name__ == "__main__":
+ 
+    im = Image.new("RGB", (300,300))
+    radius = min(im.size)/2.0
+    cx, cy = im.size[0]/2, im.size[1]/2
+    pix = im.load()
+ 
+    for x in range(im.width):
+        for y in range(im.height):
+            rx = x - cx
+            ry = y - cy
+            s = (rx ** 2.0 + ry ** 2.0) ** 0.5 / radius
+            if s <= 1.0:
+                h = ((math.atan2(ry, rx) / math.pi) + 1.0) / 2.0
+                rgb = colorsys.hsv_to_rgb(h, s, 1.0)
+                pix[x,y] = tuple([int(round(c*255.0)) for c in rgb])
+ 
+    im.show()
+

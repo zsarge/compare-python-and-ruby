@@ -1,0 +1,173 @@
+====RUBY=====
+require 'rosettacode'
+require 'time'
+ 
+module RosettaCode
+  def self.get_unimplemented(lang)
+    programming_tasks = []
+    category_members("Programming_Tasks") {|task| programming_tasks << task}
+ 
+    lang_tasks = []
+    category_members(lang) {|task| lang_tasks << task}
+ 
+    lang_tasks_omit = []
+    category_members("#{lang}/Omit") {|task| lang_tasks_omit << task}
+ 
+    [programming_tasks - lang_tasks, lang_tasks_omit]
+  end
+ 
+  def self.created_time(title)
+    url = get_api_url({
+      "action" => "query",
+      "titles" => title,
+      "format" => "xml",
+      "rvlimit" => 500,
+      "prop" => "revisions",
+      "rvprop" => "timestamp"
+    })
+    doc = REXML::Document.new open(url)
+    REXML::XPath.each(doc, "//rev").collect do |node| 
+      Time.parse( node.attribute("timestamp").value )
+    end.min 
+  end
+ 
+end
+ 
+puts Time.now
+lang = ARGV[0] || "Ruby"
+unimplemented, omitted = RosettaCode.get_unimplemented(lang)
+unimplemented.collect {|title| [title, RosettaCode.created_time(title)]} .
+              sort_by {|e| e[1]} .
+              each do |title, date|
+                puts "%s %6s %s" % [
+                  date.strftime("%Y-%m-%d"), 
+                  omitted.include?(title) ? "[omit]" : "" ,
+                  title
+                ]
+              end
+ 
+
+====PYTHON=====
+"""
+Given the name of a language on Rosetta Code,
+finds all tasks which are not implemented in that language.
+"""
+from operator import attrgetter
+from typing import Iterator
+ 
+import mwclient
+ 
+URL = 'www.rosettacode.org'
+API_PATH = '/mw/'
+ 
+ 
+def unimplemented_tasks(language: str,
+                        *,
+                        url: str,
+                        api_path: str) -> Iterator[str]:
+    """Yields all unimplemented tasks for a specified language"""
+    site = mwclient.Site(url, path=api_path)
+    all_tasks = site.categories['Programming Tasks']
+    language_tasks = site.categories[language]
+    name = attrgetter('name')
+    all_tasks_names = map(name, all_tasks)
+    language_tasks_names = set(map(name, language_tasks))
+    for task in all_tasks_names:
+        if task not in language_tasks_names:
+            yield task
+ 
+ 
+if __name__ == '__main__':
+    tasks = unimplemented_tasks('Python', url=URL, api_path=API_PATH)
+    print(*tasks, sep='\n')
+ 
+
+====PYTHON=====
+"""
+Given the name of a language on Rosetta Code,
+finds all tasks which are not implemented in that language.
+"""
+from functools import partial
+from operator import itemgetter
+from typing import (Dict,
+                    Iterator,
+                    Union)
+ 
+import requests
+ 
+URL = 'http://www.rosettacode.org/mw/api.php'
+REQUEST_PARAMETERS = dict(action='query',
+                          list='categorymembers',
+                          cmlimit=500,
+                          rawcontinue=True,
+                          format='json')
+ 
+ 
+def unimplemented_tasks(language: str,
+                        *,
+                        url: str,
+                        request_params: Dict[str, Union[str, int, bool]]
+                        ) -> Iterator[str]:
+    """Yields all unimplemented tasks for a specified language"""
+    with requests.Session() as session:
+        tasks = partial(tasks_titles,
+                        session=session,
+                        url=url,
+                        **request_params)
+        all_tasks = tasks(cmtitle='Category:Programming_Tasks')
+        language_tasks = set(tasks(cmtitle=f'Category:{language}'))
+        for task in all_tasks:
+            if task not in language_tasks:
+                yield task
+ 
+ 
+def tasks_titles(*,
+                 session: requests.Session,
+                 url: str,
+                 **params: Union[str, int, bool]) -> Iterator[str]:
+    """Yields tasks names for a specified category"""
+    while True:
+        request = session.get(url, params=params)
+        data = request.json()
+        yield from map(itemgetter('title'), data['query']['categorymembers'])
+        query_continue = data.get('query-continue')
+        if query_continue is None:
+            return
+        params.update(query_continue['categorymembers'])
+ 
+ 
+if __name__ == '__main__':
+    tasks = unimplemented_tasks('Python',
+                                url=URL,
+                                request_params=REQUEST_PARAMETERS)
+    print(*tasks, sep='\n')
+ 
+
+====PYTHON=====
+import xml.dom.minidom
+import urllib, sys
+ 
+def findrc(category):
+    name = "http://www.rosettacode.org/w/api.php?action=query&list=categorymembers&cmtitle=Category:%s&cmlimit=500&format=xml" % urllib.quote(category)
+    cmcontinue, titles = '', []
+    while True:
+        u = urllib.urlopen(name + cmcontinue)
+        xmldata = u.read()
+        u.close()
+        x = xml.dom.minidom.parseString(xmldata)
+        titles += [i.getAttribute("title") for i in x.getElementsByTagName("cm")]
+        cmcontinue = filter( None,
+                             (urllib.quote(i.getAttribute("cmcontinue"))
+                              for i in x.getElementsByTagName("categorymembers")) )
+        if cmcontinue:
+            cmcontinue = '&cmcontinue=' + cmcontinue[0]
+        else:
+            break
+    return titles
+ 
+alltasks = findrc("Programming_Tasks")
+lang = findrc(sys.argv[1])
+ 
+for i in [i for i in alltasks if i not in lang]:
+    print i
+

@@ -1,0 +1,50 @@
+====RUBY=====
+class Array
+  def beadsort
+    map {|e| [1] * e}.columns.columns.map(&:length)
+  end
+ 
+  def columns
+    y = length
+    x = map(&:length).max
+    Array.new(x) do |row|
+      Array.new(y) { |column| self[column][row] }.compact # Remove nils.
+    end
+  end
+end
+ 
+# Demonstration code:
+p [5,3,1,7,4,1,1].beadsort
+
+====RUBY=====
+func beadsort(arr) {
+ 
+    var rows = []
+    var columns = []
+ 
+    for datum in arr {
+        for column in ^datum {
+            ++(columns[column] := 0)
+            ++(rows[columns[column] - 1] := 0)
+        }
+    }
+ 
+    rows.reverse
+}
+ 
+say beadsort([5,3,1,7,4,1,1])
+
+====PYTHON=====
+ 
+#!/bin/python3
+from itertools import zip_longest
+ 
+# This is wrong, it works only on specific examples
+def beadsort(l):
+    return list(map(sum, zip_longest(*[[1] * e for e in l], fillvalue=0)))
+ 
+ 
+# Demonstration code:
+print(beadsort([5,3,1,7,4,1,1]))
+ 
+

@@ -1,0 +1,302 @@
+====RUBY=====
+n = 2200
+l_add, l = Hash(Int32, Bool).new(false), Hash(Int32, Bool).new(false)
+(1..n).each do |x|
+  x2 = x * x 
+  (x..n).each { |y| l_add[x2 + y * y] = true } 
+end
+ 
+s = 3
+(1..n).each do |x|
+  s1 = s
+  s += 2
+  s2 = s
+  ((x+1)..n).each do |y|
+    l[y] = true if l_add[s1]
+    s1 += s2
+    s2 += 2
+  end
+end
+ 
+puts (1..n).reject{ |x| l[x] }.join(" ")
+
+====RUBY=====
+n = 2200
+l_add, l = {}, {}
+1.step(n) do |x|
+  x2 = x*x 
+  x.step(n) {|y| l_add[x2 + y*y] = true} 
+end
+ 
+s = 3
+1.step(n) do |x|
+  s1 = s
+  s += 2
+  s2 = s
+  (x+1).step(n) do |y|
+    l[y] = true if l_add[s1]
+    s1 += s2
+    s2 += 2
+  end
+end
+ 
+puts (1..n).reject{|x| l[x]}.join(" ")
+ 
+
+====RUBY=====
+squares  = Enumerator.new{|y| (0..).each{|n| y << 2**n} }
+squares5 = Enumerator.new{|y| (0..).each{|n| y << 2**n*5} }
+ 
+pyth_quad = Enumerator.new do |y|
+  n = squares.next
+  m = squares5.next
+  loop do
+    if n < m
+      y << n
+      n = squares.next
+    else
+      y << m
+      m = squares5.next
+    end
+  end
+end
+# this takes less than a millisecond
+puts pyth_quad.take_while{|n| n <= 1000000000}.join(" ")
+
+====RUBY=====
+# Finds all solutions (a,b) such that: a^2 + b^2 = n^2
+func sum_of_two_squares(n) is cached {
+ 
+    n == 0 && return [[0, 0]]
+ 
+    var prod1 = 1
+    var prod2 = 1
+ 
+    var prime_powers = []
+ 
+    for p,e in (n.factor_exp) {
+        if (p % 4 == 3) {                  # p = 3 (mod 4)
+            e.is_even || return []         # power must be even
+            prod2 *= p**(e >> 1)
+        }
+        elsif (p == 2) {                   # p = 2
+            if (e.is_even) {               # power is even
+                prod2 *= p**(e >> 1)
+            }
+            else {                         # power is odd
+                prod1 *= p
+                prod2 *= p**((e - 1) >> 1)
+                prime_powers.append([p, 1])
+            }
+        }
+        else {                             # p = 1 (mod 4)
+            prod1 *= p**e
+            prime_powers.append([p, e])
+        }
+    }
+ 
+    prod1 == 1 && return [[prod2, 0]]
+    prod1 == 2 && return [[prod2, prod2]]
+ 
+    # All the solutions to the congruence: x^2 = -1 (mod prod1)
+    var square_roots = gather {
+        gather {
+            for p,e in (prime_powers) {
+                var pp = p**e
+                var r = sqrtmod(-1, pp)
+                take([[r, pp], [pp - r, pp]])
+            }
+        }.cartesian { |*a|
+            take(Math.chinese(a...))
+        }
+    }
+ 
+    var solutions = []
+ 
+    for r in (square_roots) {
+ 
+        var s = r
+        var q = prod1
+ 
+        while (s*s > prod1) {
+            (s, q) = (q % s, s)
+        }
+ 
+        solutions.append([prod2 * s, prod2 * (q % s)])
+    }
+ 
+    for p,e in (prime_powers) {
+        for (var i = e%2; i < e; i += 2) {
+ 
+            var sq = p**((e - i) >> 1)
+            var pp = p**(e - i)
+ 
+            solutions += (
+                __FUNC__(prod1 / pp).map { |pair|
+                    pair.map {|r| sq * prod2 * r }
+                }
+            )
+        }
+    }
+ 
+    solutions.map     {|pair| pair.sort } \
+             .uniq_by {|pair| pair[0]   } \
+             .sort_by {|pair| pair[0]   }
+}
+ 
+# Finds all solutions (a,b,c) such that: a^2 + b^2 + c^2 = n^2
+func sum_of_three_squares(n) {
+    gather {
+        for k in (1 .. n//3) {
+            var t = sum_of_two_squares(n**2 - k**2) || next
+            take(t.map { [k, _...] }...)
+        }
+    }
+}
+ 
+say gather {
+    for n in (1..2200) {
+        sum_of_three_squares(n) || take(n)
+    }
+}
+
+====RUBY=====
+say gather {
+    for n in (1..2200) {
+        if ((n & (n-1) == 0) || (n%%5 && ((n/5) & (n/5 - 1) == 0))) {
+            take(n)
+        }
+    }
+}
+
+====PYTHON=====
+def quad(top=2200):
+    r = [False] * top
+    ab = [False] * (top * 2)**2
+    for a in range(1, top):
+        for b in range(a, top):
+            ab[a * a + b * b] = True
+    s = 3
+    for c in range(1, top):
+        s1, s, s2 = s, s + 2, s + 2
+        for d in range(c + 1, top):
+            if ab[s1]:
+                r[d] = True
+            s1 += s2
+            s2 += 2
+    return [i for i, val in enumerate(r) if not val and i]
+ 
+if __name__ == '__main__':
+    n = 2200
+    print(f"Those values of d in 1..{n} that can't be represented: {quad(n)}")
+
+====PYTHON=====
+'''Pythagorean Quadruples'''
+ 
+from itertools import islice, takewhile
+ 
+ 
+# unrepresentables :: () -> [Int]
+def unrepresentables():
+    '''A non-finite stream of powers of two which can
+       not be represented as a Pythagorean quadruple.
+    '''
+    return merge(
+        powersOfTwo()
+    )(
+        5 * x for x in powersOfTwo()
+    )
+ 
+ 
+# powersOfTwo :: Gen [Int]
+def powersOfTwo():
+    '''A non-finite stream of successive powers of two.
+    '''
+    def double(x):
+        return 2 * x
+ 
+    return iterate(double)(1)
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''For positive integers up to 2,200 (inclusive)
+    '''
+    def p(x):
+        return 2200 >= x
+ 
+    print(
+        list(
+            takewhile(p, unrepresentables())
+        )
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return go
+ 
+ 
+# merge :: Gen [Int] -> Gen [Int] -> Gen [Int]
+def merge(ga):
+    '''An ordered stream of values drawn from two
+       other ordered streams.
+    '''
+    def go(gb):
+        def f(ma, mb):
+            a, b = ma, mb
+            while a and b:
+                ta, tb = a, b
+                if ta[0] < tb[0]:
+                    yield ta[0]
+                    a = uncons(ta[1])
+                else:
+                    yield tb[0]
+                    b = uncons(tb[1])
+        return f(uncons(ga), uncons(gb))
+    return go
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    def go(xs):
+        return (
+            xs[0:n]
+            if isinstance(xs, (list, tuple))
+            else list(islice(xs, n))
+        )
+    return go
+ 
+ 
+# uncons :: [a] -> Maybe (a, [a])
+def uncons(xs):
+    '''The deconstruction of a non-empty list
+       (or generator stream) into two parts:
+       a head value, and the remaining values.
+    '''
+    if isinstance(xs, list):
+        return (xs[0], xs[1:]) if xs else None
+    else:
+        nxt = take(1)(xs)
+        return (nxt[0], xs) if nxt else None
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

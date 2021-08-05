@@ -1,0 +1,319 @@
+====RUBY=====
+# encoding: utf-8
+pinyin = {
+  '甲' => 'jiă',
+  '乙' => 'yĭ',
+  '丙' => 'bĭng',
+  '丁' => 'dīng',
+  '戊' => 'wù',
+  '己' => 'jĭ',
+  '庚' => 'gēng',
+  '辛' => 'xīn',
+  '壬' => 'rén',
+  '癸' => 'gŭi',
+ 
+  '子' => 'zĭ',
+  '丑' => 'chŏu',
+  '寅' => 'yín',
+  '卯' => 'măo',
+  '辰' => 'chén',
+  '巳' => 'sì',
+  '午' => 'wŭ',
+  '未' => 'wèi',
+  '申' => 'shēn',
+  '酉' => 'yŏu',
+  '戌' => 'xū',
+  '亥' => 'hài'
+}
+celestial     = %w(甲 乙 丙 丁 戊 己 庚 辛 壬 癸)
+terrestrial   = %w(子 丑 寅 卯 辰 巳 午 未 申 酉 戌 亥)
+animals       = %w(Rat   Ox   Tiger  Rabbit  Dragon Snake
+                   Horse Goat Monkey Rooster Dog    Pig)
+elements      = %w(Wood Fire Earth Metal Water)
+aspects       = %w(yang yin)
+ 
+BASE = 4
+ 
+args = if !ARGV.empty?
+         ARGV
+       else
+         [Time.new.year]
+       end
+ 
+args.each do |arg|
+  ce_year = Integer(arg)
+  print "#{ce_year}: " if ARGV.length > 1
+  cycle_year     = ce_year - BASE
+ 
+  stem_number    = cycle_year % 10
+  stem_han       = celestial[stem_number]
+  stem_pinyin    = pinyin[stem_han]
+ 
+  element_number = stem_number / 2
+  element        = elements[element_number]
+ 
+  branch_number  = cycle_year % 12
+  branch_han     = terrestrial[branch_number]
+  branch_pinyin  = pinyin[branch_han]
+  animal         = animals[branch_number]
+ 
+  aspect_number = cycle_year % 2
+  aspect        = aspects[aspect_number]
+ 
+  index         = cycle_year % 60 + 1
+ 
+  print stem_han, branch_han
+  puts " (#{stem_pinyin}-#{branch_pinyin}, #{element} #{animal}; #{aspect} - year #{index} of the cycle)"
+end
+
+====RUBY=====
+func zodiac(year) {
+  var animals = %w(Rat Ox Tiger Rabbit Dragon Snake Horse Goat Monkey Rooster Dog Pig)
+  var elements = %w(Wood Fire Earth Metal Water)
+  var terrestrial_han = %w(子 丑 寅 卯 辰 巳 午 未 申 酉 戌 亥)
+  var terrestrial_pinyin = %w(zĭ chŏu yín măo chén sì wŭ wèi shēn yŏu xū hài)
+  var celestial_han = %w(甲 乙 丙 丁 戊 己 庚 辛 壬 癸)
+  var celestial_pinyin = %w(jiă yĭ bĭng dīng wù jĭ gēng xīn rén gŭi)
+  var aspect = %w(yang yin)
+ 
+  var cycle_year = ((year-4) % 60)
+  var (i2, i10, i12) = (cycle_year%2, cycle_year%10, cycle_year%12)
+ 
+  (year,
+   celestial_han[i10],    terrestrial_han[i12],
+   celestial_pinyin[i10], terrestrial_pinyin[i12],
+   elements[i10 >> 1], animals[i12], aspect[i2], cycle_year+1)
+}
+ 
+[1935, 1938, 1968, 1972, 1976, 2017].each { |year|
+    printf("%4d: %s%s (%s-%s) %s %s; %s - year %d of the cycle\n", zodiac(year))
+}
+
+====PYTHON=====
+ 
+# coding: utf-8
+ 
+from __future__ import print_function
+from datetime import datetime
+ 
+pinyin = {
+  '甲': 'jiă',
+  '乙': 'yĭ',
+  '丙': 'bĭng',
+  '丁': 'dīng',
+  '戊': 'wù',
+  '己': 'jĭ',
+  '庚': 'gēng',
+  '辛': 'xīn',
+  '壬': 'rén',
+  '癸': 'gŭi',
+ 
+  '子': 'zĭ',
+  '丑': 'chŏu',
+  '寅': 'yín',
+  '卯': 'măo',
+  '辰': 'chén',
+  '巳': 'sì',
+  '午': 'wŭ',
+  '未': 'wèi',
+  '申': 'shēn',
+  '酉': 'yŏu',
+  '戌': 'xū',
+  '亥': 'hài'
+}
+ 
+animals = ['Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake',
+           'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig']
+elements = ['Wood', 'Fire', 'Earth', 'Metal', 'Water']
+ 
+celestial = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
+terrestrial = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
+aspects = ['yang', 'yin']
+ 
+ 
+def calculate(year):
+    BASE = 4
+    year = int(year)
+    cycle_year = year - BASE
+    stem_number = cycle_year % 10
+    stem_han = celestial[stem_number]
+    stem_pinyin = pinyin[stem_han]
+    element_number = stem_number // 2
+    element = elements[element_number]
+    branch_number = cycle_year % 12
+    branch_han = terrestrial[branch_number]
+    branch_pinyin = pinyin[branch_han]
+    animal = animals[branch_number]
+    aspect_number = cycle_year % 2
+    aspect = aspects[aspect_number]
+    index = cycle_year % 60 + 1
+    print("{}: {}{} ({}-{}, {} {}; {} - year {} of the cycle)"
+          .format(year, stem_han, branch_han,
+                  stem_pinyin, branch_pinyin, element, animal, aspect, index))
+ 
+ 
+current_year = datetime.now().year
+years = [1935, 1938, 1968, 1972, 1976, current_year]
+for year in years:
+    calculate(year)
+
+====PYTHON=====
+'''Chinese zodiac'''
+ 
+from functools import (reduce)
+from datetime import datetime
+ 
+ 
+# TRADITIONAL STRINGS -------------------------------------
+ 
+# zodiacNames :: Dict
+def zodiacNames():
+    '''天干 tiangan – 10 heavenly stems
+       地支 dizhi – 12 terrestrial branches
+       五行 wuxing – 5 elements
+       生肖 shengxiao – 12 symbolic animals
+       阴阳 yinyang - dark and light
+    '''
+    return dict(
+        zip(
+            ['tian', 'di', 'wu', 'sx', 'yy'],
+            map(
+                lambda tpl: list(
+                    zip(* [tpl[0]] + list(
+                        map(
+                            lambda x: x.split(),
+                            tpl[1:])
+                    ))
+                ),
+                [
+                    # 天干 tiangan – 10 heavenly stems
+                    ('甲乙丙丁戊己庚辛壬癸',
+                     'jiă yĭ bĭng dīng wù jĭ gēng xīn rén gŭi'),
+ 
+                    # 地支 dizhi – 12 terrestrial branches
+                    ('子丑寅卯辰巳午未申酉戌亥',
+                     'zĭ chŏu yín măo chén sì wŭ wèi shēn yŏu xū hài'),
+ 
+                    # 五行 wuxing – 5 elements
+                    ('木火土金水',
+                     'mù huǒ tǔ jīn shuǐ',
+                     'wood fire earth metal water'),
+ 
+                    # 十二生肖 shengxiao – 12 symbolic animals
+                    ('鼠牛虎兔龍蛇馬羊猴鸡狗豬',
+                     'shǔ niú hǔ tù lóng shé mǎ yáng hóu jī gǒu zhū',
+                     'rat ox tiger rabbit dragon snake horse goat ' +
+                     'monkey rooster dog pig'
+                     ),
+ 
+                    # 阴阳 yinyang
+                    ('阳阴', 'yáng yīn')
+                ]
+            )))
+ 
+ 
+# zodiacYear :: Dict -> [[String]]
+def zodiacYear(dct):
+    '''A string of strings containing the
+       Chinese zodiac tokens for a given year.
+    '''
+    def tokens(y):
+        iYear = y - 4
+        iStem = iYear % 10
+        iBranch = iYear % 12
+        (hStem, pStem) = dct['tian'][iStem]
+        (hBranch, pBranch) = dct['di'][iBranch]
+        yy = iYear % 2
+        return [
+            [str(y), '', ''],
+            [
+                hStem + hBranch,
+                pStem + pBranch,
+                str((iYear % 60) + 1) + '/60'
+            ],
+            list(dct['wu'][iStem // 2]),
+            list(dct['sx'][iBranch]),
+            list(dct['yy'][int(yy)]) + ['dark' if yy else 'light']
+        ]
+    return lambda year: tokens(year)
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Writing out wiki tables displaying Chinese zodiac
+       details for a given list of years.
+    '''
+    print('\n'.join(
+        list(map(
+            zodiacTable(zodiacNames()),
+            [
+                1935, 1938, 1949,
+                1968, 1972, 1976,
+                datetime.now().year
+            ]
+        ))
+    ))
+ 
+ 
+# WIKI TABLES  --------------------------------------------
+ 
+# zodiacTable :: Dict -> Int -> String
+def zodiacTable(tokens):
+    '''A wiki table displaying Chinese zodiac
+       details for a a given year.
+    '''
+    return lambda y: wikiTable({
+        'class': 'wikitable',
+        'colwidth': '70px'
+    })(transpose(zodiacYear(tokens)(y)))
+ 
+ 
+# wikiTable :: Dict -> [[a]] -> String
+def wikiTable(opts):
+    '''List of lists rendered as a wiki table string.'''
+    def colWidth():
+        return 'width:' + opts['colwidth'] + '; ' if (
+            'colwidth' in opts
+        ) else ''
+ 
+    def cellStyle():
+        return opts['cell'] if 'cell' in opts else ''
+ 
+    return lambda rows: '{| ' + reduce(
+        lambda a, k: (
+            a + k + '="' + opts[k] + '" ' if k in opts else a
+        ),
+        ['class', 'style'],
+        ''
+    ) + '\n' + '\n|-\n'.join(
+        '\n'.join(
+            ('|' if (0 != i and ('cell' not in opts)) else (
+                '|style="' + colWidth() + cellStyle() + '"|'
+            )) + (
+                str(x) or ' '
+            ) for x in row
+        ) for i, row in enumerate(rows)
+    ) + '\n|}\n\n'
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# transpose :: Matrix a -> Matrix a
+def transpose(m):
+    '''The rows and columns of the argument transposed.
+       (The matrix containers and rows can be lists or tuples).'''
+    if m:
+        inner = type(m[0])
+        z = zip(*m)
+        return (type(m))(
+            map(inner, z) if tuple != inner else z
+        )
+    else:
+        return m
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

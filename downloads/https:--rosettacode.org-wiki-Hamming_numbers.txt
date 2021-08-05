@@ -1,0 +1,274 @@
+====RUBY=====
+require "big"
+ 
+def hamming(limit)
+  h = Array.new(limit, 1.to_big_i)     # h = Array.new(limit+1, 1.to_big_i)
+  x2, x3, x5 = 2.to_big_i, 3.to_big_i, 5.to_big_i
+  i, j, k = 0, 0, 0
+  (1...limit).each do |n|              # (1..limit).each do |n|
+    h[n] = Math.min(x2, Math.min(x3, x5))
+    x2 = 2 * h[i += 1] if x2 == h[n]
+    x3 = 3 * h[j += 1] if x3 == h[n]
+    x5 = 5 * h[k += 1] if x5 == h[n]
+  end
+  h[limit - 1]
+end
+ 
+start = Time.monotonic
+print "Hamming Number (1..20): "; (1..20).each { |i| print "#{hamming(i)} " }
+puts
+puts "Hamming Number 1691: #{hamming 1691}"
+puts "Hamming Number 1,000,000: #{hamming 1_000_000}"
+puts "Elasped Time: #{(Time.monotonic - start).total_seconds} secs"
+ 
+
+====RUBY=====
+hamming = Enumerator.new do |yielder|
+  next_ham = 1
+  queues = [[ 2, []], [3, []], [5, []] ]
+ 
+  loop do
+    yielder << next_ham   # or: yielder.yield(next_ham)
+ 
+    queues.each {|m,queue| queue << next_ham * m}
+    next_ham = queues.collect{|m,queue| queue.first}.min
+    queues.each {|m,queue| queue.shift if queue.first==next_ham}
+  end
+end
+
+====RUBY=====
+start = Time.now
+ 
+hamming.each.with_index(1) do |ham, idx|
+  case idx
+  when (1..20), 1691
+    puts "#{idx} => #{ham}"
+  when 1_000_000
+    puts "#{idx} => #{ham}"
+    break
+  end
+end
+ 
+puts "elapsed: #{Time.now - start} seconds"
+
+====RUBY=====
+def hamming(limit)
+  h = Array.new(limit, 1)
+  x2, x3, x5 = 2, 3, 5
+  i, j, k = 0, 0, 0
+  (1...limit).each do |n|
+    # h[n] = [x2, [x3, x5].min].min    # not as fast on all VMs
+    h[n] = (x3 < x5 ? (x2 < x3 ? x2 : x3) : (x2 < x5 ? x2 : x5))
+    x2 = 2 * h[i += 1] if x2 == h[n]
+    x3 = 3 * h[j += 1] if x3 == h[n]
+    x5 = 5 * h[k += 1] if x5 == h[n]
+  end
+  h[limit - 1]
+end
+ 
+start = Time.new
+print "Hamming Number (1..20): "; (1..20).each { |i| print "#{hamming(i)} " }
+puts
+puts "Hamming Number 1691: #{hamming 1691}"
+puts "Hamming Number 1,000,000: #{hamming 1_000_000}"
+puts "Elasped Time: #{Time.new - start} secs"
+
+====RUBY=====
+func ham_gen {
+    var s = [[1], [1], [1]]
+    var m = [2, 3, 5]
+ 
+    func {
+        var n = [s[0][0], s[1][0], s[2][0]].min
+        { |i|
+            s[i].shift if (s[i][0] == n)
+            s[i].append(n * m[i])
+        } << ^3
+        return n
+    }
+}
+ 
+var h = ham_gen()
+ 
+var i = 20;
+say i.of { h() }.join(' ')
+ 
+{ h() } << (i+1 ..^ 1691)
+say h()
+
+====PYTHON=====
+from itertools import islice
+ 
+def hamming2():
+    '''\
+    This version is based on a snippet from:
+        https://web.archive.org/web/20081219014725/http://dobbscodetalk.com:80
+                         /index.php?option=com_content&task=view&id=913&Itemid=85
+        http://www.drdobbs.com/architecture-and-design/hamming-problem/228700538
+        Hamming problem
+        Written by Will Ness
+        December 07, 2008
+ 
+        When expressed in some imaginary pseudo-C with automatic
+        unlimited storage allocation and BIGNUM arithmetics, it can be
+        expressed as:
+            hamming = h where
+              array h;
+              n=0; h[0]=1; i=0; j=0; k=0;
+              x2=2*h[ i ]; x3=3*h[j]; x5=5*h[k];
+              repeat:
+                h[++n] = min(x2,x3,x5);
+                if (x2==h[n]) { x2=2*h[++i]; }
+                if (x3==h[n]) { x3=3*h[++j]; }
+                if (x5==h[n]) { x5=5*h[++k]; } 
+    '''
+    h = 1
+    _h=[h]    # memoized
+    multipliers  = (2, 3, 5)
+    multindeces  = [0 for i in multipliers] # index into _h for multipliers
+    multvalues   = [x * _h[i] for x,i in zip(multipliers, multindeces)]
+    yield h
+    while True:
+        h = min(multvalues)
+        _h.append(h)
+        for (n,(v,x,i)) in enumerate(zip(multvalues, multipliers, multindeces)):
+            if v == h:
+                i += 1
+                multindeces[n] = i
+                multvalues[n]  = x * _h[i]
+        # cap the memoization
+        mini = min(multindeces)
+        if mini >= 1000:
+            del _h[:mini]
+            multindeces = [i - mini for i in multindeces]
+        #
+        yield h
+
+====PYTHON=====
+import psyco
+ 
+def hamming(limit):
+    h = [1] * limit
+    x2, x3, x5 = 2, 3, 5
+    i = j = k = 0
+ 
+    for n in xrange(1, limit):
+        h[n] = min(x2, x3, x5)
+        if x2 == h[n]:
+            i += 1
+            x2 = 2 * h[i]
+        if x3 == h[n]:
+            j += 1
+            x3 = 3 * h[j]
+        if x5 == h[n]:
+            k += 1
+            x5 = 5 * h[k]
+ 
+    return h[-1]
+ 
+psyco.bind(hamming)
+print [hamming(i) for i in xrange(1, 21)]
+print hamming(1691)
+print hamming(1000000)
+
+====PYTHON=====
+from heapq import heappush, heappop
+from itertools import islice
+ 
+def h():
+    heap = [1]
+    while True:
+        h = heappop(heap)
+        while heap and h==heap[0]:
+            heappop(heap)
+        for m in [2,3,5]:
+            heappush(heap, m*h)
+        yield h
+ 
+print list(islice(h(), 20))
+print list(islice(h(), 1690, 1691))
+print list(islice(h(), 999999, 1000000)) # runtime 9.5 sec on i5-3570S
+ 
+
+====PYTHON=====
+from itertools import tee, chain, groupby, islice
+from heapq import merge
+ 
+def raymonds_hamming():
+    # Generate "5-smooth" numbers, also called "Hamming numbers"
+    # or "Regular numbers".  See: http://en.wikipedia.org/wiki/Regular_number
+    # Finds solutions to 2**i * 3**j * 5**k  for some integers i, j, and k.
+ 
+    def deferred_output():
+        for i in output:
+            yield i
+ 
+    result, p2, p3, p5 = tee(deferred_output(), 4)
+    m2 = (2*x for x in p2)                          # multiples of 2
+    m3 = (3*x for x in p3)                          # multiples of 3
+    m5 = (5*x for x in p5)                          # multiples of 5
+    merged = merge(m2, m3, m5)
+    combined = chain([1], merged)                   # prepend a starting point
+    output = (k for k,g in groupby(combined))       # eliminate duplicates
+ 
+    return result
+ 
+print list(islice(raymonds_hamming(), 20))
+print islice(raymonds_hamming(), 1689, 1690).next()
+print islice(raymonds_hamming(), 999999, 1000000).next()
+
+====PYTHON=====
+from heapq import merge
+from itertools import tee
+ 
+def hamming_numbers():
+    last = 1
+    yield last
+ 
+    a,b,c = tee(hamming_numbers(), 3)
+ 
+    for n in merge((2*i for i in a), (3*i for i in b), (5*i for i in c)):
+        if n != last:
+            yield n
+            last = n
+
+====PYTHON=====
+from itertools import islice, chain, tee
+ 
+def merge(r, s):
+    # This is faster than heapq.merge.
+    rr = r.next()
+    ss = s.next()
+    while True:
+        if rr < ss:
+            yield rr
+            rr = r.next()
+        else:
+            yield ss
+            ss = s.next()
+ 
+def p(n):
+    def gen():
+        x = n
+        while True:
+            yield x
+            x *= n
+    return gen()
+ 
+def pp(n, s):
+    def gen():
+        for x in (merge(s, chain([n], (n * y for y in fb)))):
+            yield x
+    r, fb = tee(gen())
+    return r
+ 
+def hamming(a, b = None):
+    if not b:
+        b = a + 1
+    seq = (chain([1], pp(5, pp(3, p(2)))))
+    return list(islice(seq, a - 1, b - 1))
+ 
+print hamming(1, 21)
+print hamming(1691)[0]
+print hamming(1000000)[0]
+

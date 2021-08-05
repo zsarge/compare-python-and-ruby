@@ -1,0 +1,96 @@
+====RUBY=====
+require 'lcs'
+ 
+def levenshtein_align(a, b)
+  apos, bpos = LCS.new(a, b).backtrack2
+ 
+  c = ""
+  d = ""
+  x0 = y0 = -1
+  dx = dy = 0
+  apos.zip(bpos) do |x,y|
+    diff = x + dx - y - dy
+    if diff < 0
+      dx -= diff
+      c += "-" * (-diff)
+    elsif diff > 0
+      dy += diff
+      d += "-" * diff
+    end
+    c += a[x0+1..x]
+    x0 = x
+    d += b[y0+1..y]
+    y0 = y
+  end
+ 
+  c += a[x0+1..-1]
+  d += b[y0+1..-1]
+  diff = a.length + y0 - b.length - x0
+  if diff < 0
+    c += "-" * (-diff)
+  elsif diff > 0
+    d += "-" * diff
+  end
+  [c, d]
+end
+ 
+puts levenshtein_align("rosettacode", "raisethysword")
+
+====RUBY=====
+func align(s, t) {
+    s.chars!.prepend!('^')
+    t.chars!.prepend!('^')
+ 
+    var A = []
+    {|i| A[i][0]{@|<d s t>} = (i, s.ft(1, i).join, '~' * i) } << ^s
+    {|i| A[0][i]{@|<d s t>} = (i, '-' * i, t.ft(1, i).join) } << ^t
+ 
+    for i (1 .. s.end) {
+      for j (1 .. t.end) {
+        if (s[i] != t[j]) {
+          A[i][j]{:d} = 1+(
+            var min = Math.min(A[i-1][j]{:d}, A[i][j-1]{:d}, A[i-1][j-1]{:d})
+          )
+          A[i][j]{@|<s t>} = (A[i-1][j]{:d} == min
+              ? [A[i-1][j]{:s}+s[i], A[i-1][j]{:t}+'-']
+              : (A[i][j-1]{:d} == min
+              ? [A[i][j-1]{:s}+'-', A[i][j-1]{:t}+t[j]]
+              : [A[i-1][j-1]{:s}+s[i], A[i-1][j-1]{:t}+t[j]]))...
+        }
+        else {
+          A[i][j]{@|<d s t>} = (
+              A[i-1][j-1]{:d},
+              A[i-1][j-1]{:s}+s[i],
+              A[i-1][j-1]{:t}+t[j],
+          )
+        }
+      }
+    }
+    return [A[-1][-1]{@|<s t>}]
+}
+ 
+align("rosettacode", "raisethysword").each { .say }
+
+====PYTHON=====
+from difflib import ndiff
+ 
+def levenshtein(str1, str2):
+    result = ""
+    pos, removed = 0, 0
+    for x in ndiff(str1, str2):
+        if pos<len(str1) and str1[pos] == x[2]:
+          pos += 1
+          result += x[2]
+          if x[0] == "-":
+              removed += 1
+          continue
+        else:
+          if removed > 0:
+            removed -=1
+          else:
+            result += "-"
+    print(result)
+ 
+levenshtein("place","palace")
+levenshtein("rosettacode","raisethysword")
+

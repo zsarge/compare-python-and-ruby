@@ -1,0 +1,81 @@
+====RUBY=====
+require "prime"
+ 
+def prime_conspiracy(m)
+  conspiracy = Hash.new(0)
+  Prime.take(m).map{|n| n%10}.each_cons(2){|a,b| conspiracy[[a,b]] += 1}
+  puts "#{m} first primes. Transitions prime % 10 → next-prime % 10."
+  conspiracy.sort.each do |(a,b),v|
+    puts "%d → %d count:%10d frequency:%7.4f %" % [a, b, v, 100.0*v/m]
+  end
+end
+ 
+prime_conspiracy(1_000_000)
+
+====RUBY=====
+var primes = (^Inf -> lazy.grep{.is_prime})
+ 
+var upto = 1e6
+var conspiracy = Hash()
+ 
+primes.first(upto+1).reduce { |a,b|
+    var d = b%10
+    conspiracy{"#{a} → #{d}"} := 0 ++
+    d
+}
+ 
+for k,v in (conspiracy.sort_by{|k,_v| k }) {
+    printf("%s count: %6s\tfrequency: %2.2f %\n", k, v.commify, v / upto * 100)
+}
+
+====PYTHON=====
+def isPrime(n):
+    if n < 2:
+        return False
+    if n % 2 == 0:
+        return n == 2
+    if n % 3 == 0:
+        return n == 3
+ 
+    d = 5
+    while d * d <= n:
+        if n % d == 0:
+            return False
+        d += 2
+ 
+        if n % d == 0:
+            return False
+        d += 4
+    return True
+ 
+def generatePrimes():
+    yield 2
+    yield 3
+ 
+    p = 5
+    while p > 0:
+        if isPrime(p):
+            yield p
+        p += 2
+        if isPrime(p):
+            yield p
+        p += 4
+ 
+g = generatePrimes()
+transMap = {}
+prev = None
+limit = 1000000
+for _ in xrange(limit):
+    prime = next(g)
+    if prev:
+        transition = (prev, prime %10)
+        if transition in transMap:
+            transMap[transition] += 1
+        else:
+            transMap[transition] = 1
+    prev = prime % 10
+ 
+print "First {:,} primes. Transitions prime % 10 > next-prime % 10.".format(limit)
+for trans in sorted(transMap):
+    print "{0} -> {1} count {2:5} frequency: {3}%".format(trans[0], trans[1], transMap[trans], 100.0 * transMap[trans] / limit)
+

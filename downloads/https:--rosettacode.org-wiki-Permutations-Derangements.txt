@@ -1,0 +1,72 @@
+====RUBY=====
+def derangements(n)
+  ary = (1 .. n).to_a
+  ary.permutation.select do |perm|
+    ary.zip(perm).all? {|a,b| a != b}
+  end
+end
+ 
+def subfact(n)
+  case n
+  when 0 then 1
+  when 1 then 0
+  else (n-1)*(subfact(n-1) + subfact(n-2))
+  end
+end
+ 
+puts "derangements for n = 4"
+derangements(4).each{|d|p d}
+ 
+puts "\n n   derange  subfact"
+(0..9).each do |n|
+  puts "%2d :%8d,%8d" % [n, derangements(n).size, subfact(n)]
+end
+ 
+puts "\nNumber of derangements"
+(10..20).each do |n|
+  puts "#{n} : #{subfact(n)}"
+end
+
+====PYTHON=====
+from itertools import permutations
+import math
+ 
+ 
+def derangements(n):
+    'All deranged permutations of the integers 0..n-1 inclusive'
+    return ( perm for perm in permutations(range(n))
+             if all(indx != p for indx, p in enumerate(perm)) )
+ 
+def subfact(n):
+    if n == 2 or n == 0:
+        return 1
+    elif n == 1:
+        return 0
+    elif  1 <= n <=18:
+        return round(math.factorial(n) / math.e)
+    elif n.imag == 0 and n.real == int(n.real) and n > 0:
+        return (n-1) * ( subfact(n - 1) + subfact(n - 2) )
+    else:
+        raise ValueError()
+ 
+def _iterlen(iter):
+    'length of an iterator without taking much memory'
+    l = 0
+    for x in iter:
+        l += 1
+    return l
+ 
+if __name__ == '__main__':
+    n = 4
+    print("Derangements of %s" % (tuple(range(n)),))
+    for d in derangements(n):
+        print("  %s" % (d,))
+ 
+    print("\nTable of n vs counted vs calculated derangements")
+    for n in range(10):
+        print("%2i %-5i %-5i" %
+              (n, _iterlen(derangements(n)), subfact(n)))
+ 
+    n = 20
+    print("\n!%i = %i" % (n, subfact(n)))
+

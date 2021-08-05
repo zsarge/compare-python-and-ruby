@@ -1,0 +1,3 @@
+====RUBY=====
+% sidef -E "say 'hello'"
+

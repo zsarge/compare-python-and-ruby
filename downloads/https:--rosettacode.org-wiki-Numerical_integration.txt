@@ -1,0 +1,206 @@
+====RUBY=====
+def leftrect(f, left, right)
+  f.call(left)
+end
+ 
+def midrect(f, left, right)
+  f.call((left+right)/2.0)
+end
+ 
+def rightrect(f, left, right)
+  f.call(right)
+end
+ 
+def trapezium(f, left, right)
+  (f.call(left) + f.call(right)) / 2.0
+end
+ 
+def simpson(f, left, right)
+  (f.call(left) + 4*f.call((left+right)/2.0) + f.call(right)) / 6.0
+end
+ 
+def integrate(f, a, b, steps, method)
+  delta = 1.0 * (b - a) / steps
+  total = 0.0
+  steps.times do |i|
+    left = a + i*delta
+    right = left + delta
+    total += delta * send(method, f, left, right)
+  end
+  total
+end
+ 
+def square(x)
+  x**2
+end
+ 
+def def_int(f, a, b)
+  l = case f.to_s
+      when /sin>/
+        lambda {|x| -Math.cos(x)}
+      when /square>/
+        lambda {|x| (x**3)/3.0}
+      end
+  l.call(b) - l.call(a)
+end
+ 
+a = 0
+b = Math::PI
+steps = 10
+ 
+for func in [method(:square), Math.method(:sin)]
+  puts "integral of #{func} from #{a} to #{b} in #{steps} steps"
+  actual = def_int(func, a, b)
+  for method in [:leftrect, :midrect, :rightrect, :trapezium, :simpson]
+    int = integrate(func, a, b, steps, method)
+    diff = (int - actual) * 100.0 / actual
+    printf "   %-10s  %s\t(%.1f%%)\n", method, int, diff
+  end
+end
+
+====RUBY=====
+func sum(f, start, from, to) {
+    var s = 0;
+    RangeNum(start, to, from-start).each { |i|
+        s += f(i);
+    }
+    return s
+}
+ 
+func leftrect(f, a, b, n) {
+    var h = ((b - a) / n);
+    h * sum(f, a, a+h, b-h);
+}
+ 
+func rightrect(f, a, b, n) {
+    var h = ((b - a) / n);
+    h * sum(f, a+h, a + 2*h, b);
+}
+ 
+func midrect(f, a, b, n) {
+    var h = ((b - a) / n);
+    h * sum(f, a + h/2, a + h + h/2, b - h/2)
+}
+ 
+func trapez(f, a, b, n) {
+    var h = ((b - a) / n);
+    h/2 * (f(a) + f(b) + sum({ f(_)*2 }, a+h, a + 2*h, b-h));
+}
+ 
+func simpsons(f, a, b, n) {
+    var h = ((b - a) / n);
+    var h2 = h/2;
+ 
+    var sum1 = f(a + h2);
+    var sum2 = 0;
+ 
+    sum({|i| sum1 += f(i + h2); sum2 += f(i); 0 }, a+h, a+h+h, b-h);
+    h/6 * (f(a) + f(b) + 4*sum1 + 2*sum2);
+}
+ 
+func tryem(label, f, a, b, n, exact) {
+    say "\n#{label}\n   in [#{a}..#{b}] / #{n}";
+ 
+    say('              exact result: ', exact);
+    say('     rectangle method left: ', leftrect(f, a, b, n));
+    say('    rectangle method right: ', rightrect(f, a, b, n));
+    say('      rectangle method mid: ', midrect(f, a, b, n));
+    say('composite trapezoidal rule: ', trapez(f, a, b, n));
+    say('   quadratic simpsons rule: ', simpsons(f, a, b, n));
+}
+ 
+tryem('x^3', { _ ** 3 }, 0, 1, 100, 0.25);
+tryem('1/x', { 1 / _ }, 1, 100, 1000, log(100));
+tryem('x', { _ }, 0, 5_000, 5_000_000, 12_500_000);
+tryem('x', { _ }, 0, 6_000, 6_000_000, 18_000_000);
+
+====PYTHON=====
+from fractions import Fraction
+ 
+def left_rect(f,x,h):
+  return f(x)
+ 
+def mid_rect(f,x,h):
+  return f(x + h/2)
+ 
+def right_rect(f,x,h):
+  return f(x+h)
+ 
+def trapezium(f,x,h):
+  return (f(x) + f(x+h))/2.0
+ 
+def simpson(f,x,h):
+  return (f(x) + 4*f(x + h/2) + f(x+h))/6.0
+ 
+def cube(x):
+  return x*x*x
+ 
+def reciprocal(x):
+  return 1/x
+ 
+def identity(x):
+  return x
+ 
+def integrate( f, a, b, steps, meth):
+   h = (b-a)/steps
+   ival = h * sum(meth(f, a+i*h, h) for i in range(steps))
+   return ival  
+ 
+# Tests
+for a, b, steps, func in ((0., 1., 100, cube), (1., 100., 1000, reciprocal)):
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               integrate( func, a, b, steps, rule)))
+    a, b = Fraction.from_float(a), Fraction.from_float(b)
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps and fractions) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               float(integrate( func, a, b, steps, rule))))
+ 
+# Extra tests (compute intensive)
+for a, b, steps, func in ((0., 5000., 5000000, identity),
+                          (0., 6000., 6000000, identity)):
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               integrate( func, a, b, steps, rule)))
+    a, b = Fraction.from_float(a), Fraction.from_float(b)
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps and fractions) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               float(integrate( func, a, b, steps, rule))))
+
+====PYTHON=====
+for a, b, steps, func in ((0., 1., 100, cube), (1., 100., 1000, reciprocal)):
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               integrate( func, a, b, steps, rule)))
+    a, b = Fraction.from_float(a), Fraction.from_float(b)
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps and fractions) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               float(integrate( func, a, b, steps, rule))))
+ 
+# Extra tests (compute intensive)
+for a, b, steps, func in ((1., 5000., 5000000, identity),
+                          (1., 6000., 6000000, identity)):
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               integrate( func, a, b, steps, rule)))
+    a, b = Fraction.from_float(a), Fraction.from_float(b)
+    for rule in (left_rect, mid_rect, right_rect, trapezium, simpson):
+        print('%s integrated using %s\n  from %r to %r (%i steps and fractions) = %r' %
+              (func.__name__, rule.__name__, a, b, steps,
+               float(integrate( func, a, b, steps, rule))))
+
+====PYTHON=====
+def faster_simpson(f, a, b, steps):
+   h = (b-a)/float(steps)
+   a1 = a+h/2
+   s1 = sum( f(a1+i*h) for i in range(0,steps))
+   s2 = sum( f(a+i*h) for i in range(1,steps))
+   return (h/6.0)*(f(a)+f(b)+4.0*s1+2.0*s2)
+

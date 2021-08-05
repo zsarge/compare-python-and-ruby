@@ -1,0 +1,260 @@
+====RUBY=====
+magic_number = 9*8*7
+div          = (9876432 // magic_number) * magic_number
+candidates   = div.step(to: 0, by: -magic_number)
+ 
+res = candidates.find do |c|
+  digits = c.to_s.chars.map(&.to_i)
+  (digits & [0,5]).empty? && digits == digits.uniq
+end
+ 
+puts "Largest decimal number is #{res}"
+
+====RUBY=====
+def divByAll(num, digits)
+  digits.all? { |digit| num % digit.to_i(16) == 0 }
+end
+ 
+magic = 15_i64 * 14 * 13 * 12 * 11
+high = (0xfedcba987654321_i64 // magic) * magic
+ 
+high.step(to: magic, by: -magic) do |i|
+  s = i.to_s(16)               # always generates lower case a-f
+  next if s.includes?('0') || s.chars.uniq.size != s.size # need uniq non-zero digits
+  (puts "Largest hex number is #{i.to_s(16)}"; break) if divByAll(i, s.chars)
+end
+
+====RUBY=====
+magic_number = 9*8*7
+div          = 9876432.div(magic_number) * magic_number
+candidates   = div.step(0, -magic_number)
+ 
+res = candidates.find do |c|
+  digits = c.digits
+  (digits & [0,5]).empty? && digits == digits.uniq 
+end
+ 
+puts "Largest decimal number is #{res}"
+
+====RUBY=====
+def divByAll(num, digits)
+  digits.all? { |digit| num % digit.to_i(16) == 0 }
+end
+ 
+magic = 15 * 14 * 13 * 12 * 11
+high = (0xfedcba987654321 / magic) * magic
+ 
+high.step(magic, -magic) do |i|
+  s = i.to_s(16)               # always generates lower case a-f
+  next if s.include? "0"       # can't contain '0'
+  sd = s.chars.uniq
+  next if sd.size != s.size    # digits must be unique
+  (puts "Largest hex number is #{i.to_s(16)}"; break) if divByAll(i, sd)
+end
+
+====RUBY=====
+func largest_number(base) {
+ 
+    var digits = @(base ^.. 1)
+ 
+    digits.each {|k|
+        digits.variations(k, {|*a|
+            var n = Number(a.join, base)
+            if (a.all {|d| d.divides(n) }) {
+                return n
+            }
+        })
+    }
+}
+ 
+say largest_number(10)   #=> 9867312
+
+====PYTHON=====
+'''Largest number divisible by its digits'''
+ 
+from itertools import (chain, permutations)
+from functools import (reduce)
+from math import (gcd)
+ 
+ 
+# main :: IO ()
+def main():
+    '''Tests'''
+ 
+    # (Division by zero is not an option, so 0 and 5 are omitted)
+    digits = [1, 2, 3, 4, 6, 7, 8, 9]
+ 
+    # Least common multiple of the digits above
+    lcmDigits = reduce(lcm, digits)
+ 
+    # Any 7 items drawn from the digits above,
+    # including any two of [1, 4, 7]
+    sevenDigits = ((delete)(digits)(x) for x in [1, 4, 7])
+ 
+    print(
+        max(
+            (
+                intFromDigits(x) for x
+                in concatMap(permutations)(sevenDigits)
+            ),
+            key=lambda n: n if 0 == n % lcmDigits else 0
+        )
+    )
+ 
+ 
+# intFromDigits :: [Int] -> Int
+def intFromDigits(xs):
+    '''An integer derived from an
+       ordered list of digits.
+    '''
+    return reduce(lambda a, x: a * 10 + x, xs, 0)
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f):
+    '''A concatenated list over which a function has been
+       mapped. The list monad can be derived by using a
+       function f which wraps its output in a list,
+       (using an empty list to represent computational failure).
+    '''
+    def go(xs):
+        return chain.from_iterable(map(f, xs))
+    return go
+ 
+ 
+# delete :: Eq a => [a] -> a -> [a]
+def delete(xs):
+    '''xs with the first instance of
+       x removed.
+    '''
+    def go(x):
+        ys = xs.copy()
+        ys.remove(x)
+        return ys
+    return go
+ 
+ 
+# lcm :: Int -> Int -> Int
+def lcm(x, y):
+    '''The smallest positive integer divisible
+       without remainder by both x and y.
+    '''
+    return 0 if (0 == x or 0 == y) else abs(
+        y * (x // gcd(x, y))
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+'''Largest number divisible by its hex digits'''
+ 
+from functools import (reduce)
+from math import (gcd)
+ 
+ 
+# main :: IO ()
+def main():
+    '''First integer evenly divisible by each of its
+       hex digits, none of which appear more than once.
+    '''
+ 
+    # Least common multiple of digits [1..15]
+    # ( -> 360360 )
+    lcmDigits = foldl1(lcm)(
+        enumFromTo(1)(15)
+    )
+    allDigits = 0xfedcba987654321
+ 
+    # ( -> 1147797409030632360 )
+    upperLimit = allDigits - (allDigits % lcmDigits)
+ 
+    # Possible numbers
+    xs = enumFromThenToNext(upperLimit)(
+        upperLimit - lcmDigits
+    )(1)
+ 
+    print(
+        hex(
+            until(lambda x: 15 == len(set(showHex(x))))(
+                lambda _: next(xs)
+            )(next(xs))
+        )
+    )   # --> 0xfedcb59726a1348
+ 
+ 
+# ------------------ GENERIC FUNCTIONS -------------------
+ 
+# enumFromThenToNext :: Int -> Int -> Int -> Gen [Int]
+def enumFromThenToNext(m):
+    '''Non-finite series of integer values enumerated
+       from m to n with a step size defined by nxt-m.
+    '''
+    def go(m, nxt):
+        d = nxt - m
+        v = m
+        while True:
+            yield v
+            v = d + v
+    return lambda nxt: lambda n: go(m, nxt)
+ 
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: range(m, 1 + n)
+ 
+ 
+# foldl1 :: (a -> a -> a) -> [a] -> a
+def foldl1(f):
+    '''Left to right reduction of the
+       non-empty list xs, using the binary
+       operator f, with the head of xs
+       as the initial acccumulator value.
+    '''
+    return lambda xs: reduce(
+        lambda a, x: f(a)(x), xs[1:], xs[0]
+    ) if xs else None
+ 
+ 
+# lcm :: Int -> Int -> Int
+def lcm(x):
+    '''The smallest positive integer divisible
+       without remainder by both x and y.
+    '''
+    return lambda y: (
+        0 if (0 == x or 0 == y) else abs(
+            y * (x // gcd(x, y))
+        )
+    )
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.
+    '''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+# showHex :: Int -> String
+def showHex(n):
+    '''Hexadecimal string representation
+       of an integer value.
+    '''
+    return hex(n)[2:]
+ 
+ 
+# MAIN --
+if __name__ == '__main__':
+    main()
+

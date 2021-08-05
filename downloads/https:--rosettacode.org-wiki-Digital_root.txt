@@ -1,0 +1,134 @@
+====RUBY=====
+class String
+  def digroot_persistence(base=10)
+    num = self.to_i(base)
+    persistence = 0
+    until num < base do
+      num = num.digits(base).sum
+      persistence += 1
+    end
+    [num.to_s(base), persistence]
+  end
+end
+ 
+puts "--- Examples in 10-Base ---"
+%w(627615 39390 588225 393900588225).each do |str|
+  puts "%12s has a digital root of %s and a persistence of %s." % [str, *str.digroot_persistence]
+end
+puts "\n--- Examples in other Base ---"
+format = "%s base %s has a digital root of %s and a persistence of %s."
+[["101101110110110010011011111110011000001", 2],
+ [ "5BB64DFCC1", 16],
+ ["5", 8],
+ ["50YE8N29", 36]].each do |(str, base)|
+   puts format % [str, base, *str.digroot_persistence(base)]
+end
+
+====RUBY=====
+func digroot (r, base = 10) {
+    var root = r.base(base)
+    var persistence = 0
+    while (root.len > 1) {
+        root = root.chars.map{|n| Number(n, 36) }.sum(0).base(base)
+        ++persistence
+    }
+    return(persistence, root)
+}
+ 
+var nums = [5, 627615, 39390, 588225, 393900588225]
+var bases = [2, 3, 8, 10, 16, 36]
+var fmt = "%25s(%2s): persistance = %s, root = %2s\n"
+ 
+nums << (550777011503 *
+         105564897893993412813307040538786690718089963180462913406682192479)
+ 
+bases.each { |b|
+    nums.each { |n|
+        var x = n.base(b)
+        x = 'BIG' if (x.len > 25)
+        fmt.printf(x, b, digroot(n, b))
+    }
+    print "\n"
+}
+
+====PYTHON=====
+def digital_root (n):
+    ap = 0
+    n = abs(int(n))
+    while n >= 10:
+        n = sum(int(digit) for digit in str(n))
+        ap += 1
+    return ap, n
+ 
+if __name__ == '__main__':
+    for n in [627615, 39390, 588225, 393900588225, 55]:
+        persistance, root = digital_root(n)
+        print("%12i has additive persistance %2i and digital root %i." 
+              % (n, persistance, root))
+
+====PYTHON=====
+from functools import (reduce)
+ 
+ 
+# main :: IO ()
+def main():
+    print (
+        tabulated(digitalRoot)(
+            'Integer -> (additive persistence, digital root):'
+        )([627615, 39390, 588225, 393900588225, 55])
+    )
+ 
+ 
+# digitalRoot :: Int -> (Int, Int)
+def digitalRoot(n):
+    '''Integer -> (additive persistence, digital root)'''
+ 
+    # f :: (Int, Int) -> (Int, Int)
+    def f(pn):
+        p, n = pn
+        return (
+            1 + p,
+            reduce(lambda a, x: a + int(x), str(n), 0)
+        )
+ 
+    # p :: (Int , Int) -> Bool
+    def p(pn):
+        return 10 > pn[1]
+ 
+    return until(p)(f)(
+        (0, abs(int(n)))
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# tabulated :: (a -> b) -> String -> String
+def tabulated(f):
+    '''function -> heading -> input List -> tabulated output string'''
+    def go(s, xs):
+        fw = compose(len)(str)
+        w = fw(max(xs, key=fw))
+        return s + '\n' + '\n'.join(list(map(
+            lambda x: str(x).rjust(w, ' ') + ' -> ' + str(f(x)), xs
+        )))
+    return lambda s: lambda xs: go(s, xs)
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+if __name__ == '__main__':
+    main()
+

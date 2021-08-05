@@ -1,0 +1,42 @@
+====RUBY=====
+def makeList(separator)
+  counter = 1
+ 
+  makeItem = lambda {|item|
+    result = "#{counter}#{separator}#{item}\n"
+    counter += 1
+    result
+  }
+ 
+  makeItem["first"] + makeItem["second"] + makeItem["third"]
+end
+ 
+print makeList(". ")
+
+====RUBY=====
+func make_list(separator = ') ') {
+ 
+    var count = 1
+    func make_item(item) {
+        [count++, separator, item].join
+    }
+ 
+    <first second third>.map(make_item).join("\n")
+}
+ 
+say make_list('. ')
+
+====PYTHON=====
+def makeList(separator):
+    counter = 1
+ 
+    def makeItem(item):
+        nonlocal counter
+        result = str(counter) + separator + item + "\n"
+        counter += 1
+        return result
+ 
+    return makeItem("first") + makeItem("second") + makeItem("third")
+ 
+print(makeList(". "))
+

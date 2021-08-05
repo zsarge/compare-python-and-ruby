@@ -1,0 +1,27 @@
+====RUBY=====
+File.delete("output.txt", "/output.txt")
+Dir.delete("docs")
+Dir.delete("/docs")
+
+====RUBY=====
+# here
+%f'input.txt' -> delete;
+%d'docs'      -> delete;
+ 
+# root dir
+Dir.root + %f'input.txt' -> delete;
+Dir.root + %d'docs'      -> delete;
+
+====PYTHON=====
+import os
+# current directory
+os.remove("output.txt")
+os.rmdir("docs")
+# root directory
+os.remove("/output.txt")
+os.rmdir("/docs")
+
+====PYTHON=====
+import shutil
+shutil.rmtree("docs")
+

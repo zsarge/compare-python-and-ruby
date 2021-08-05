@@ -1,0 +1,397 @@
+====RUBY=====
+require "bit_array"
+ 
+struct BitArray
+  def clone
+    BitArray.new(size).tap { |new| new.to_slice.copy_from (to_slice) }
+  end
+end
+ 
+record Item, name : String, weight : Int32, value : Int32
+ 
+record Selection, mask : BitArray, cur_index : Int32, total_value : Int32
+ 
+class Knapsack
+  @threshold_value = 0
+  @threshold_choice : Selection?
+  getter checked_nodes = 0
+ 
+  def knapsack_step(taken, items, remaining_weight)
+    if taken.total_value > @threshold_value
+      @threshold_value = taken.total_value
+      @threshold_choice = taken
+    end
+    candidate_index = items.index(taken.cur_index) { |item| item.weight <= remaining_weight }
+    return nil unless candidate_index
+    @checked_nodes += 1
+    candidate = items[candidate_index]
+    # candidate is a best of available items, so if we fill remaining value with it
+    # and still don't reach the threshold, the branch is wrong
+    return nil if taken.total_value + 1.0 * candidate.value / candidate.weight * remaining_weight < @threshold_value
+    # now recursively check both variants
+    mask = taken.mask.clone
+    mask[candidate_index] = true
+    knapsack_step Selection.new(mask, candidate_index + 1, taken.total_value + candidate.value), items, remaining_weight - candidate.weight
+    mask = taken.mask.clone
+    mask[candidate_index] = false
+    knapsack_step Selection.new(mask, candidate_index + 1, taken.total_value), items, remaining_weight
+  end
+ 
+  def select(items, max_weight)
+    @checked_variants = 0
+    # sort by descending relative value
+    list = items.sort_by { |item| -1.0 * item.value / item.weight }
+    # use heuristic of relative value as an initial estimate for branch&bounds
+    w = max_weight
+    heur_list = list.take_while { |item| w -= item.weight; w > 0 }
+    nothing = Selection.new(BitArray.new(items.size), 0, 0)
+    @threshold_value = heur_list.sum(&.value) - 1
+    @threshold_choice = nothing
+    knapsack_step(nothing, list, max_weight)
+    selected = @threshold_choice.not_nil!
+    result = [] of Item
+    selected.mask.each_with_index { |v, i| result << list[i] if v }
+    result
+  end
+end
+ 
+possible = [
+  Item.new("map", 9, 150),
+  Item.new("compass", 13, 35),
+  Item.new("water", 153, 200),
+  Item.new("sandwich", 50, 160),
+  Item.new("glucose", 15, 60),
+  Item.new("tin", 68, 45),
+  Item.new("banana", 27, 60),
+  Item.new("apple", 39, 40),
+  Item.new("cheese", 23, 30),
+  Item.new("beer", 52, 10),
+  Item.new("suntan cream", 11, 70),
+  Item.new("camera", 32, 30),
+  Item.new("T-shirt", 24, 15),
+  Item.new("trousers", 48, 10),
+  Item.new("umbrella", 73, 40),
+  Item.new("waterproof trousers", 42, 70),
+  Item.new("waterproof overclothes", 43, 75),
+  Item.new("note-case", 22, 80),
+  Item.new("sunglasses", 7, 20),
+  Item.new("towel", 18, 12),
+  Item.new("socks", 4, 50),
+  Item.new("book", 30, 10),
+]
+ 
+solver = Knapsack.new
+used = solver.select(possible, 400)
+puts "optimal choice: #{used.map(&.name)}"
+puts "total weight #{used.sum(&.weight)}, total value #{used.sum(&.value)}"
+puts "checked nodes: #{solver.checked_nodes}"
+ 
+
+====RUBY=====
+KnapsackItem = Struct.new(:name, :weight, :value)
+potential_items = [
+  KnapsackItem['map', 9, 150],              KnapsackItem['compass', 13, 35],
+  KnapsackItem['water', 153, 200],          KnapsackItem['sandwich', 50, 160],
+  KnapsackItem['glucose', 15, 60],          KnapsackItem['tin', 68, 45],
+  KnapsackItem['banana', 27, 60],           KnapsackItem['apple', 39, 40],
+  KnapsackItem['cheese', 23, 30],           KnapsackItem['beer', 52, 10],
+  KnapsackItem['suntan cream', 11, 70],     KnapsackItem['camera', 32, 30],
+  KnapsackItem['t-shirt', 24, 15],          KnapsackItem['trousers', 48, 10],
+  KnapsackItem['umbrella', 73, 40],         KnapsackItem['waterproof trousers', 42, 70],
+  KnapsackItem['waterproof overclothes', 43, 75], KnapsackItem['note-case', 22, 80],
+  KnapsackItem['sunglasses', 7, 20],        KnapsackItem['towel', 18, 12],
+  KnapsackItem['socks', 4, 50],             KnapsackItem['book', 30, 10],
+]
+knapsack_capacity = 400
+ 
+class Array
+  # do something for each element of the array's power set
+  def power_set
+    yield [] if block_given?
+    self.inject([[]]) do |ps, elem|
+      ps.each_with_object([]) do |i,r|
+        r << i
+        new_subset = i + [elem]
+        yield new_subset if block_given?
+        r << new_subset
+      end
+    end
+  end
+end
+ 
+maxval, solutions = potential_items.power_set.group_by {|subset|
+  weight = subset.inject(0) {|w, elem| w + elem.weight}
+  weight>knapsack_capacity ? 0 : subset.inject(0){|v, elem| v + elem.value}
+}.max
+ 
+puts "value: #{maxval}"
+solutions.each do |set|
+  wt, items = 0, []
+  set.each {|elem| wt += elem.weight; items << elem.name}
+  puts "weight: #{wt}"
+  puts "items: #{items.join(',')}"
+end
+
+====RUBY=====
+KnapsackItem = Struct.new(:name, :weight, :value)
+ 
+def dynamic_programming_knapsack(items, max_weight)
+  num_items = items.size
+  cost_matrix = Array.new(num_items){Array.new(max_weight+1, 0)}
+ 
+  num_items.times do |i|
+    (max_weight + 1).times do |j|
+      if(items[i].weight > j)
+        cost_matrix[i][j] = cost_matrix[i-1][j]
+      else
+        cost_matrix[i][j] = [cost_matrix[i-1][j], items[i].value + cost_matrix[i-1][j-items[i].weight]].max
+      end
+    end
+  end
+  used_items = get_used_items(items, cost_matrix)
+  [get_list_of_used_items_names(items, used_items),                     # used items names
+   items.zip(used_items).map{|item,used| item.weight*used}.inject(:+),  # total weight
+   cost_matrix.last.last]                                               # total value
+end
+ 
+def get_used_items(items, cost_matrix)
+  i = cost_matrix.size - 1
+  currentCost = cost_matrix[0].size - 1
+  marked = cost_matrix.map{0}
+ 
+  while(i >= 0 && currentCost >= 0)
+    if(i == 0 && cost_matrix[i][currentCost] > 0 ) || (cost_matrix[i][currentCost] != cost_matrix[i-1][currentCost])
+      marked[i] = 1
+      currentCost -= items[i].weight
+    end
+    i -= 1
+  end
+  marked
+end
+ 
+def get_list_of_used_items_names(items, used_items)
+  items.zip(used_items).map{|item,used| item.name if used>0}.compact.join(', ')
+end
+ 
+if $0 == __FILE__
+  items = [
+    KnapsackItem['map'                   ,   9, 150], KnapsackItem['compass'            , 13,  35],
+    KnapsackItem['water'                 , 153, 200], KnapsackItem['sandwich'           , 50, 160],
+    KnapsackItem['glucose'               ,  15,  60], KnapsackItem['tin'                , 68,  45],
+    KnapsackItem['banana'                ,  27,  60], KnapsackItem['apple'              , 39,  40],
+    KnapsackItem['cheese'                ,  23,  30], KnapsackItem['beer'               , 52,  10],
+    KnapsackItem['suntan cream'          ,  11,  70], KnapsackItem['camera'             , 32,  30],
+    KnapsackItem['t-shirt'               ,  24,  15], KnapsackItem['trousers'           , 48,  10],
+    KnapsackItem['umbrella'              ,  73,  40], KnapsackItem['waterproof trousers', 42,  70],
+    KnapsackItem['waterproof overclothes',  43,  75], KnapsackItem['note-case'          , 22,  80],
+    KnapsackItem['sunglasses'            ,   7,  20], KnapsackItem['towel'              , 18,  12],
+    KnapsackItem['socks'                 ,   4,  50], KnapsackItem['book'               , 30,  10]
+  ]
+ 
+  names, weight, value = dynamic_programming_knapsack(items, 400)
+  puts
+  puts 'Dynamic Programming:'
+  puts
+  puts "Found solution: #{names}"
+  puts "total weight: #{weight}"
+  puts "total value: #{value}"
+end
+
+====RUBY=====
+var raw = <<'TABLE'
+map,                      9, 150
+compass,                 13,  35
+water,                  153, 200
+sandwich,                50, 160
+glucose,                 15,  60
+tin,                     68,  45
+banana,                  27,  60
+apple,                   39,  40
+cheese,                  23,  30
+beer,                    52,  10
+suntancream,             11,  70
+camera,                  32,  30
+T-shirt,                 24,  15
+trousers,                48,  10
+umbrella,                73,  40
+waterproof trousers,     42,  70
+waterproof overclothes,  43,  75
+note-case,               22,  80
+sunglasses,               7,  20
+towel,                   18,  12
+socks,                    4,  50
+book,                    30,  10
+TABLE
+ 
+struct KnapsackItem {
+    String name,
+    Number weight,
+    Number value,
+}
+ 
+var items = []
+raw.each_line{ |row|
+    var fields = row.split(/\s*,\s*/)
+    items << KnapsackItem(
+          name: fields[0],
+        weight: fields[1].to_n,
+         value: fields[2].to_n,
+    )
+}
+ 
+var max_weight = 400
+var p = [
+    items.len.of { [[0, []], max_weight.of(nil)...] }...,
+    max_weight.inc.of {[0, []]}
+]
+ 
+func optimal(i, w) {
+    if (!defined p[i][w]) {
+        var item = items[i];
+        if (item.weight > w) {
+            p[i][w] = optimal(i.dec, w)
+        }
+        else {
+            var x = optimal(i.dec, w)
+            var y = optimal(i.dec, w - item.weight)
+ 
+            if (x[0] > (y[0] + item.value)) {
+                p[i][w] = x;
+            }
+            else {
+                p[i][w] = [y[0] + item.value, [y[1]..., item.name]]
+            }
+        }
+    }
+    return p[i][w]
+}
+ 
+var sol = optimal(items.end, max_weight)
+say "#{sol[0]}: #{sol[1]}"
+
+====PYTHON=====
+from itertools import combinations
+ 
+def anycomb(items):
+    ' return combinations of any length from the items '
+    return ( comb
+             for r in range(1, len(items)+1)
+             for comb in combinations(items, r)
+             )
+ 
+def totalvalue(comb):
+    ' Totalise a particular combination of items'
+    totwt = totval = 0
+    for item, wt, val in comb:
+        totwt  += wt
+        totval += val
+    return (totval, -totwt) if totwt <= 400 else (0, 0)
+ 
+items = (
+    ("map", 9, 150), ("compass", 13, 35), ("water", 153, 200), ("sandwich", 50, 160),
+    ("glucose", 15, 60), ("tin", 68, 45), ("banana", 27, 60), ("apple", 39, 40),
+    ("cheese", 23, 30), ("beer", 52, 10), ("suntan cream", 11, 70), ("camera", 32, 30),
+    ("t-shirt", 24, 15), ("trousers", 48, 10), ("umbrella", 73, 40),
+    ("waterproof trousers", 42, 70), ("waterproof overclothes", 43, 75),
+    ("note-case", 22, 80), ("sunglasses", 7, 20), ("towel", 18, 12),
+    ("socks", 4, 50), ("book", 30, 10),
+    )
+bagged = max( anycomb(items), key=totalvalue) # max val or min wt if values equal
+print("Bagged the following items\n  " +
+      '\n  '.join(sorted(item for item,_,_ in bagged)))
+val, wt = totalvalue(bagged)
+print("for a total value of %i and a total weight of %i" % (val, -wt))
+
+====PYTHON=====
+try:
+    xrange
+except:
+    xrange = range
+ 
+def totalvalue(comb):
+    ' Totalise a particular combination of items'
+    totwt = totval = 0
+    for item, wt, val in comb:
+        totwt  += wt
+        totval += val
+    return (totval, -totwt) if totwt <= 400 else (0, 0)
+ 
+items = (
+    ("map", 9, 150), ("compass", 13, 35), ("water", 153, 200), ("sandwich", 50, 160),
+    ("glucose", 15, 60), ("tin", 68, 45), ("banana", 27, 60), ("apple", 39, 40),
+    ("cheese", 23, 30), ("beer", 52, 10), ("suntan cream", 11, 70), ("camera", 32, 30),
+    ("t-shirt", 24, 15), ("trousers", 48, 10), ("umbrella", 73, 40),
+    ("waterproof trousers", 42, 70), ("waterproof overclothes", 43, 75),
+    ("note-case", 22, 80), ("sunglasses", 7, 20), ("towel", 18, 12),
+    ("socks", 4, 50), ("book", 30, 10),
+    )
+ 
+def knapsack01_dp(items, limit):
+    table = [[0 for w in range(limit + 1)] for j in xrange(len(items) + 1)]
+ 
+    for j in xrange(1, len(items) + 1):
+        item, wt, val = items[j-1]
+        for w in xrange(1, limit + 1):
+            if wt > w:
+                table[j][w] = table[j-1][w]
+            else:
+                table[j][w] = max(table[j-1][w],
+                                  table[j-1][w-wt] + val)
+ 
+    result = []
+    w = limit
+    for j in range(len(items), 0, -1):
+        was_added = table[j][w] != table[j-1][w]
+ 
+        if was_added:
+            item, wt, val = items[j-1]
+            result.append(items[j-1])
+            w -= wt
+ 
+    return result
+ 
+ 
+bagged = knapsack01_dp(items, 400)
+print("Bagged the following items\n  " +
+      '\n  '.join(sorted(item for item,_,_ in bagged)))
+val, wt = totalvalue(bagged)
+print("for a total value of %i and a total weight of %i" % (val, -wt))
+
+====PYTHON=====
+def total_value(items, max_weight):
+    return  sum([x[2] for x in items]) if sum([x[1] for x in items]) <= max_weight else 0
+ 
+cache = {}
+def solve(items, max_weight):
+    if not items:
+        return ()
+    if (items,max_weight) not in cache:
+        head = items[0]
+        tail = items[1:]
+        include = (head,) + solve(tail, max_weight - head[1])
+        dont_include = solve(tail, max_weight)
+        if total_value(include, max_weight) > total_value(dont_include, max_weight):
+            answer = include
+        else:
+            answer = dont_include
+        cache[(items,max_weight)] = answer
+    return cache[(items,max_weight)]
+ 
+items = (
+    ("map", 9, 150), ("compass", 13, 35), ("water", 153, 200), ("sandwich", 50, 160),
+    ("glucose", 15, 60), ("tin", 68, 45), ("banana", 27, 60), ("apple", 39, 40),
+    ("cheese", 23, 30), ("beer", 52, 10), ("suntan cream", 11, 70), ("camera", 32, 30),
+    ("t-shirt", 24, 15), ("trousers", 48, 10), ("umbrella", 73, 40),
+    ("waterproof trousers", 42, 70), ("waterproof overclothes", 43, 75),
+    ("note-case", 22, 80), ("sunglasses", 7, 20), ("towel", 18, 12),
+    ("socks", 4, 50), ("book", 30, 10),
+    )
+max_weight = 400
+ 
+solution = solve(items, max_weight)
+print "items:"
+for x in solution:
+    print x[0]
+print "value:", total_value(solution, max_weight)
+print "weight:", sum([x[1] for x in solution])
+

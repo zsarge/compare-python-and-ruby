@@ -1,0 +1,14 @@
+====RUBY=====
+size = File.size('input.txt')
+size = File.size('/input.txt')
+
+====RUBY=====
+say (Dir.cwd  + %f'input.txt' -> size);
+say (Dir.root + %f'input.txt' -> size);
+
+====PYTHON=====
+import os
+ 
+size = os.path.getsize('input.txt')
+size = os.path.getsize('/input.txt')
+

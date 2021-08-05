@@ -1,0 +1,55 @@
+====RUBY=====
+class DListNode
+  def get_tail
+    # parent class (ListNode) includes Enumerable, so the find method is available to us
+    self.find {|node| node.succ.nil?}
+  end
+ 
+  def each_previous(&b)
+    yield self
+    self.prev.each_previous(&b) if self.prev
+  end
+end
+ 
+head = DListNode.from_array([:a, :b, :c])
+head.each {|node| p node.value}
+head.get_tail.each_previous {|node| p node.value}
+
+====PYTHON=====
+class List:
+    def __init__(self, data, next=None, prev=None):
+        self.data = data
+        self.next = next
+        self.prev = prev
+ 
+    def append(self, data):
+        if self.next == None:
+            self.next = List(data, None, self)
+            return self.next
+        else:
+            return self.next.append(data)
+ 
+# Build the list
+tail = head = List(10)
+for i in [ 20, 30, 40 ]:
+    tail = tail.append(i)
+ 
+# Traverse forwards
+node = head
+while node != None:
+    print(node.data)
+    node = node.next
+ 
+# Traverse Backwards
+node = tail
+while node != None:
+    print(node.data)
+    node = node.prev
+
+====PYTHON=====
+l = [ 10, 20, 30, 40 ]
+for i in l:
+    print(i)
+for i in reversed(l):    # reversed produces an iterator, so only O(1) memory is used
+    print(i)
+

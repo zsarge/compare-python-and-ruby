@@ -1,0 +1,107 @@
+====RUBY=====
+def make_change(amount, coins)
+  @cache = Array.new(amount+1){|i| Array.new(coins.size, i.zero? ? 1 : nil)}
+  @coins = coins
+  do_count(amount, @coins.length - 1)
+end
+ 
+def do_count(n, m)
+  if n < 0 || m < 0
+    0
+  elsif @cache[n][m]
+    @cache[n][m]
+  else
+    @cache[n][m] = do_count(n-@coins[m], m) + do_count(n, m-1)
+  end
+end
+ 
+p make_change(   1_00, [1,5,10,25])
+p make_change(1000_00, [1,5,10,25,50,100])
+
+====RUBY=====
+def make_change2(amount, coins)
+  n, m = amount, coins.size
+  table = Array.new(n+1){|i| Array.new(m, i.zero? ? 1 : nil)}
+  for i in 1..n
+    for j in 0...m
+      table[i][j] = (i<coins[j] ? 0 : table[i-coins[j]][j]) +
+                    (j<1        ? 0 : table[i][j-1])
+    end
+  end
+  table[-1][-1]
+end
+ 
+p make_change2(   1_00, [1,5,10,25])
+p make_change2(1000_00, [1,5,10,25,50,100])
+
+====RUBY=====
+func cc(_)                { 0 }
+func cc({ .is_neg  }, *_) { 0 }
+func cc({ .is_zero }, *_) { 1 }
+ 
+func cc(amount, first, *rest) is cached {
+    cc(amount, rest...) + cc(amount - first, first, rest...);
+}
+ 
+func cc_optimized(amount, *rest) {
+    cc(amount, rest.sort_by{|v| -v }...);
+}
+ 
+var x = cc_optimized(100, 1, 5, 10, 25);
+say "Ways to change $1 with common coins: #{x}";
+ 
+var y = cc_optimized(1000 * 100, 1, 5, 10, 25, 50, 100);
+say "Ways to change $1000 with addition of less common coins: #{y}";
+
+====PYTHON=====
+def changes(amount, coins):
+    ways = [0] * (amount + 1)
+    ways[0] = 1
+    for coin in coins:
+        for j in xrange(coin, amount + 1):
+            ways[j] += ways[j - coin]
+    return ways[amount]
+ 
+print changes(100, [1, 5, 10, 25])
+print changes(100000, [1, 5, 10, 25, 50, 100])
+
+====PYTHON=====
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+ 
+def count_changes(amount_cents, coins):
+    n = len(coins)
+    # max([]) instead of max() for Psyco
+    cycle = max([c+1 for c in coins if c <= amount_cents]) * n
+    table = [0] * cycle
+    for i in xrange(n):
+        table[i] = 1
+ 
+    pos = n
+    for s in xrange(1, amount_cents + 1):
+        for i in xrange(n):
+            if i == 0 and pos >= cycle:
+                pos = 0
+            if coins[i] <= s:
+                q = pos - coins[i] * n
+                table[pos]= table[q] if (q >= 0) else table[q + cycle]
+            if i:
+                table[pos] += table[pos - 1]
+            pos += 1
+    return table[pos - 1]
+ 
+def main():
+    us_coins = [100, 50, 25, 10, 5, 1]
+    eu_coins = [200, 100, 50, 20, 10, 5, 2, 1]
+ 
+    for coins in (us_coins, eu_coins):
+        print count_changes(     100, coins[2:])
+        print count_changes(  100000, coins)
+        print count_changes( 1000000, coins)
+        print count_changes(10000000, coins), "\n"
+ 
+main()
+

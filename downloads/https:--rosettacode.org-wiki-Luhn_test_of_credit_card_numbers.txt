@@ -1,0 +1,154 @@
+====RUBY=====
+def luhn_valid?(n)  # Card values can be numbers or strings
+  d2sum = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9]
+  sum, n = 0, n.to_u64
+  while n > 0; sum += n%10; n //= 10; sum += d2sum[n%10]; n //= 10 end
+  sum % 10 == 0
+end
+ 
+cards = [49927398716, "49927398717", 1234567812345678, "1234567812345670"]
+cards.each{ |i| puts "#{i}: #{luhn_valid?(i)}" }
+
+====RUBY=====
+ def luhn_valid?(str)
+   str.scan(/\d/).reverse            #using str.to_i.digits fails for cases with leading zeros
+      .each_slice(2)
+      .sum { |i, k = 0| i.to_i + ((k.to_i)*2).digits.sum }
+      .modulo(10).zero?
+ end
+ 
+["49927398716", "49927398717", "1234567812345678", "1234567812345670"].map{ |i| luhn_valid?(i) }
+ 
+
+====RUBY=====
+def luhn_valid?(n)  # Card values can be numbers or strings
+  d2sum = [0, 2, 4, 6, 8, 1, 3, 5, 7, 9]
+  sum, num = 0, n.to_i
+  num.digits.each_with_index { |digit, i| sum += i.even? ? digit : d2sum[digit] }
+  sum % 10 == 0
+end
+ 
+cards = [49927398716, "49927398717", 1234567812345678, "1234567812345670"]
+cards.each{ |i| puts "#{i}: #{luhn_valid?(i)}" }
+
+====RUBY=====
+func luhn (n) {
+    static a = {|j| (2*j // 10) + (2*j % 10) }.map(^10)
+ 
+    var checksum = n.digits.map_kv {|i,j|
+        i.is_odd ? a[j] : j
+    }.sum
+ 
+    checksum % 10 == 0
+}
+ 
+for n in [49927398716, 49927398717, 1234567812345678, 1234567812345670] {
+    say [n, luhn(n)]
+}
+
+====PYTHON=====
+>>> def luhn(n):
+	r = [int(ch) for ch in str(n)][::-1]
+	return (sum(r[0::2]) + sum(sum(divmod(d*2,10)) for d in r[1::2])) % 10 == 0
+ 
+>>> for n in (49927398716, 49927398717, 1234567812345678, 1234567812345670):
+	print(n, luhn(n))
+
+====PYTHON=====
+'''Luhn test of credit card numbers'''
+ 
+from operator import add, mul
+from functools import reduce
+from itertools import cycle
+ 
+ 
+# luhn :: Integer -> Bool
+def luhn(n):
+    '''True if n is a valid Luhn credit card number.'''
+    def divMod10Sum(a, x):
+        return a + add(*divmod(x, 10))
+    return 0 == reduce(
+        divMod10Sum,
+        map(
+            mul,
+            cycle([1, 2]),
+            map(int, reversed(str(n)))
+        ),
+        0
+    ) % 10
+ 
+ 
+# ---------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Tests'''
+    print(list(
+        map(luhn, [
+            49927398716, 49927398717,
+            1234567812345678, 1234567812345670
+        ])
+    ))
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+'''Luhn test of credit card numbers'''
+ 
+from itertools import cycle
+ 
+ 
+# luhn :: String -> Bool
+def luhn(k):
+    '''True if k is a valid Luhn credit card number string
+    '''
+    def asDigits(s):
+        return (int(c) for c in s)
+ 
+    return 0 == sum(map(
+        lambda f, x: f(x),
+        cycle([
+            lambda n: n,
+            lambda n: sum(asDigits(str(2 * n)))
+        ]),
+        asDigits(reversed(k))
+    )) % 10
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Tests'''
+    print('\n'.join([
+        repr((x, luhn(x))) for x in [
+            "49927398716",
+            "49927398717",
+            "1234567812345678",
+            "1234567812345670"
+        ]
+    ]))
+ 
+ 
+if __name__ == '__main__':
+    main()
+ 
+
+====PYTHON=====
+>>> def vérifLuhn(ch):
+  sum = 0
+  chParity = len(ch) % 2
+  for i in range (len(ch)-1, -1, -1):
+    j = int(ch[i])
+    if ((i + 1) % 2 != chParity):
+      j = j * 2 
+    if (j > 9):
+      j = j - 9 
+    sum = sum + j
+  print("value calculated = ", str(sum))
+  return sum % 10 == 0         
+ 
+for n in (49927398716, 49927398717, 1234567812345678, 1234567812345670):
+        print (str(n)+" =>", vérifLuhn(str(n)))
+ 
+

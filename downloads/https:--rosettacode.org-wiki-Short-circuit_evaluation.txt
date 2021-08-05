@@ -1,0 +1,114 @@
+====RUBY=====
+def a( bool )
+  puts "a( #{bool} ) called"
+  bool
+end
+ 
+def b( bool )
+  puts "b( #{bool} ) called"
+  bool
+end
+ 
+ [true, false].each do |a_val|
+   [true, false].each do |b_val|
+     puts "a( #{a_val} ) and b( #{b_val} ) is #{a( a_val ) and b( b_val )}."
+     puts
+     puts "a( #{a_val} ) or b( #{b_val} ) is #{a( a_val)  or b( b_val )}."
+     puts
+   end
+ end
+
+====RUBY=====
+func a(bool) { print 'A'; return bool }
+func b(bool) { print 'B'; return bool }
+ 
+# Test-driver
+func test() {
+    for op in ['&&', '||'] {
+        for x,y in [[1,1],[1,0],[0,1],[0,0]] {
+            "a(%s) %s b(%s): ".printf(x, op, y)
+            eval "a(Bool(x)) #{op} b(Bool(y))"
+            print "\n"
+        }
+    }
+}
+ 
+# Test and display
+test()
+
+====PYTHON=====
+>>> def a(answer):
+	print("  # Called function a(%r) -> %r" % (answer, answer))
+	return answer
+ 
+>>> def b(answer):
+	print("  # Called function b(%r) -> %r" % (answer, answer))
+	return answer
+ 
+>>> for i in (False, True):
+	for j in (False, True):
+		print ("\nCalculating: x = a(i) and b(j)")
+		x = a(i) and b(j)
+		print ("Calculating: y = a(i) or  b(j)")
+		y = a(i) or  b(j)
+ 
+ 
+ 
+Calculating: x = a(i) and b(j)
+  # Called function a(False) -> False
+Calculating: y = a(i) or  b(j)
+  # Called function a(False) -> False
+  # Called function b(False) -> False
+ 
+Calculating: x = a(i) and b(j)
+  # Called function a(False) -> False
+Calculating: y = a(i) or  b(j)
+  # Called function a(False) -> False
+  # Called function b(True) -> True
+ 
+Calculating: x = a(i) and b(j)
+  # Called function a(True) -> True
+  # Called function b(False) -> False
+Calculating: y = a(i) or  b(j)
+  # Called function a(True) -> True
+ 
+Calculating: x = a(i) and b(j)
+  # Called function a(True) -> True
+  # Called function b(True) -> True
+Calculating: y = a(i) or  b(j)
+  # Called function a(True) -> True
+
+====PYTHON=====
+>>> for i in (False, True):
+	for j in (False, True):
+		print ("\nCalculating: x = a(i) and b(j) using x = b(j) if a(i) else False")
+		x = b(j) if a(i) else False
+		print ("Calculating: y = a(i) or  b(j) using y = b(j) if not a(i) else True")
+		y = b(j) if not a(i) else True
+ 
+ 
+ 
+Calculating: x = a(i) and b(j) using x = b(j) if a(i) else False
+  # Called function a(False) -> False
+Calculating: y = a(i) or  b(j) using y = b(j) if not a(i) else True
+  # Called function a(False) -> False
+  # Called function b(False) -> False
+ 
+Calculating: x = a(i) and b(j) using x = b(j) if a(i) else False
+  # Called function a(False) -> False
+Calculating: y = a(i) or  b(j) using y = b(j) if not a(i) else True
+  # Called function a(False) -> False
+  # Called function b(True) -> True
+ 
+Calculating: x = a(i) and b(j) using x = b(j) if a(i) else False
+  # Called function a(True) -> True
+  # Called function b(False) -> False
+Calculating: y = a(i) or  b(j) using y = b(j) if not a(i) else True
+  # Called function a(True) -> True
+ 
+Calculating: x = a(i) and b(j) using x = b(j) if a(i) else False
+  # Called function a(True) -> True
+  # Called function b(True) -> True
+Calculating: y = a(i) or  b(j) using y = b(j) if not a(i) else True
+  # Called function a(True) -> True
+

@@ -1,0 +1,123 @@
+====RUBY=====
+STX = "\u0002"
+ETX = "\u0003"
+ 
+def bwt(s)
+    for c in s.split('')
+        if c == STX or c == ETX then
+            raise ArgumentError.new("Input can't contain STX or ETX")
+        end
+    end
+ 
+    ss = ("%s%s%s" % [STX, s, ETX]).split('')
+    table = []
+    for i in 0 .. ss.length - 1
+        table.append(ss.join)
+        ss = ss.rotate(-1)
+    end
+ 
+    table = table.sort
+    return table.map{ |e| e[-1] }.join
+end
+ 
+def ibwt(r)
+    len = r.length
+    table = [""] * len
+    for i in 0 .. len - 1
+        for j in 0 .. len - 1
+            table[j] = r[j] + table[j]
+        end
+        table = table.sort
+    end
+    for row in table
+        if row[-1] == ETX then
+            return row[1 .. -2]
+        end
+    end
+    return ""
+end
+ 
+def makePrintable(s)
+    s = s.gsub(STX, "^")
+    return s.gsub(ETX, "|")
+end
+ 
+def main
+    tests = [
+        "banana",
+        "appellee",
+        "dogwood",
+        "TO BE OR NOT TO BE OR WANT TO BE OR NOT?",
+        "SIX.MIXED.PIXIES.SIFT.SIXTY.PIXIE.DUST.BOXES",
+        "\u0002ABC\u0003"
+    ]
+    for test in tests
+        print makePrintable(test), "\n"
+        print " --> "
+ 
+        begin
+            t = bwt(test)
+            print makePrintable(t), "\n"
+ 
+            r = ibwt(t)
+            print " --> ", r, "\n\n"
+        rescue ArgumentError => e
+            print e.message, "\n"
+            print " -->\n\n"
+        end
+    end
+end
+ 
+main()
+
+====RUBY=====
+class BurrowsWheelerTransform (String L = "\002") {
+ 
+    method encode(String s) {
+        assert(!s.contains(L), "String cannot contain `#{L.dump}`")
+        s = (L + s)
+        s.len.of{|i| s.substr(i) + s.substr(0, i) }.sort.map{.last}.join
+    }
+ 
+    method decode(String s) {
+        var t = s.len.of("")
+        var c = s.chars
+        { t = (c »+« t).sort } * s.len
+        t.first { .begins_with(L) }.substr(L.len)
+    }
+}
+ 
+var tests = [
+    "banana", "appellee", "dogwood", "TOBEORNOTTOBEORTOBEORNOT"
+    "SIX.MIXED.PIXIES.SIFT.SIXTY.PIXIE.DUST.BOXES",
+]
+ 
+var bwt = BurrowsWheelerTransform(L: '$')
+ 
+tests.each { |str|
+    var enc = bwt.encode(str)
+    var dec = bwt.decode(enc)
+    say "BWT(#{dec.dump}) = #{enc.dump}"
+    assert_eq(str, dec)
+}
+
+====PYTHON=====
+ 
+def bwt(s):
+    """Apply Burrows-Wheeler transform to input string."""
+    assert "\002" not in s and "\003" not in s, "Input string cannot contain STX and ETX characters"
+    s = "\002" + s + "\003"  # Add start and end of text marker
+    table = sorted(s[i:] + s[:i] for i in range(len(s)))  # Table of rotations of string
+    last_column = [row[-1:] for row in table]  # Last characters of each row
+    return "".join(last_column)  # Convert list of characters into string
+ 
+ 
+def ibwt(r):
+    """Apply inverse Burrows-Wheeler transform."""
+    table = [""] * len(r)  # Make empty table
+    for i in range(len(r)):
+        table = sorted(r[i] + table[i] for i in range(len(r)))  # Add a column of r
+    s = [row for row in table if row.endswith("\003")][0]  # Find the correct row (ending in ETX)
+    return s.rstrip("\003").strip("\002")  # Get rid of start and end markers
+ 
+

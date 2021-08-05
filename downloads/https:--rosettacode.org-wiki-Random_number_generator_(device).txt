@@ -1,0 +1,26 @@
+====RUBY=====
+require 'securerandom'
+SecureRandom.random_number(1 << 32)
+ 
+#or specifying SecureRandom as the desired RNG:
+p (1..10).to_a.sample(3, random: SecureRandom) # =>[1, 4, 5]
+ 
+
+====RUBY=====
+func urandom() {
+    const device = %f'/dev/urandom';
+ 
+    device.open('<:raw', \var fh, \var err) ->
+        || die "Can't open `#{device}': #{err}";
+ 
+    fh.sysread(\var noise, 4);
+    'L'.unpack(noise);
+}
+ 
+say urandom();    # sample: 3517432564
+
+====PYTHON=====
+import random
+rand = random.SystemRandom()
+rand.randint(1,10)
+

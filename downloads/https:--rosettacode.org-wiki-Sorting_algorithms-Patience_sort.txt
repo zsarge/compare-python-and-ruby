@@ -1,0 +1,80 @@
+====RUBY=====
+class Array
+  def patience_sort
+    piles = []
+    each do |i|
+      if (idx = piles.index{|pile| pile.last <= i})
+        piles[idx] << i
+      else
+        piles << [i]    #create a new pile
+      end
+    end
+    # merge piles
+    result = []
+    until piles.empty?
+      first = piles.map(&:first)
+      idx = first.index(first.min)
+      result << piles[idx].shift
+      piles.delete_at(idx) if piles[idx].empty?
+    end
+    result
+  end
+end
+ 
+a = [4, 65, 2, -31, 0, 99, 83, 782, 1]
+p a.patience_sort
+
+====RUBY=====
+func patience(deck) {
+  var stacks = [];
+  deck.each { |card|
+    given (stacks.first { card < .last }) { |stack|
+      case (defined stack) {
+        stack << card
+      }
+      default {
+        stacks << [card]
+      }
+    }
+  }
+ 
+  gather {
+    while (stacks) {
+      take stacks.min_by { .last }.pop
+      stacks.grep!{ !.is_empty }
+    }
+  }
+}
+ 
+var a = [4, 65, 2, -31, 0, 99, 83, 782, 1]
+say patience(a)
+
+====PYTHON=====
+from functools import total_ordering
+from bisect import bisect_left
+from heapq import merge
+ 
+@total_ordering
+class Pile(list):
+    def __lt__(self, other): return self[-1] < other[-1]
+    def __eq__(self, other): return self[-1] == other[-1]
+ 
+def patience_sort(n):
+    piles = []
+    # sort into piles
+    for x in n:
+        new_pile = Pile([x])
+        i = bisect_left(piles, new_pile)
+        if i != len(piles):
+            piles[i].append(x)
+        else:
+            piles.append(new_pile)
+ 
+    # use a heap-based merge to merge piles efficiently
+    n[:] = merge(*[reversed(pile) for pile in piles])
+ 
+if __name__ == "__main__":
+    a = [4, 65, 2, -31, 0, 99, 83, 782, 1]
+    patience_sort(a)
+    print a
+

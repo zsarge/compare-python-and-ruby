@@ -1,0 +1,24 @@
+====RUBY=====
+Dir.entries("testdir").empty? 
+
+====RUBY=====
+Dir.new('/my/dir').is_empty;    # true, false or nil
+
+====RUBY=====
+func is_empty(dir) {
+    dir.open(\var dir_h) || return nil;
+    dir_h.each { |file|
+        file ~~ ['.', '..'] && next;
+        return false;
+    };
+    return true;
+};
+
+====PYTHON=====
+import os;
+if os.listdir(raw_input("directory")):
+    print "not empty"
+else:
+    print "empty"
+ 
+

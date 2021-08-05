@@ -1,0 +1,73 @@
+====RUBY=====
+def left_truncatable?(n)
+  truncatable?(n) {|i| i.to_s[1..-1].to_i}
+end
+ 
+ 
+def right_truncatable?(n)
+  truncatable?(n) {|i| i/10}
+end
+ 
+def truncatable?(n, &trunc_func)
+  return false if n.to_s.include? "0"
+  loop do
+    n = trunc_func.call(n)
+    return true if n.zero?
+    return false unless Prime.prime?(n)
+  end
+end
+ 
+require 'prime'
+primes = Prime.each(1_000_000).to_a.reverse
+ 
+p primes.detect {|p| left_truncatable? p}
+p primes.detect {|p| right_truncatable? p}
+
+====RUBY=====
+func t_prime(n, left=true) {
+    var p = %w(2 3 5 7);
+    var f = (
+        left ? { '1'..'9' ~X+ p }
+             : { p ~X+ '1'..'9' }
+    )
+    n.times {
+        p = f().grep{ .to_i.is_prime }
+    }
+    p.map{.to_i}.max
+}
+ 
+say t_prime(5, left: true)
+say t_prime(5, left: false)
+
+====PYTHON=====
+maxprime = 1000000
+ 
+def primes(n):
+    multiples = set()
+    prime = []
+    for i in range(2, n+1):
+        if i not in multiples:
+            prime.append(i)
+            multiples.update(set(range(i*i, n+1, i)))
+    return prime
+ 
+def truncatableprime(n):
+    'Return a longest left and right truncatable primes below n'
+    primelist = [str(x) for x in primes(n)[::-1]]
+    primeset = set(primelist)
+    for n in primelist:
+        # n = 'abc'; [n[i:] for i in range(len(n))] -> ['abc', 'bc', 'c']
+        alltruncs = set(n[i:] for i in range(len(n)))
+        if alltruncs.issubset(primeset):
+            truncateleft = int(n)
+            break
+    for n in primelist:
+        # n = 'abc'; [n[:i+1] for i in range(len(n))] -> ['a', 'ab', 'abc']
+        alltruncs = set([n[:i+1] for i in range(len(n))])
+        if alltruncs.issubset(primeset):
+            truncateright = int(n)
+            break
+    return truncateleft, truncateright
+ 
+print(truncatableprime(maxprime))
+

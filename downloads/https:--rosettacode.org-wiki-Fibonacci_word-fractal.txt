@@ -1,0 +1,152 @@
+====RUBY=====
+def fibonacci_word(n)
+  words = ["1", "0"]
+  (n-1).times{ words << words[-1] + words[-2] }
+  words[n]
+end
+ 
+def print_fractal(word)
+  area = Hash.new(" ")
+  x = y = 0
+  dx, dy = 0, -1
+  area[[x,y]] = "S"
+  word.each_char.with_index(1) do |c,n|
+    area[[x+dx, y+dy]] = dx.zero? ? "|" : "-"
+    x, y = x+2*dx, y+2*dy
+    area[[x, y]] = "+"
+    dx,dy = n.even? ? [dy,-dx] : [-dy,dx]  if c=="0"
+  end
+ 
+  (xmin, xmax), (ymin, ymax) = area.keys.transpose.map(&:minmax)
+  for y in ymin..ymax
+    puts (xmin..xmax).map{|x| area[[x,y]]}.join
+  end
+end
+ 
+word = fibonacci_word(16)
+print_fractal(word)
+
+====RUBY=====
+var(m=17, scale=3) = ARGV.map{.to_i}...
+ 
+(var world = Hash.new){0}{0} = 1
+var loc = 0
+var dir = 1i
+ 
+var fib = ['1', '0']
+func fib_word(n) {
+    fib[n] \\= (fib_word(n-1) + fib_word(n-2))
+}
+ 
+func step {
+    scale.times {
+        loc += dir
+        world{loc.im}{loc.re} = 1
+    }
+}
+ 
+func turn_left  { dir *=  1i }
+func turn_right { dir *= -1i }
+ 
+var n = 1
+fib_word(m).each { |c|
+    if (c == '0') {
+        step()
+        n % 2 == 0 ? turn_left()
+                   : turn_right()
+    } else { n++ }
+}
+ 
+func braille_graphics(a) {
+    var (xlo, xhi, ylo, yhi) = ([Inf, -Inf]*2)...
+ 
+    a.each_key { |y|
+        ylo.min!(y.to_i)
+        yhi.max!(y.to_i)
+        a{y}.each_key { |x|
+            xlo.min!(x.to_i)
+            xhi.max!(x.to_i)
+        }
+    }
+ 
+    for y in (ylo..yhi `by` 4) {
+        for x in (xlo..xhi `by` 2) {
+            var cell = 0x2800
+ 
+            a{y+0}{x+0} && (cell += 1)
+            a{y+1}{x+0} && (cell += 2)
+            a{y+2}{x+0} && (cell += 4)
+            a{y+0}{x+1} && (cell += 8)
+            a{y+1}{x+1} && (cell += 16)
+            a{y+2}{x+1} && (cell += 32)
+            a{y+3}{x+0} && (cell += 64)
+            a{y+3}{x+1} && (cell += 128)
+ 
+            print cell.chr
+        }
+        print "\n"
+    }
+}
+ 
+braille_graphics(world)
+
+====PYTHON=====
+from functools import wraps
+from turtle import *
+ 
+def memoize(obj):
+    cache = obj.cache = {}
+    @wraps(obj)
+    def memoizer(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            cache[key] = obj(*args, **kwargs)
+        return cache[key]
+    return memoizer
+ 
+@memoize
+def fibonacci_word(n):
+    assert n > 0
+    if n == 1:
+        return "1"
+    if n == 2:
+        return "0"
+    return fibonacci_word(n - 1) + fibonacci_word(n - 2)
+ 
+def draw_fractal(word, step):
+    for i, c in enumerate(word, 1):
+        forward(step)
+        if c == "0":
+            if i % 2 == 0:
+                left(90)
+            else:
+                right(90)
+ 
+def main():
+    n = 25 # Fibonacci Word to use.
+    step = 1 # Segment length.
+    width = 1050 # Width of plot area.
+    height = 1050 # Height of plot area.
+    w = fibonacci_word(n)
+ 
+    setup(width=width, height=height)
+    speed(0)
+    setheading(90)
+    left(90)
+    penup()
+    forward(500)
+    right(90)
+    backward(500)
+    pendown()
+    tracer(10000)
+    hideturtle()
+ 
+    draw_fractal(w, step)
+ 
+    # Save Poscript image.
+    getscreen().getcanvas().postscript(file="fibonacci_word_fractal.eps")
+    exitonclick()
+ 
+if __name__ == '__main__':
+    main()
+

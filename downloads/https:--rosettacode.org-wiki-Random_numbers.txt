@@ -1,0 +1,37 @@
+====RUBY=====
+n, mean, sd, tau = 1000, 1, 0.5, (2 * Math::PI)
+array = Array.new(n) { mean + sd * Math.sqrt(-2 * Math.log(rand)) * Math.cos(tau * rand) }
+ 
+mean = array.sum / array.size
+standev = Math.sqrt( array.sum{ |x| (x - mean) ** 2 } / array.size )
+puts "mean = #{mean}, standard deviation = #{standev}"
+
+====RUBY=====
+Array.new(1000) { 1 + Math.sqrt(-2 * Math.log(rand)) * Math.cos(2 * Math::PI * rand) }
+
+====RUBY=====
+var arr = 1000.of { 1 + (0.5 * sqrt(-2 * 1.rand.log) * cos(Num.tau * 1.rand)) }
+arr.each { .say }
+
+====PYTHON=====
+>>> import random
+>>> values = [random.gauss(1, .5) for i in range(1000)]
+>>> 
+
+====PYTHON=====
+>>> def quick_check(numbers):
+    count = len(numbers)
+    mean = sum(numbers) / count
+    sdeviation = (sum((i - mean)**2 for i in numbers) / count)**0.5
+    return mean, sdeviation
+ 
+>>> quick_check(values)
+(1.0140373306786599, 0.49943411329234066)
+>>> 
+
+====PYTHON=====
+>>> values = [ random.normalvariate(1, 0.5) for i in range(1000)]
+>>> quick_check(values)
+(0.990099111944864, 0.5029847005836282)
+>>> 
+

@@ -1,0 +1,38 @@
+====RUBY=====
+require "bigdecimal/math"
+include BigMath
+ 
+e, pi = E(200), PI(200)
+[19, 43, 67, 163].each do |x|
+  puts "#{x}: #{(e ** (pi * BigMath.sqrt(BigDecimal(x), 200))).round(100).to_s("F")}"
+end
+ 
+
+====RUBY=====
+func ramanujan_const(x, decimals=32) {
+    local Num!PREC = *"#{4*round((Num.pi*√x)/log(10) + decimals + 1)}"
+    exp(Num.pi * √x) -> round(-decimals).to_s
+}
+ 
+var decimals = 100
+printf("Ramanujan's constant to #{decimals} decimals:\n%s\n\n",
+     ramanujan_const(163, decimals))
+ 
+say "Heegner numbers yielding 'almost' integers:"
+[19, 96, 43, 960, 67, 5280, 163, 640320].each_slice(2, {|h,x|
+    var c = ramanujan_const(h, 32)
+    var n = (x**3 + 744)
+    printf("%3s: %51s ≈ %18s (diff: %s)\n", h, c, n, n-Num(c))
+})
+
+====PYTHON=====
+from mpmath import mp
+heegner = [19,43,67,163]
+mp.dps = 50
+x = mp.exp(mp.pi*mp.sqrt(163))
+print("calculated Ramanujan's constant: {}".format(x))
+print("Heegner numbers yielding 'almost' integers:")
+for i in heegner:
+    print(" for {}: {} ~ {} error: {}".format(str(i),mp.exp(mp.pi*mp.sqrt(i)),round(mp.exp(mp.pi*mp.sqrt(i))),(mp.pi*mp.sqrt(i)) - round(mp.pi*mp.sqrt(i))))
+ 
+

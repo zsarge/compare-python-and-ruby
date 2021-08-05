@@ -1,0 +1,6 @@
+====PYTHON=====
+import sys
+with open(sys.argv[0],'r') as input:
+    for row in input:
+        print(row, end='')
+

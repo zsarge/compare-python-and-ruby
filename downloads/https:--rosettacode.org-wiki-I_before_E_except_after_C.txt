@@ -1,0 +1,79 @@
+====RUBY=====
+require 'open-uri'
+ 
+plausibility_ratio = 2
+counter = Hash.new(0)
+path = 'http://wiki.puzzlers.org/pub/wordlists/unixdict.txt'
+rules = [['I before E when not preceded by C:', 'ie', 'ei'],
+         ['E before I when preceded by C:', 'cei', 'cie']]
+ 
+open(path){|f| f.each{|line| line.scan(/ie|ei|cie|cei/){|match| counter[match] += 1 }}}
+ 
+overall_plausible = rules.all? do |(str, x, y)|
+  num_x, num_y, ratio = counter[x], counter[y], counter[x] / counter[y].to_f
+  plausibility = ratio > plausibility_ratio
+  puts str
+  puts "#{x}: #{num_x}; #{y}: #{num_y}; Ratio: #{ratio.round(2)}: #{ plausibility ? 'Plausible' : 'Implausible'}"
+  plausibility
+end
+ 
+puts "Overall: #{overall_plausible ? 'Plausible' : 'Implausible'}."
+ 
+
+====PYTHON=====
+import urllib.request
+import re
+ 
+PLAUSIBILITY_RATIO = 2
+ 
+def plausibility_check(comment, x, y):
+    print('\n  Checking plausibility of: %s' % comment)
+    if x > PLAUSIBILITY_RATIO * y:
+        print('    PLAUSIBLE. As we have counts of %i vs %i, a ratio of %4.1f times'
+              % (x, y, x / y))
+    else:
+        if x > y:
+            print('    IMPLAUSIBLE. As although we have counts of %i vs %i, a ratio of %4.1f times does not make it plausible'
+                  % (x, y, x / y))
+        else:
+            print('    IMPLAUSIBLE, probably contra-indicated. As we have counts of %i vs %i, a ratio of %4.1f times'
+                  % (x, y, x / y))
+    return x > PLAUSIBILITY_RATIO * y
+ 
+def simple_stats(url='http://wiki.puzzlers.org/pub/wordlists/unixdict.txt'):
+    words = urllib.request.urlopen(url).read().decode().lower().split()
+    cie = len({word for word in words if 'cie' in word})
+    cei = len({word for word in words if 'cei' in word})
+    not_c_ie = len({word for word in words if re.search(r'(^ie|[^c]ie)', word)})
+    not_c_ei = len({word for word in words if re.search(r'(^ei|[^c]ei)', word)})
+    return cei, cie, not_c_ie, not_c_ei
+ 
+def print_result(cei, cie, not_c_ie, not_c_ei):
+    if ( plausibility_check('I before E when not preceded by C', not_c_ie, not_c_ei)
+         & plausibility_check('E before I when preceded by C', cei, cie) ):
+        print('\nOVERALL IT IS PLAUSIBLE!')
+    else:
+        print('\nOVERALL IT IS IMPLAUSIBLE!')
+    print('(To be plausible, one count must exceed another by %i times)' % PLAUSIBILITY_RATIO)
+ 
+print('Checking plausibility of "I before E except after C":')
+print_result(*simple_stats())
+
+====PYTHON=====
+def stretch_stats(url='http://ucrel.lancs.ac.uk/bncfreq/lists/1_2_all_freq.txt'):
+    freq = [line.strip().lower().split()
+            for line in urllib.request.urlopen(url)
+            if len(line.strip().split()) == 3]
+    wordfreq = [(word.decode(), int(frq))
+                for word, pos, frq in freq[1:]
+                if (b'ie' in word) or (b'ei' in word)]
+    cie = sum(frq for word, frq in wordfreq if 'cie' in word)
+    cei = sum(frq for word, frq in wordfreq if 'cei' in word)
+    not_c_ie = sum(frq for word, frq in wordfreq if re.search(r'(^ie|[^c]ie)', word))
+    not_c_ei = sum(frq for word, frq in wordfreq if re.search(r'(^ei|[^c]ei)', word))
+    return cei, cie, not_c_ie, not_c_ei
+ 
+print('\n\nChecking plausibility of "I before E except after C"')
+print('And taking account of word frequencies in British English:')
+print_result(*stretch_stats())
+

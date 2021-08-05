@@ -1,0 +1,197 @@
+====RUBY=====
+def foo() p "foo" end
+ 
+foo                             #=> "foo"
+foo()                           #=> "foo"
+
+====RUBY=====
+def foo arg; p arg end          # one argument
+ 
+foo(1)                          #=> 1
+foo "1"                         #=> "1"
+foo [0,1,2]                     #=> [0, 1, 2]   (one Array)
+
+====RUBY=====
+def foo(x=0, y=x, flag=true) p [x,y,flag] end
+ 
+foo                             #=> [0, 0, true]
+foo(1)                          #=> [1, 1, true]
+foo(1,2)                        #=> [1, 2, true]
+foo 1,2,false                   #=> [1, 2, false]
+
+====RUBY=====
+def foo(*args) p args end
+ 
+foo                             #=> []
+foo(1,2,3,4,5)                  #=> [1, 2, 3, 4, 5]
+
+====RUBY=====
+def foo(id:0, name:"", age:0) p [id, name, age] end
+ 
+foo(age:22, name:"Tom")         #=> [0, "Tom", 22]
+
+====RUBY=====
+def foo(a,b) a + b end
+ 
+bar = foo 10,20
+p bar                           #=> 30
+p foo("abc","def")              #=> "abcdef"
+ 
+# return multiple values
+def sum_and_product(a,b) return a+b,a*b end
+ 
+x,y = sum_and_product(3,5)
+p x                             #=> 8
+p y                             #=> 15
+
+====RUBY=====
+puts "OK!"                      # Kernel#puts
+raise "Error input"             # Kernel#raise
+Integer("123")                  # Kernel#Integer
+rand(6)                         # Kernel#rand
+throw(:exit)                    # Kernel#throw
+ 
+# method which can be seen like a reserved word.
+attr_accessor                   # Module#attr_accessor
+include                         # Module#include
+private                         # Module#private
+require                         # Kernel#require
+loop { }                        # Kernel#loop
+
+====RUBY=====
+class Array
+  def sum(init=0, &blk)
+    if blk
+      inject(init){|s, n| s + blk.call(n)}
+    else
+      inject(init){|s, n| s + n}
+    end
+  end
+end
+ 
+ary = [1,2,3,4,5]
+p ary.sum                               #=> 15
+p ary.sum(''){|n| (-n).to_s}            #=> "-1-2-3-4-5"
+p (ary.sum do |n| n * n end)            #=> 55
+
+====RUBY=====
+def foo(a,b,c) p [a,b,c] end
+ 
+args = [1,2,3]
+foo *args                       #=> [1, 2, 3]
+args = [1,2]
+foo(0,*args)                    #=> [0, 1, 2]
+
+====RUBY=====
+#                                   return value        substance
+i = 3
+p 1 + i                         #=> 4                   1.+(i)
+p i < 5                         #=> true                i.<(5)
+p 2 ** i                        #=> 8                   2.**(i)
+p -i                            #=> -3                  [email protected]()
+a = [1,2,3]
+p a[0]                          #=> 1                   a.[](0)
+a[2] = "0"                      #                       a.[]=(2,"0")
+p a << 5                        #=> [1, 2, "0", 5]      a.<<(5)
+p a & [4,2]                     #=> [2]                 a.&([4,2])
+p "abcde"[1..3]                 #=> "bcd"               "abcde".[](1..3)
+p "%2d %4s" % [1,"xyz"]         #=> " 1  xyz"           "%2d %4s".%([1,"xyz"])
+
+====RUBY=====
+foo();                       # without arguments
+foo(1, 2);                   # with two arguments
+foo(args...);                # with a variable number of arguments
+foo(name: 'Bar', age: 42);   # with named arguments
+ 
+var f = foo;                 # store the function foo inside 'f'
+var result = f();            # obtain the return value of a function
+ 
+var arr = [1,2,3];
+foo(arr);                    # the arguments are passed by object-reference
+
+====RUBY=====
+func curry(f, *args1) {
+    func (*args2) {
+        f(args1..., args2...);
+    }
+}
+ 
+func add(a, b) {
+    a + b
+}
+ 
+var adder = curry(add, 1);
+say adder(3);                 #=>4
+
+====PYTHON=====
+def no_args():
+    pass
+# call
+no_args()
+ 
+def fixed_args(x, y):
+    print('x=%r, y=%r' % (x, y))
+# call
+fixed_args(1, 2)        # x=1, y=2
+ 
+## Can also called them using the parameter names, in either order:
+fixed_args(y=2, x=1)
+ 
+## Can also "apply" fixed_args() to a sequence:
+myargs=(1,2) # tuple
+fixed_args(*myargs)
+ 
+def opt_args(x=1):
+    print(x)
+# calls
+opt_args()              # 1
+opt_args(3.141)         # 3.141
+ 
+def var_args(*v):
+    print(v)
+# calls	
+var_args(1, 2, 3)       # (1, 2, 3)
+var_args(1, (2,3))      # (1, (2, 3))
+var_args()              # ()
+ 
+## Named arguments
+fixed_args(y=2, x=1)    # x=1, y=2
+ 
+## As a statement
+if 1:
+    no_args()
+ 
+## First-class within an expression
+assert no_args() is None
+ 
+def return_something():
+    return 1
+x = return_something()
+ 
+def is_builtin(x):
+	print(x.__name__ in dir(__builtins__))
+# calls
+is_builtin(pow)         # True
+is_builtin(is_builtin)  # False
+ 
+# Very liberal function definition
+ 
+def takes_anything(*args, **kwargs):
+    for each in args:
+        print(each)
+    for key, value in sorted(kwargs.items()):
+        print("%s:%s" % (key, value))
+    # Passing those to another, wrapped, function:
+    wrapped_fn(*args, **kwargs)
+    # (Function being wrapped can have any parameter list
+    # ... that doesn't have to match this prototype)
+ 
+## A subroutine is merely a function that has no explicit
+## return statement and will return None.
+ 
+## Python uses "Call by Object Reference".
+## See, for example, http://www.python-course.eu/passing_arguments.php
+ 
+## For partial function application see:
+##   http://rosettacode.org/wiki/Partial_function_application#Python
+

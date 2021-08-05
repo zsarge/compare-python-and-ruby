@@ -1,0 +1,236 @@
+====RUBY=====
+Shoes.app(:height=>540,:width=>540, :title=>"Sierpinski Triangle") do
+  def triangle(slot, tri, color)
+    x, y, len = tri
+    slot.append do
+      fill color
+      shape do
+        move_to(x,y)
+        dx = len * Math::cos(Math::PI/3)
+        dy = len * Math::sin(Math::PI/3)
+        line_to(x-dx, y+dy)
+        line_to(x+dx, y+dy)
+        line_to(x,y)
+      end
+    end
+  end
+  @s = stack(:width => 520, :height => 520) {}
+  @s.move(10,10)
+ 
+  length = 512
+  @triangles = [[length/2,0,length]]
+  triangle(@s, @triangles[0], rgb(0,0,0))
+ 
+  @n = 1
+  animate(1) do
+    if @n <= 7
+      @triangles = @triangles.inject([]) do |sum, (x, y, len)|
+        dx = len/2 * Math::cos(Math::PI/3)
+        dy = len/2 * Math::sin(Math::PI/3)
+        triangle(@s, [x, y+2*dy, -len/2], rgb(255,255,255))
+        sum += [[x, y, len/2], [x-dx, y+dy, len/2], [x+dx, y+dy, len/2]]
+      end
+    end
+    @n += 1
+  end
+ 
+  keypress do |key|
+    case key
+    when :control_q, "\x11" then exit
+    end
+  end
+end
+
+====RUBY=====
+ 
+T_HEIGHT = sqrt(3) / 2
+TOP_Y = 1 / sqrt(3)
+BOT_Y = sqrt(3) / 6
+TRIANGLE_SIZE = 800
+ 
+def settings
+  size(TRIANGLE_SIZE, (T_HEIGHT * TRIANGLE_SIZE))
+  smooth
+end
+ 
+def setup
+  sketch_title 'Sierpinski Triangle'
+  fill(255)
+  background(0)
+  no_stroke
+  draw_sierpinski(width / 2, height / 1.5, TRIANGLE_SIZE)
+end
+ 
+def draw_sierpinski(cx, cy, sz)
+  if sz < 5 # Limit no of recursions on size
+    draw_triangle(cx, cy, sz) # Only draw terminals
+  else
+    cx0 = cx
+    cy0 = cy - BOT_Y * sz
+    cx1 = cx - sz / 4
+    cy1 = cy + (BOT_Y / 2) * sz
+    cx2 = cx + sz / 4
+    cy2 = cy + (BOT_Y / 2) * sz
+    draw_sierpinski(cx0, cy0, sz / 2)
+    draw_sierpinski(cx1, cy1, sz / 2)
+    draw_sierpinski(cx2, cy2, sz / 2)
+  end
+end
+ 
+def draw_triangle(cx, cy, sz)
+  cx0 = cx
+  cy0 = cy - TOP_Y * sz
+  cx1 = cx - sz / 2
+  cy1 = cy + BOT_Y * sz
+  cx2 = cx + sz / 2
+  cy2 = cy + BOT_Y * sz
+  triangle(cx0, cy0, cx1, cy1, cx2, cy2)
+end
+ 
+
+====RUBY=====
+func sierpinski_triangle(n) -> Array {
+  var triangle = ['*']
+  { |i|
+    var sp = (' ' * 2**i)
+    triangle = (triangle.map {|x| sp + x + sp} +
+                triangle.map {|x| x + ' ' + x})
+  } * n
+  triangle
+}
+ 
+class Array {
+  method to_png(scale=1, bgcolor='white', fgcolor='black') {
+ 
+    static gd = require('GD::Simple')
+    var width = self.max_by{.len}.len
+    self.map!{|r| "%-#{width}s" % r}
+ 
+    var img = gd.new(width * scale, self.len * scale)
+ 
+    for i in ^self {
+      for j in RangeNum(i*scale, i*scale + scale) {
+        img.moveTo(0, j)
+        for line in (self[i].scan(/(\s+|\S+)/)) {
+          img.fgcolor(line.contains(/\S/) ? fgcolor : bgcolor)
+          img.line(scale * line.len)
+        }
+      }
+    }
+    img.png
+  }
+}
+ 
+var triangle = sierpinski_triangle(8)
+var raw_png = triangle.to_png(bgcolor:'black', fgcolor:'red')
+File('triangle.png').write(raw_png, :raw)
+
+====PYTHON=====
+ 
+# a very simple version
+import turtle as t
+def sier(n,length):
+    if n == 0:
+        return
+    for i in range(3):
+        sier(n - 1, length / 2)
+        t.fd(length)
+        t.rt(120)
+ 
+
+====PYTHON=====
+ 
+# otra versión muy simple
+from pylab import*
+x=[[1,1],[1,0]]
+for i in'123':x=kron(x,x)
+imsave('a',x)
+ 
+
+====PYTHON=====
+#!/usr/bin/env python
+##########################################################################################
+# a very complicated version
+# import necessary modules
+# ------------------------
+from numpy import *
+import turtle
+ 
+##########################################################################################
+#	Functions defining the drawing actions
+#       (used by the function DrawSierpinskiTriangle).
+#	----------------------------------------------
+def Left(turn, point, fwd, angle, turt):
+	turt.left(angle)
+	return [turn, point, fwd, angle, turt]
+def Right(turn, point, fwd, angle, turt):
+	turt.right(angle)
+	return [turn, point, fwd, angle, turt]
+def Forward(turn, point, fwd, angle, turt):
+	turt.forward(fwd)
+	return [turn, point, fwd, angle, turt]
+ 
+
+====PYTHON=====
+##########################################################################################
+#		The drawing function
+#		--------------------
+#
+# level		level of Sierpinski triangle (minimum value = 1)
+# ss		screensize (Draws on a screen of size ss x ss. Default value = 400.)
+#-----------------------------------------------------------------------------------------
+def DrawSierpinskiTriangle(level, ss=400):
+	# typical values
+	turn = 0		# initial turn (0 to start horizontally)
+	angle=60.0 		# in degrees
+ 
+	# Initialize the turtle
+	turtle.hideturtle()
+	turtle.screensize(ss,ss)
+	turtle.penup()
+	turtle.degrees()
+ 
+	# The starting point on the canvas
+	fwd0         = float(ss)
+	point=array([-fwd0/2.0, -fwd0/2.0])
+ 
+	# Setting up the Lindenmayer system
+	# Assuming that the triangle will be drawn in the following way:
+	#	1.) Start at a point
+	#	2.) Draw a straight line - the horizontal line (H)
+	#	3.) Bend twice by 60 degrees to the left (--)
+	#	4.) Draw a straight line - the slanted line (X)
+	#	5.) Bend twice by 60 degrees to the left (--)
+	#	6.) Draw a straight line - another slanted line (X)
+	# 		This produces the triangle in the first level. (so the axiom to begin with is H--X--X)
+	#	7.) For the next level replace each horizontal line using
+	#		X->XX
+	#		H -> H--X++H++X--H
+	#			The lengths will be halved.
+ 
+ 
+	decode    = {'-':Left, '+':Right, 'X':Forward, 'H':Forward}
+	axiom     = 'H--X--X'
+ 
+	# Start the drawing
+	turtle.goto(point[0], point[1])
+	turtle.pendown()
+	turtle.hideturtle()
+	turt=turtle.getpen()
+	startposition=turt.clone()
+ 
+	# Get the triangle in the Lindenmayer system
+	fwd       = fwd0/(2.0**level)
+	path      = axiom
+	for i in range(0,level):
+		path=path.replace('X','XX')
+		path=path.replace('H','H--X++H++X--H')
+ 
+	# Draw it.
+	for i in path:
+		[turn, point, fwd, angle, turt]=decode[i](turn, point, fwd, angle, turt)
+##########################################################################################
+ 
+DrawSierpinskiTriangle(5)
+ 
+

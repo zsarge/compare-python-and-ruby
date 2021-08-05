@@ -1,0 +1,12 @@
+====RUBY=====
+File.new("testfile").tty?   #=> false
+File.new("/dev/tty").tty?   #=> true
+STDOUT.tty?  #=> true
+
+====PYTHON=====
+from sys import stdout
+if stdout.isatty():
+    print 'The output device is a teletype. Or something like a teletype.'
+else:
+    print 'The output device isn\'t like a teletype.'
+

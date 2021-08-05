@@ -1,0 +1,58 @@
+====RUBY=====
+# Without restrictions
+BEGIN {
+   v = [ ]
+   m = 0
+}
+ 
+n = $_.length
+if n == m then
+   v <<= $_
+elsif n > m then
+   v = [$_]
+   m = n
+end
+ 
+END {
+   v.each { |s| puts s }
+}
+
+====RUBY=====
+h = $stdin.group_by(&:size)
+puts h.max.last  unless h.empty?
+
+====RUBY=====
+var l = '';  # Sample longest string seen.
+var a = '';  # Accumulator to save longest strings.
+ 
+STDIN.each { |n|
+    n.substr(l.len) ? (a = n; l = n)
+                    : (!l.substr(n.len) && a.concat!(n));
+}
+ 
+print a;
+
+====PYTHON=====
+import fileinput
+ 
+# This returns True if the second string has a value on the 
+# same index as the last index of the first string. It runs
+# faster than trimming the strings because it runs len once
+# and is a single index lookup versus slicing both strings 
+# one character at a time.
+def longer(a, b):
+    try:
+        b[len(a)-1]
+        return False
+    except:
+        return True
+ 
+longest, lines = '', ''
+for x in fileinput.input():
+    if longer(x, longest):
+        lines, longest = x, x
+    elif not longer(longest, x):
+        lines += x
+ 
+print(lines, end='')
+

@@ -1,0 +1,111 @@
+====RUBY=====
+def remove_comments!(str, comment_start='/*', comment_end='*/')
+  while start_idx = str.index(comment_start) 
+    end_idx = str.index(comment_end, start_idx + comment_start.length) + comment_end.length - 1
+    str[start_idx .. end_idx] = "" 
+  end
+  str
+end
+ 
+def remove_comments(str, comment_start='/*', comment_end='*/')
+  remove_comments!(str.dup, comment_start, comment_end)
+end
+ 
+example = <<END_OF_STRING
+  /**
+   * Some comments
+   * longer comments here that we can parse.
+   *
+   * Rahoo 
+   */
+   function subroutine() {
+    a = /* inline comment */ b + c ;
+   }
+   /*/ <-- tricky comments */
+ 
+   /**
+    * Another comment.
+    */
+    function something() {
+    }
+END_OF_STRING
+ 
+puts remove_comments example
+
+====RUBY=====
+func strip_block_comments(code, beg='/*', end='*/') {
+    var re = Regex.new(beg.escape + '.*?' + end.escape, 's');
+    code.gsub(re, '');
+}
+ 
+say strip_block_comments(ARGF.slurp);
+
+====PYTHON=====
+def _commentstripper(txt, delim):
+    'Strips first nest of block comments'
+ 
+    deliml, delimr = delim
+    out = ''
+    if deliml in txt:
+        indx = txt.index(deliml)
+        out += txt[:indx]
+        txt = txt[indx+len(deliml):]
+        txt = _commentstripper(txt, delim)
+        assert delimr in txt, 'Cannot find closing comment delimiter in ' + txt
+        indx = txt.index(delimr)
+        out += txt[(indx+len(delimr)):]
+    else:
+        out = txt
+    return out
+ 
+def commentstripper(txt, delim=('/*', '*/')):
+    'Strips nests of block comments'
+ 
+    deliml, delimr = delim
+    while deliml in txt:
+        txt = _commentstripper(txt, delim)
+    return txt
+
+====PYTHON=====
+def test():
+    print('\nNON-NESTED BLOCK COMMENT EXAMPLE:')
+    sample = '''  /**
+   * Some comments
+   * longer comments here that we can parse.
+   *
+   * Rahoo 
+   */
+   function subroutine() {
+    a = /* inline comment */ b + c ;
+   }
+   /*/ <-- tricky comments */
+ 
+   /**
+    * Another comment.
+    */
+    function something() {
+    }'''
+    print(commentstripper(sample))
+ 
+    print('\nNESTED BLOCK COMMENT EXAMPLE:')
+    sample = '''  /**
+   * Some comments
+   * longer comments here that we can parse.
+   *
+   * Rahoo 
+   *//*
+   function subroutine() {
+    a = /* inline comment */ b + c ;
+   }
+   /*/ <-- tricky comments */
+   */
+   /**
+    * Another comment.
+    */
+    function something() {
+    }'''
+    print(commentstripper(sample))
+ 
+if __name__ == '__main__':
+    test()
+

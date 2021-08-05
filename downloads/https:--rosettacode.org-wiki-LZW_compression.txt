@@ -1,0 +1,198 @@
+====RUBY=====
+# Compress a string to a list of output symbols.
+def compress(uncompressed)
+    # Build the dictionary.
+    dict_size = 256
+    dictionary = Hash[ Array.new(dict_size) {|i| [i.chr, i.chr]} ]
+ 
+    w = ""
+    result = []
+    for c in uncompressed.split('')
+        wc = w + c
+        if dictionary.has_key?(wc)
+            w = wc
+        else
+            result << dictionary[w]
+            # Add wc to the dictionary.
+            dictionary[wc] = dict_size
+            dict_size += 1
+            w = c
+        end
+    end
+ 
+    # Output the code for w.
+    result << dictionary[w] unless w.empty?
+    result
+end
+ 
+# Decompress a list of output ks to a string.
+def decompress(compressed)
+    # Build the dictionary.
+    dict_size = 256
+    dictionary = Hash[ Array.new(dict_size) {|i| [i.chr, i.chr]} ]
+ 
+    w = result = compressed.shift
+    for k in compressed
+        if dictionary.has_key?(k)
+            entry = dictionary[k]
+        elsif k == dict_size
+            entry = w + w[0,1]
+        else
+            raise 'Bad compressed k: %s' % k
+        end
+        result += entry
+ 
+        # Add w+entry[0] to the dictionary.
+        dictionary[dict_size] = w + entry[0,1]
+        dict_size += 1
+ 
+        w = entry
+    end
+    result
+end
+ 
+# How to use:
+compressed = compress('TOBEORNOTTOBEORTOBEORNOT')
+p compressed
+decompressed = decompress(compressed)
+puts decompressed
+
+====RUBY=====
+# Compress a string to a list of output symbols.
+func compress(String uncompressed) -> Array {
+ 
+    # Build the dictionary.
+    var dict_size = 256
+    var dictionary = Hash()
+ 
+    for i in range(dict_size) {
+        dictionary{i.chr} = i.chr
+    }
+ 
+    var w = ''
+    var result = []
+    uncompressed.each { |c|
+        var wc = w+c
+        if (dictionary.exists(wc)) {
+            w = wc
+        } else {
+            result << dictionary{w}
+            # Add wc to the dictionary.
+            dictionary{wc} = dict_size
+            dict_size++
+            w = c
+        }
+    }
+ 
+    # Output the code for w.
+    if (w != '') {
+        result << dictionary{w}
+    }
+ 
+    return result
+}
+ 
+# Decompress a list of output ks to a string.
+func decompress(Array compressed) -> String {
+ 
+    # Build the dictionary.
+    var dict_size = 256
+    var dictionary = Hash()
+ 
+    for i in range(dict_size) {
+        dictionary{i.chr} = i.chr
+    }
+ 
+    var w = compressed.shift
+    var result = w
+    compressed.each { |k|
+        var entry = nil
+        if (dictionary.exists(k)) {
+            entry = dictionary{k}
+        } elsif (k == dict_size) {
+            entry = w+w.first
+        } else {
+            die "Bad compressed k: #{k}"
+        }
+        result += entry
+ 
+        # Add w+entry[0] to the dictionary.
+        dictionary{dict_size} = w+entry.first
+        dict_size++
+ 
+        w = entry
+    }
+    return result
+}
+ 
+# How to use:
+var compressed = compress('TOBEORNOTTOBEORTOBEORNOT')
+say compressed.join(' ')
+var decompressed = decompress(compressed)
+say decompressed
+
+====PYTHON=====
+def compress(uncompressed):
+    """Compress a string to a list of output symbols."""
+ 
+    # Build the dictionary.
+    dict_size = 256
+    dictionary = dict((chr(i), i) for i in range(dict_size))
+    # in Python 3: dictionary = {chr(i): i for i in range(dict_size)}
+ 
+    w = ""
+    result = []
+    for c in uncompressed:
+        wc = w + c
+        if wc in dictionary:
+            w = wc
+        else:
+            result.append(dictionary[w])
+            # Add wc to the dictionary.
+            dictionary[wc] = dict_size
+            dict_size += 1
+            w = c
+ 
+    # Output the code for w.
+    if w:
+        result.append(dictionary[w])
+    return result
+ 
+ 
+def decompress(compressed):
+    """Decompress a list of output ks to a string."""
+    from io import StringIO
+ 
+    # Build the dictionary.
+    dict_size = 256
+    dictionary = dict((i, chr(i)) for i in range(dict_size))
+    # in Python 3: dictionary = {i: chr(i) for i in range(dict_size)}
+ 
+    # use StringIO, otherwise this becomes O(N^2)
+    # due to string concatenation in a loop
+    result = StringIO()
+    w = chr(compressed.pop(0))
+    result.write(w)
+    for k in compressed:
+        if k in dictionary:
+            entry = dictionary[k]
+        elif k == dict_size:
+            entry = w + w[0]
+        else:
+            raise ValueError('Bad compressed k: %s' % k)
+        result.write(entry)
+ 
+        # Add w+entry[0] to the dictionary.
+        dictionary[dict_size] = w + entry[0]
+        dict_size += 1
+ 
+        w = entry
+    return result.getvalue()
+ 
+ 
+# How to use:
+compressed = compress('TOBEORNOTTOBEORTOBEORNOT')
+print (compressed)
+decompressed = decompress(compressed)
+print (decompressed)
+

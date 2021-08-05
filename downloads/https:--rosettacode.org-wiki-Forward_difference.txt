@@ -1,0 +1,151 @@
+====RUBY=====
+def dif(s)
+  s.each_cons(2).collect { |x, y| y - x }
+end
+ 
+def difn(s, n)
+  n.times.inject(s) { |s, | dif(s) }
+end
+
+====RUBY=====
+p dif([1, 23, 45, 678])      # => [22, 22, 633]
+p difn([1, 23, 45, 678], 2)  # => [0, 611]
+
+====RUBY=====
+func dif(arr) {
+    gather {
+        for i (0 ..^ arr.end) {
+            take(arr[i+1] - arr[i])
+        }
+    }
+}
+ 
+func difn(n, arr) {
+    { arr = dif(arr) } * n
+    arr
+}
+ 
+say dif([1, 23, 45, 678])       # => [22, 22, 633]
+say difn(2, [1, 23, 45, 678])   # => [0, 611]
+
+====PYTHON=====
+>>> dif = lambda s: [x-s[i] for i,x in enumerate(s[1:])]
+>>> # or, dif = lambda s: [x-y for x,y in zip(s[1:],s)]
+>>> difn = lambda s, n: difn(dif(s), n-1) if n else s
+ 
+>>> s = [90, 47, 58, 29, 22, 32, 55, 5, 55, 73]
+>>> difn(s, 0)
+[90, 47, 58, 29, 22, 32, 55, 5, 55, 73]
+>>> difn(s, 1)
+[-43, 11, -29, -7, 10, 23, -50, 50, 18]
+>>> difn(s, 2)
+[54, -40, 22, 17, 13, -73, 100, -32]
+ 
+>>> from pprint import pprint
+>>> pprint( [difn(s, i) for i in xrange(10)] )
+[[90, 47, 58, 29, 22, 32, 55, 5, 55, 73],
+ [-43, 11, -29, -7, 10, 23, -50, 50, 18],
+ [54, -40, 22, 17, 13, -73, 100, -32],
+ [-94, 62, -5, -4, -86, 173, -132],
+ [156, -67, 1, -82, 259, -305],
+ [-223, 68, -83, 341, -564],
+ [291, -151, 424, -905],
+ [-442, 575, -1329],
+ [1017, -1904],
+ [-2921]]
+
+====PYTHON=====
+'''Forward difference'''
+ 
+ 
+from itertools import islice
+from operator import sub
+ 
+ 
+# forwardDifference :: Num a => [a] -> [a]
+def forwardDifference(xs):
+    '''1st order forward difference of xs.
+    '''
+    return [sub(*x) for x in zip(xs[1:], xs)]
+ 
+ 
+# nthForwardDifference :: Num a => [a] -> Int -> [a]
+def nthForwardDifference(xs):
+    '''Nth order forward difference of xs.
+    '''
+    return index(iterate(forwardDifference)(xs))
+ 
+ 
+# ------------------------- TEST --------------------------
+# main :: IO ()
+def main():
+    '''Nth order forward difference.'''
+ 
+    xs = [90, 47, 58, 29, 22, 32, 55, 5, 55, 73]
+ 
+    print('9th order forward difference of:')
+    print(xs)
+    print('')
+    print(
+        ' -> ' + repr(nthForwardDifference(xs)(9))
+    )
+ 
+    print('\nSuccessive orders of forward difference:')
+    print(unlines([
+        str(i) + ' -> ' + repr(x) for i, x in
+        enumerate(take(10)(
+            iterate(forwardDifference)(xs)
+        ))
+    ]))
+ 
+ 
+# ------------------- GENERIC FUNCTIONS -------------------
+ 
+# index (!!) :: [a] -> Int -> a
+def index(xs):
+    '''Item at given (zero-based) index.'''
+    return lambda n: None if 0 > n else (
+        xs[n] if (
+            hasattr(xs, "__getitem__")
+        ) else next(islice(xs, n, None))
+    )
+ 
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return go
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    return lambda xs: (
+        xs[0:n]
+        if isinstance(xs, (list, tuple))
+        else list(islice(xs, n))
+    )
+ 
+ 
+# unlines :: [String] -> String
+def unlines(xs):
+    '''A single string formed by the intercalation
+       of a list of strings with the newline character.
+    '''
+    return '\n'.join(xs)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,71 @@
+====RUBY=====
+ 
+require "json_mapping"
+ 
+class Foo
+  JSON.mapping(
+    num: Int64,
+    array: Array(String),
+  )
+end
+ 
+def json
+  foo = Foo.from_json(%({"num": 1, "array": ["a", "b"]}))
+  puts("#{foo.num} #{foo.array}")
+  puts(foo.to_json)
+end
+ 
+
+====RUBY=====
+ 
+require "json"
+ 
+class Foo
+  include JSON::Serializable
+ 
+  property num : Int64
+  property array : Array(String)
+end
+ 
+def json
+  foo = Foo.from_json(%({"num": 1, "array": ["a", "b"]}))
+  puts("#{foo.num} #{foo.array}")
+  puts(foo.to_json)
+end
+ 
+
+====RUBY=====
+require 'json'
+ 
+ruby_obj = JSON.parse('{"blue": [1, 2], "ocean": "water"}')
+puts ruby_obj
+ 
+ruby_obj["ocean"] = { "water" => ["fishy", "salty"] }
+puts JSON.generate(ruby_obj)
+puts JSON.pretty_generate(ruby_obj)
+
+====RUBY=====
+var json = require('JSON').new;
+var data = json.decode('{"blue": [1, 2], "ocean": "water"}');
+say data;
+data{:ocean} = Hash.new(water => %w[fishy salty]);
+say json.encode(data);
+
+====PYTHON=====
+>>> import json
+>>> data = json.loads('{ "foo": 1, "bar": [10, "apples"] }')
+>>> sample = { "blue": [1,2], "ocean": "water" }
+>>> json_string = json.dumps(sample)
+>>> json_string
+'{"blue": [1, 2], "ocean": "water"}'
+>>> sample
+{'blue': [1, 2], 'ocean': 'water'}
+>>> data
+{'foo': 1, 'bar': [10, 'apples']}
+
+====PYTHON=====
+>>> true = True; false = False; null = None
+>>> data = eval('{ "foo": 1, "bar": [10, "apples"] }')
+>>> data
+{'foo': 1, 'bar': [10, 'apples']}
+

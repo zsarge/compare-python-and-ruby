@@ -1,0 +1,223 @@
+====RUBY=====
+Shoes.app(title: "Honeycombs", height: 700, width: 700) do
+  C = Math::cos(Math::PI/3)
+  S = Math::sin(Math::PI/3)
+  Radius = 60.0
+  letters = [
+    %w[L A R N D 1 2], 
+    %w[G U I Y T 3 4], 
+    %w[P C F E B 5 6], 
+    %w[V S O M K 7 8],
+    %w[Q X J Z H 9 0],
+  ]
+ 
+  def highlight(hexagon)
+    hexagon.style(fill: magenta)
+  end
+ 
+  def unhighlight(hexagon)
+    hexagon.style(fill: yellow)
+  end
+ 
+  def choose(hexagon)
+    hexagon.choose
+    highlight hexagon
+    chosen = @hexagons.find_all {|h| h.chosen?}.map {|h| h.letter}
+    if chosen.size == @hexagons.size
+      @chosen.text = 'Every hexagon has been chosen.'
+    else
+      @chosen.text = "Chosen: #{chosen.sort.join(',')}\n" +
+                     "Last Chosen: #{hexagon.letter}" 
+    end
+  end
+ 
+  width = 20 + (Radius*(7*letters[0].size - 3)/4.0).ceil
+  height = 60 + (Radius*(1 + 2*S*letters.size)).ceil
+  @hexagons = []
+  letter_to_hex = {}
+ 
+  # create the GUI
+  stack(height: height, width: width) do
+    @chosen = para("Chosen:\nLast chosen:")
+ 
+    # draw the hexagrams
+    letters.each_index do |row|
+      letters[0].each_index do |column|
+        x = 60 + column * Radius * 0.75 + (1-S) * Radius
+        y = 80 + row * S * Radius + (column.odd? ? S * Radius * 0.5 : 0)
+        h = shape(x-Radius, y-S*Radius) do
+          strokewidth 3
+          move_to(x-C*Radius, y-S*Radius)
+          line_to(x+C*Radius, y-S*Radius)
+          line_to(x+Radius,   y)
+          line_to(x+C*Radius, y+S*Radius)
+          line_to(x-C*Radius, y+S*Radius)
+          line_to(x-Radius,   y)
+          line_to(x-C*Radius, y-S*Radius)
+        end
+ 
+        # add some attributes and methods to the shape
+        class << h
+          attr_accessor :x, :y, :state, :letter
+          def chosen?
+            not @state.nil?
+          end
+          def choose
+            @state = :chosen
+          end
+          def contains?(px, py)
+            if @x-Radius < px and px <= @x-C*Radius
+              ratio = (px - @x + Radius)/(Radius*(1-C))
+              @y - ratio*S*Radius < py and py <= @y + ratio*S*Radius
+            elsif @x-C*Radius < px and px <= @x+C*Radius
+              @y - S*Radius < py and py < @y + S*Radius
+            elsif @x+C*Radius < px and px <= @x+Radius
+              ratio = (@x + Radius - px)/(Radius*(1-C))
+              @y - ratio*S*Radius < py and py <= @y + ratio*S*Radius
+            else
+              false
+            end
+          end
+          def inspect
+            %q(<%s,"%s",%s,%[email protected]%d>) % [self.class, letter, chosen?, x, y]
+          end
+        end
+ 
+        h.x = x + x - Radius
+        h.y = y + y - S*Radius
+        h.letter = letters[row][column]
+        unhighlight h
+ 
+        @hexagons << h
+        letter_to_hex[h.letter.downcase] = h
+        letter_to_hex[h.letter.upcase] = h
+ 
+        # add the letter to the hexagon
+        para(h.letter).style(size:56, stroke:red) \
+                      .move(h.x - C*Radius, h.y - S*Radius)
+      end
+    end
+ 
+    # highlight the hexagon under the mouse
+    hex_over = nil
+    motion do |x, y|
+      hex = @hexagons.find {|h| h.contains?(x,y)}
+      unless hex.nil? or hex.chosen?
+        highlight hex 
+      end
+      unless hex_over == hex or hex_over.nil? or hex_over.chosen?
+        unhighlight hex_over 
+      end
+      hex_over = hex
+    end
+ 
+    # handle mouse clicks
+    click do |button, x, y|
+      info("button #{button} clicked at (#{x}, #{y})")
+      hexagon = @hexagons.find {|h| h.contains?(x,y)}
+      if hexagon
+        info("clicked hexagon #{hexagon}")
+        choose hexagon
+      end
+    end
+ 
+    # handle keystrokes
+    keypress do |key| 
+      if key == "\x11"  # control-Q
+        exit
+      elsif key == "?"
+        info @hexagons.collect {|h| h.inspect}.join("\n")
+      elsif letter_to_hex.has_key?(key)
+        info("pressed key #{key} -> #{letter_to_hex[key]}")
+        choose letter_to_hex[key]
+      end
+    end
+  end
+end
+
+====RUBY=====
+require('Tk')
+ 
+class Honeycombs(
+    Number size   = 36,
+    Array letters = @('A' .. 'Z').shuffle.first(20),
+) {
+ 
+    define tk   = %S<Tk>
+    has changed = Hash()
+ 
+    func altitude(n) {
+        sqrt(3/4) * n
+    }
+ 
+    method polygon_coordinates(x, y, size) {
+        var alt = altitude(size)
+        return (x - size,       y,
+                x - size/2, y - alt,
+                x + size/2, y - alt,
+                x + size,       y,
+                x + size/2, y + alt,
+                x - size/2, y + alt,
+               );
+    }
+ 
+    method change(canvas, id, letter_id) {
+        return {
+            canvas.itemconfigure(id,        '-fill' => 'magenta')
+            canvas.itemconfigure(letter_id, '-fill' => 'black')
+            changed{id} = true
+ 
+            if (20 == changed.len) {
+                say "All letters pressed."
+                canvas.MainWindow.after(10, { tk.exit })
+            }
+        }
+    }
+ 
+    method comb(canvas, fromx, fromy, size, count) {
+        for x,y in (
+            RangeNum(fromx, 3*count*size - 1,          3*size) ~X
+            RangeNum(fromy,     7.5*size - 1, 2*altitude(size))
+        ) {
+            var id = canvas.createPolygon(
+                                  self.polygon_coordinates(x, y, size),
+                                  '-outline' => 'black',
+                                  '-fill'    => 'yellow',
+                                  '-width'   => 2,
+                                )
+            var letter = letters.shift
+            var letter_id = canvas.createText(x, y,
+                                     '-fill' => 'red',
+                                     '-text' => letter,
+                                     '-font' => "{sans} #{size * 0.9}",
+                                )
+            canvas.MainWindow.bind('all', letter.lc,
+                                      self.change(canvas, id, letter_id))
+            [id, letter_id].each { |b|
+                canvas.bind(b, '<Button-1>',
+                                      self.change(canvas, id, letter_id))
+            }
+        }
+    }
+ 
+    method display(title) {
+        {
+            var mw     = %s'MainWindow'.new('-title' => title)
+            var canvas = mw.Canvas('-width'  => 8*size,
+                                   '-height' => 8*size).pack
+ 
+            self.comb(canvas, size,       size,                  size, 3)
+            self.comb(canvas, size * 2.5, size + altitude(size), size, 2)
+ 
+            var btn = mw.Button('-text'      => 'Quit',
+                                '-underline' => 0,
+                                '-command'   => { tk.exit },
+                               ).pack
+            mw.bind('<Alt-q>', { btn.invoke })
+            tk.MainLoop()
+        }.fork
+    }
+}
+ 
+Honeycombs().display(title: 'Honeycombs')
+

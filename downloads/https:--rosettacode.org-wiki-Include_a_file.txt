@@ -1,0 +1,31 @@
+====RUBY=====
+require 'file'
+
+====RUBY=====
+include 'file.sf';
+
+====RUBY=====
+include Some::Name;
+# variables are available here as: Some::Name::var_name
+
+====PYTHON=====
+import one # note there is no .py sufix
+# then you may use
+# one.one_function()
+# object = one.OneClass()
+
+====PYTHON=====
+from one import *
+
+====PYTHON=====
+from one import OneClass, one_function
+# then you may use
+# one_function()
+# object = OneClass()
+
+====PYTHON=====
+import mymodule
+
+====PYTHON=====
+mymodule.variable
+

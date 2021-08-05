@@ -1,0 +1,125 @@
+====RUBY=====
+ 
+def gray_encode(bin)
+  bin ^ (bin >> 1)
+end
+ 
+def gray_decode(gray)
+  bin = gray
+  while gray > 0
+    gray >>= 1
+    bin ^= gray
+  end
+  bin
+end
+ 
+
+====RUBY=====
+ 
+(0..31).each do |n|
+  gr = gray_encode n
+  bin = gray_decode gr
+  printf "%2d : %05b => %05b => %05b : %2d\n", n, n, gr, bin, bin
+end
+ 
+
+====RUBY=====
+class Integer
+  # Converts a normal integer to a Gray code.
+  def to_gray
+    raise Math::DomainError, "integer is negative" if self < 0
+    self ^ (self >> 1)
+  end
+ 
+  # Converts a Gray code to a normal integer.
+  def from_gray
+    raise Math::DomainError, "integer is negative" if self < 0
+    recurse = proc do |i|
+      next 0 if i == 0
+      o = recurse[i >> 1] << 1
+      o | (i[0] ^ o[1])
+    end
+    recurse[self]
+  end
+end
+ 
+(0..31).each do |number|
+  encoded = number.to_gray
+  decoded = encoded.from_gray
+  printf "%2d : %5b => %5b => %5b : %2d\n",
+         number, number, encoded, decoded, decoded
+end
+
+====RUBY=====
+func bin2gray(n) {
+    n ^ (n >> 1)
+}
+ 
+func gray2bin(num) {
+    var bin = num
+    while (num >>= 1) { bin ^= num }
+    return bin
+}
+ 
+{ |i|
+    var gr = bin2gray(i)
+    printf("%d\t%b\t%b\t%b\n", i, i, gr, gray2bin(gr))
+} << ^32
+
+====PYTHON=====
+>>> def int2bin(n):
+	'From positive integer to list of binary bits, msb at index 0'
+	if n:
+		bits = []
+		while n:
+			n,remainder = divmod(n, 2)
+			bits.insert(0, remainder)
+		return bits
+	else: return [0]
+ 
+ 
+>>> def bin2int(bits):
+	'From binary bits, msb at index 0 to integer'
+	i = 0
+	for bit in bits:
+		i = i * 2 + bit
+	return i
+
+====PYTHON=====
+>>> def bin2gray(bits):
+	return bits[:1] + [i ^ ishift for i, ishift in zip(bits[:-1], bits[1:])]
+ 
+>>> def gray2bin(bits):
+	b = [bits[0]]
+	for nextb in bits[1:]: b.append(b[-1] ^ nextb)
+	return b
+
+====PYTHON=====
+>>> for i in range(16):
+	print('int:%2i -> bin:%12r -> gray:%12r -> bin:%12r -> int:%2i' %
+	      ( i,
+	        int2bin(i),
+	        bin2gray(int2bin(i)),
+	        gray2bin(bin2gray(int2bin(i))),
+	        bin2int(gray2bin(bin2gray(int2bin(i))))
+	      ))
+ 
+ 
+int: 0 -> bin:         [0] -> gray:         [0] -> bin:         [0] -> int: 0
+int: 1 -> bin:         [1] -> gray:         [1] -> bin:         [1] -> int: 1
+int: 2 -> bin:      [1, 0] -> gray:      [1, 1] -> bin:      [1, 0] -> int: 2
+int: 3 -> bin:      [1, 1] -> gray:      [1, 0] -> bin:      [1, 1] -> int: 3
+int: 4 -> bin:   [1, 0, 0] -> gray:   [1, 1, 0] -> bin:   [1, 0, 0] -> int: 4
+int: 5 -> bin:   [1, 0, 1] -> gray:   [1, 1, 1] -> bin:   [1, 0, 1] -> int: 5
+int: 6 -> bin:   [1, 1, 0] -> gray:   [1, 0, 1] -> bin:   [1, 1, 0] -> int: 6
+int: 7 -> bin:   [1, 1, 1] -> gray:   [1, 0, 0] -> bin:   [1, 1, 1] -> int: 7
+int: 8 -> bin:[1, 0, 0, 0] -> gray:[1, 1, 0, 0] -> bin:[1, 0, 0, 0] -> int: 8
+int: 9 -> bin:[1, 0, 0, 1] -> gray:[1, 1, 0, 1] -> bin:[1, 0, 0, 1] -> int: 9
+int:10 -> bin:[1, 0, 1, 0] -> gray:[1, 1, 1, 1] -> bin:[1, 0, 1, 0] -> int:10
+int:11 -> bin:[1, 0, 1, 1] -> gray:[1, 1, 1, 0] -> bin:[1, 0, 1, 1] -> int:11
+int:12 -> bin:[1, 1, 0, 0] -> gray:[1, 0, 1, 0] -> bin:[1, 1, 0, 0] -> int:12
+int:13 -> bin:[1, 1, 0, 1] -> gray:[1, 0, 1, 1] -> bin:[1, 1, 0, 1] -> int:13
+int:14 -> bin:[1, 1, 1, 0] -> gray:[1, 0, 0, 1] -> bin:[1, 1, 1, 0] -> int:14
+int:15 -> bin:[1, 1, 1, 1] -> gray:[1, 0, 0, 0] -> bin:[1, 1, 1, 1] -> int:15
+>>> 
+

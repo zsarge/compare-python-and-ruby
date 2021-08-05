@@ -1,0 +1,40 @@
+====RUBY=====
+ seventh_line = open("/etc/passwd").each_line.take(7).last
+ 
+
+====RUBY=====
+func getNthLine(filename, n) {
+  var file = File.new(filename);
+  file.open_r.each { |line|
+    Num($.) == n && return line;
+  }
+  warn "file #{file} does not have #{n} lines, only #{$.}\n";
+  return nil;
+}
+ 
+var line = getNthLine("/etc/passwd", 7);
+print line if defined line;
+
+====PYTHON=====
+with open('xxx.txt') as f:
+    for i, line in enumerate(f):
+        if i == 6:
+            break
+    else:
+        print('Not 7 lines in file')
+        line = None
+
+====PYTHON=====
+from itertools import islice
+ 
+with open('xxx.txt') as f:
+    try:
+        line = next(islice(f, 6, 7))
+    except StopIteration:
+        print('Not 7 lines in file')
+
+====PYTHON=====
+ 
+print open('xxx.txt').readlines()[:7][-1]
+ 
+

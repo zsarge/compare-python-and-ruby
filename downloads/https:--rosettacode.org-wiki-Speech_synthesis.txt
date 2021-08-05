@@ -1,0 +1,57 @@
+====RUBY=====
+module OperatingSystem
+  require 'rbconfig'
+  module_function
+  def operating_system
+    case RbConfig::CONFIG["host_os"]
+    when /linux/i
+      :linux
+    when /cygwin|mswin|mingw|windows/i
+      :windows
+    when /darwin/i
+      :mac
+    when /solaris/i
+      :solaris
+    else
+      nil
+    end
+  end
+  def linux?;   operating_system == :linux;   end
+  def windows?; operating_system == :windows; end
+  def mac?;     operating_system == :mac;     end
+end
+
+====RUBY=====
+load 'operating_system.rb'
+ 
+def speak(text)
+  if OperatingSystem.windows?
+    require 'win32/sapi5'
+    v = Win32::SpVoice.new
+    v.Speak(text)
+  elsif OperatingSystem.mac?
+    IO.popen(["say"], "w") {|pipe| pipe.puts text}
+  else
+    # Try to run "espeak". No OperatingSystem check: "espeak" is
+    # for Linux but is also an optional package for BSD.
+    IO.popen(["espeak", "-stdin"], "w") {|pipe| pipe.puts text}
+  end
+end
+ 
+speak 'This is an example of speech synthesis.'
+
+====RUBY=====
+func text2speech(text, lang='en') {
+    Sys.run("espeak -v #{lang} -w /dev/stdout #{text.escape} | aplay");
+}
+text2speech("This is an example of speech synthesis.");
+
+====PYTHON=====
+ 
+import pyttsx
+ 
+engine = pyttsx.init()
+engine.say("It was all a dream.")
+engine.runAndWait()
+ 
+

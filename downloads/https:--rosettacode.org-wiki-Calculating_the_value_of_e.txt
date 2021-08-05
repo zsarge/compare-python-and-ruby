@@ -1,0 +1,112 @@
+====RUBY=====
+ 
+fact = 1
+e = 2
+e0 = 0
+n = 2
+ 
+until (e - e0).abs < Float::EPSILON do
+  e0 = e
+  fact *= n
+  n += 1
+  e += 1.0 / fact
+end
+ 
+puts e
+ 
+
+====RUBY=====
+require "bigdecimal/math"
+ 
+puts BigMath.E(50).to_s # 50 decimals
+ 
+
+====RUBY=====
+func calculate_e(n=50) {
+    sum(0..n, {|k| 1/k! })
+}
+ 
+say calculate_e()
+say calculate_e(69).as_dec(100)
+
+====RUBY=====
+func f(n) {
+    var t = n*log(10)
+    (n + 10).bsearch_le { |k|
+        lngamma(k+1) <=> t
+    }
+}
+ 
+for k in (1..10) {
+    var n = f(10**k)
+    say "Sum_{k=0..#{n}} 1/k! = e correct to #{10**k->commify} decimal places"
+}
+
+====PYTHON=====
+import math
+#Implementation of Brother's formula
+e0 = 0
+e = 2
+n = 0
+fact = 1
+while(e-e0 > 1e-15):
+	e0 = e
+	n += 1
+	fact *= 2*n*(2*n+1)
+	e += (2.*n+2)/fact
+ 
+print "Computed e = "+str(e)
+print "Real e = "+str(math.e)
+print "Error = "+str(math.e-e)
+print "Number of iterations = "+str(n)
+
+====PYTHON=====
+'''Calculating an approximate value for e'''
+ 
+from itertools import (accumulate, chain)
+from functools import (reduce)
+from operator import (mul)
+ 
+ 
+# eApprox :: () -> Float
+def eApprox():
+    '''Approximation to the value of e.'''
+    return reduce(
+        lambda a, x: a + 1 / x,
+        scanl(mul)(1)(
+            range(1, 18)
+        ),
+        0
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+ 
+    print(
+        eApprox()
+    )
+ 
+ 
+# GENERIC ABSTRACTIONS ------------------------------------
+ 
+# scanl is like reduce, but returns a succession of
+# intermediate values, building from the left.
+# See, for example, under `scan` in the Lists chapter of
+# the language-independent Bird & Wadler 1988.
+ 
+# scanl :: (b -> a -> b) -> b -> [a] -> [b]
+def scanl(f):
+    '''scanl is like reduce, but returns a succession of
+       intermediate values, building from the left.'''
+    return lambda a: lambda xs: (
+        accumulate(chain([a], xs), f)
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

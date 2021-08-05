@@ -1,0 +1,23 @@
+====RUBY=====
+seconds = gets.to_f
+puts "Sleeping..."
+sleep(seconds) # number is in seconds ... but accepts fractions
+# Minimum resolution is system dependent.
+puts "Awake!"
+
+====RUBY=====
+var sec = read(Number);       # any positive number (it may be fractional)
+say "Sleeping...";
+Sys.sleep(sec);               # in seconds
+#Sys.usleep(sec);             # in microseconds
+#Sys.nanosleep(sec);          # in nanoseconds
+say "Awake!";
+
+====PYTHON=====
+import time
+ 
+seconds = float(raw_input())
+print "Sleeping..."
+time.sleep(seconds) # number is in seconds ... but accepts fractions
+print "Awake!"
+

@@ -1,0 +1,301 @@
+====RUBY=====
+class Ant
+ 
+  class OutOfBoundsException < StandardError; end
+ 
+  class Plane
+    def initialize(x, y)
+      @size_x, @size_y = x, y
+      @cells = Array.new(y) {Array.new(x, :white)}
+    end
+ 
+    def white?(px, py)
+      @cells[py][px] == :white
+    end
+ 
+    def toggle_colour(px, py)
+      @cells[py][px] = (white?(px, py) ? :black : :white)
+    end
+ 
+    def check_bounds(px, py)
+      unless (0 <= px and px < @size_x) and (0 <= py and py < @size_y)
+        raise OutOfBoundsException, "(#@size_x, #@size_y)"
+      end
+    end
+ 
+    def to_s
+      @cells.collect {|row|
+        row.collect {|cell| cell == :white ? "." : "#"}.join + "\n"
+      }.join
+    end
+  end
+ 
+  dir_move = [[:north, [0,-1]], [:east, [1,0]], [:south, [0,1]], [:west, [-1,0]]]
+  Move = Hash[dir_move]
+  directions = dir_move.map{|dir, move| dir}       # [:north, :east, :south, :west]
+  Right = Hash[ directions.zip(directions.rotate).to_a ]
+  Left  = Right.invert
+ 
+  def initialize(size_x, size_y, pos_x=size_x/2, pos_y=size_y/2)
+    @plane = Plane.new(size_x, size_y)
+    @pos_x, @pos_y = pos_x, pos_y
+    @direction = :south
+    @plane.check_bounds(@pos_x, @pos_y)
+  end
+ 
+  def run
+    moves = 0
+    loop do
+      begin
+        moves += 1
+        move
+      rescue OutOfBoundsException
+        break
+      end
+    end
+    moves
+  end
+ 
+  def move
+    @plane.toggle_colour(@pos_x, @pos_y)
+    advance
+    if @plane.white?(@pos_x, @pos_y)
+      @direction = Right[@direction]
+    else
+      @direction = Left[@direction]
+    end
+  end
+ 
+  def advance
+    dx, dy = Move[@direction]
+    @pos_x += dx
+    @pos_y += dy
+    @plane.check_bounds(@pos_x, @pos_y)
+  end
+ 
+  def position
+    "(#@pos_x, #@pos_y)"
+  end
+ 
+  def to_s
+    @plane.to_s
+  end
+end
+ 
+#
+# the simulation
+#
+ant = Ant.new(100, 100)
+moves = ant.run
+puts "out of bounds after #{moves} moves: #{ant.position}"
+puts ant
+
+====RUBY=====
+class Ant
+  MOVE = [[1,0], [0,1], [-1,0], [0,-1]]   # [0]:east, [1]:south, [2]:west, [3]:north
+ 
+  def initialize(size_x, size_y, pos_x=size_x/2, pos_y=size_y/2)
+    @plane = Array.new(size_y) {Array.new(size_x, true)}  # true -> white, false -> black
+    @sx, @sy = size_x, size_y
+    @px, @py = pos_x, pos_y       # start position
+    @direction = 0                # south
+    @moves = 0
+    move  while (0 <= @px and @px < @sx) and (0 <= @py and @py < @sy)
+  end
+ 
+  def move
+    @moves += 1
+    @direction = (@plane[@py][@px] ? @direction+1 : @direction-1) % 4
+    @plane[@py][@px] = [email protected][@py][@px]
+    @px += MOVE[@direction][0]
+    @py += MOVE[@direction][1]
+  end
+ 
+  def to_s
+    ["out of bounds after #{@moves} moves: (#@px, #@py)"] +
+      (0[email protected]).map {|y| (0[email protected]).map {|x| @plane[y][x] ? "." : "#"}.join}
+  end
+end
+ 
+puts Ant.new(100, 100).to_s
+
+====RUBY=====
+define dirs = [[1,0], [0,-1], [-1,0], [0,1]]
+define size = 100
+ 
+enum |White, Black|
+var plane = size.of { size.of (White) }
+ 
+var (x, y) = ([size >> 1] * 2)...
+var dir = dirs.len.irand
+ 
+var moves = 0
+loop {
+    (x >= 0) && (y >= 0) && (x < size) && (y < size) || break
+ 
+    given (plane[x][y]) {
+        when (White) { dir--; plane[x][y] = Black }
+        when (Black) { dir++; plane[x][y] = White }
+    }
+ 
+    ++moves
+    [[\x, \y], dirs[dir %= dirs.len]].zip {|a,b| *a += b }
+}
+ 
+say "Out of bounds after #{moves} moves at (#{x}, #{y})"
+plane.map{.map {|square| square == Black ? '#' : '.' }}.each{.join.say}
+
+====PYTHON=====
+"""
+we use the following conventions:
+directions 0: up, 1: left, 2: down: 3: right
+ 
+pixel white: True, black: False
+ 
+turn right: True, left: False
+"""
+ 
+# number of iteration steps per frame
+# set this to 1 to see a slow animation of each
+# step or to 10 or 100 for a faster animation
+ 
+STEP = 100
+count = 0
+ 
+def setup():
+    global x, y, direction
+ 
+    # 100x100 is large enough to show the
+    # corridor after about 10000 cycles
+    size(100, 100, P2D)
+ 
+    background(255)
+    x = width / 2
+    y = height / 2
+    direction = 0
+ 
+def draw():
+    global count
+    for i in range(STEP):
+        count += 1
+        pix = get(x, y) != -1 # white =-1
+        setBool(x, y, pix)
+ 
+        turn(pix)
+        move()
+ 
+        if (x < 0 or y < 0 or x >= width or y >= height):
+            println("finished")
+            noLoop()
+            break
+ 
+    if count % 1000 == 0:
+        println("iteration {}".format(count))
+ 
+def move():
+    global x, y
+    if direction == 0:
+        y -= 1
+    elif direction == 1:
+        x -= 1
+    elif direction == 2:
+        y += 1
+    elif direction == 3:
+        x += 1
+ 
+def turn(rightleft):
+    global direction
+    direction += 1 if rightleft else -1
+    if direction == -1:
+        direction = 3
+    if direction == 4:
+        direction = 0
+ 
+def setBool(x, y, white):
+    set(x, y, -1 if white else 0)
+
+====PYTHON=====
+ 
+"""Langton's ant implementation."""
+from enum import Enum, IntEnum
+ 
+ 
+class Dir(IntEnum):
+    """Possible directions."""
+ 
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
+ 
+ 
+class Color(Enum):
+    """Possible colors."""
+ 
+    WHITE = " "
+    BLACK = "#"
+ 
+ 
+def invert_color(grid, x, y):
+    """Invert the color of grid at x, y coordinate."""
+    if grid[y][x] == Color.BLACK:
+        grid[y][x] = Color.WHITE
+    else:
+        grid[y][x] = Color.BLACK
+ 
+ 
+def next_direction(grid, x, y, direction):
+    """Compute next direction according to current position and direction."""
+    if grid[y][x] == Color.BLACK:
+        turn_right = False
+    else:
+        turn_right = True
+    direction_index = direction.value
+    if turn_right:
+        direction_index = (direction_index + 1) % 4
+    else:
+        direction_index = (direction_index - 1) % 4
+    directions = [Dir.UP, Dir.RIGHT, Dir.DOWN, Dir.LEFT]
+    direction = directions[direction_index]
+    return direction
+ 
+ 
+def next_position(x, y, direction):
+    """Compute next position according to direction."""
+    if direction == Dir.UP:
+        y -= 1
+    elif direction == Dir.RIGHT:
+        x -= 1
+    elif direction == Dir.DOWN:
+        y += 1
+    elif direction == Dir.LEFT:
+        x += 1
+    return x, y
+ 
+ 
+def print_grid(grid):
+    """Display grid."""
+    print(80 * "#")
+    print("\n".join("".join(v.value for v in row) for row in grid))
+ 
+ 
+def ant(width, height, max_nb_steps):
+    """Langton's ant."""
+    grid = [[Color.WHITE] * width for _ in range(height)]
+    x = width // 2
+    y = height // 2
+    direction = Dir.UP
+ 
+    i = 0
+    while i < max_nb_steps and 0 <= x < width and 0 <= y < height:
+        invert_color(grid, x, y)
+        direction = next_direction(grid, x, y, direction)
+        x, y = next_position(x, y, direction)
+        print_grid(grid)
+        i += 1
+ 
+ 
+if __name__ == "__main__":
+    ant(width=75, height=52, max_nb_steps=12000)
+ 
+

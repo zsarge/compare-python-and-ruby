@@ -1,0 +1,38 @@
+====RUBY=====
+a = 1.0/0       # => Infinity
+a.finite?       # => false
+a.infinite?     # => 1
+ 
+a = -1/0.0      # => -Infinity
+a.infinite?     # => -1
+ 
+a = Float::MAX  # => 1.79769313486232e+308
+a.finite?       # => true
+a.infinite?     # => nil
+
+====RUBY=====
+a = Float::INFINITY       # => Infinity
+
+====RUBY=====
+var a = 1.5/0        # Inf
+say a.is_inf         # true
+say a.is_pos         # true
+ 
+var b = -1.5/0       # -Inf
+say b.is_ninf        # true
+say b.is_neg         # true
+ 
+var inf = Inf
+var ninf = -Inf
+say (inf == -ninf)   # true
+
+====PYTHON=====
+>>> float('infinity')
+inf
+
+====PYTHON=====
+>>> 1.0 / 0.0
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ZeroDivisionError: float division
+

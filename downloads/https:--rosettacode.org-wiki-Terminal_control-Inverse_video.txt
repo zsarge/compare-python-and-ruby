@@ -1,0 +1,8 @@
+====RUBY=====
+puts "\033[7mReversed\033[m Normal"
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+print "\033[7mReversed\033[m Normal"
+

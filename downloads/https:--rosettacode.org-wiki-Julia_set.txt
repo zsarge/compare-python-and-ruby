@@ -1,0 +1,244 @@
+====RUBY=====
+require "complex"
+ 
+def julia(c_real, c_imag)
+  puts Complex.new(c_real, c_imag)
+  -1.0.step(to: 1.0, by: 0.04) do |v|
+    puts -1.4.step(to: 1.4, by: 0.02).map{|h| judge(c_real, c_imag, h, v)}.join
+  end
+end
+ 
+def judge(c_real, c_imag, x, y)
+  50.times do
+    z_real = (x * x - y * y) + c_real
+    z_imag = x * y * 2 + c_imag
+    return " "  if z_real**2 > 10000
+    x, y = z_real, z_imag
+  end
+  "#"
+end
+ 
+julia(-0.8, 0.156)
+ 
+
+====RUBY=====
+def julia(c_real, c_imag)
+  puts Complex(c_real, c_imag)
+  -1.0.step(1.0, 0.04) do |v|
+    puts -1.4.step(1.4, 0.02).map{|h| judge(c_real, c_imag, h, v)}.join
+  end
+end
+ 
+def judge(c_real, c_imag, x, y)
+  50.times do
+    z_real = (x * x - y * y) + c_real
+    z_imag = x * y * 2 + c_imag
+    return " "  if z_real**2 > 10000
+    x, y = z_real, z_imag
+  end
+  "#"
+end
+ 
+julia(-0.8, 0.156)
+
+====RUBY=====
+ 
+# frozen_string_literal: true
+ 
+attr_reader :max_iter
+CONST = Complex(-0.7, 0.27015)
+ 
+def setup
+  sketch_title 'Julia Set'
+  @max_iter = 360
+  color_mode HSB, 360, 100, 100
+  load_pixels
+end
+ 
+def draw
+  grid(width, height) do |x, y|
+    i = max_iter
+    z = Complex(map1d(x, 0..width, -1.4..1.4), map1d(y, 0..height, -1.0..1.0))
+    while z.abs < 2 && i -= 1
+      z *= z
+      z += CONST
+    end 
+    pixels[x + width * y] = color((360 * i) / max_iter, 100, i) 
+  end 
+  update_pixels 
+  fill 0 
+  text CONST.to_s, 530, 400 
+  no_loop 
+end
+ 
+
+====RUBY=====
+require('Imager')
+ 
+var (w, h) = (640, 480)
+var img = %s'Imager'.new(xsize => w, ysize => h, channels => 3)
+ 
+var maxIter = 50
+var c = Complex(-0.388, 0.613)
+ 
+var color = %s'Imager::Color'.new('#000000')
+ 
+for x,y in (^w ~X ^h) {
+    var i = maxIter
+    var z = Complex((x - w/2) / w * 3, (y - h/2) / h * 2)
+    while (z.abs < 2 && --i) {
+        z = (z*z + c)
+    }
+    color.set(hsv => [i / maxIter * 360, 1, i])
+    img.setpixel(x => x, y => y, color => color)
+}
+ 
+img.write(file => "JuliaSet_sidef.png")
+
+====RUBY=====
+var (w, h) = (141, 50)
+ 
+var maxIter = 40
+var c = Complex(-0.8, 0.156)
+ 
+for y in ^h {
+    for x in ^w {
+        var i = maxIter
+        var z = Complex(3 * (x - w/2) / w, 2 * (y - h/2) / h)
+        while (z.abs < 2 && --i) {
+            z = (z*z + c)
+        }
+        print (i > 0 ? ' ' : '#')
+    }
+    print "\n"
+}
+
+====PYTHON=====
+from __future__ import division
+ 
+cX = -0.7
+cY = 0.27015
+maxIter = 300
+ 
+def setup():
+    size(640, 480)
+ 
+def draw():
+    for x in range(width):
+        for y in range(height):
+            zx = 1.5 * (x - width / 2) / (0.5 * width)
+            zy = (y - height / 2) / (0.5 * height)
+            i = maxIter
+            while zx * zx + zy * zy < 4 and i > 0:
+                tmp = zx * zx - zy * zy + cX
+                zy = 2.0 * zx * zy + cY
+                zx = tmp
+                i -= 1
+            colorMode(HSB)
+            c = color(i / maxIter * 255, 255, 255 if i > 1 else 0)
+            set(x, y, c)
+
+====PYTHON=====
+from PIL import Image
+ 
+if __name__ == "__main__":
+	w, h, zoom = 800,600,1
+	bitmap = Image.new("RGB", (w, h), "white")
+	pix = bitmap.load()
+ 
+	cX, cY = -0.7, 0.27015
+	moveX, moveY = 0.0, 0.0
+	maxIter = 255
+ 
+	for x in range(w):
+		for y in range(h):
+			zx = 1.5*(x - w/2)/(0.5*zoom*w) + moveX
+			zy = 1.0*(y - h/2)/(0.5*zoom*h) + moveY
+			i = maxIter
+			while zx*zx + zy*zy < 4 and i > 1:
+				tmp = zx*zx - zy*zy + cX
+				zy,zx = 2.0*zx*zy + cY, tmp
+				i -= 1
+			# convert byte to RGB (3 bytes), kinda magic to get nice colors
+			pix[x][y] = (i << 21) + (i << 10) + i*8
+ 
+	bitmap.show()
+
+====PYTHON=====
+"""
+Solution from:
+https://codereview.stackexchange.com/questions/210271/generating-julia-set
+"""
+from functools import partial
+from numbers import Complex
+from typing import Callable
+ 
+import matplotlib.pyplot as plt
+import numpy as np
+ 
+ 
+def douady_hubbard_polynomial(z: Complex,
+                              c: Complex) -> Complex:
+    """
+    Monic and centered quadratic complex polynomial
+    https://en.wikipedia.org/wiki/Complex_quadratic_polynomial#Map
+    """
+    return z ** 2 + c
+ 
+ 
+def julia_set(mapping: Callable[[Complex], Complex],
+              *,
+              min_coordinate: Complex,
+              max_coordinate: Complex,
+              width: int,
+              height: int,
+              iterations_count: int = 256,
+              threshold: float = 2.) -> np.ndarray:
+    """
+    As described in https://en.wikipedia.org/wiki/Julia_set
+    :param mapping: function defining Julia set
+    :param min_coordinate: bottom-left complex plane coordinate
+    :param max_coordinate: upper-right complex plane coordinate
+    :param height: pixels in vertical axis
+    :param width: pixels in horizontal axis
+    :param iterations_count: number of iterations
+    :param threshold: if the magnitude of z becomes greater
+    than the threshold we assume that it will diverge to infinity
+    :return: 2D pixels array of intensities
+    """
+    im, re = np.ogrid[min_coordinate.imag: max_coordinate.imag: height * 1j,
+                      min_coordinate.real: max_coordinate.real: width * 1j]
+    z = (re + 1j * im).flatten()
+ 
+    live, = np.indices(z.shape)  # indexes of pixels that have not escaped
+    iterations = np.empty_like(z, dtype=int)
+ 
+    for i in range(iterations_count):
+        z_live = z[live] = mapping(z[live])
+        escaped = abs(z_live) > threshold
+        iterations[live[escaped]] = i
+        live = live[~escaped]
+        if live.size == 0:
+            break
+    else:
+        iterations[live] = iterations_count
+ 
+    return iterations.reshape((height, width))
+ 
+ 
+if __name__ == '__main__':
+    mapping = partial(douady_hubbard_polynomial,
+                      c=-0.7 + 0.27015j)  # type: Callable[[Complex], Complex]
+ 
+    image = julia_set(mapping,
+                      min_coordinate=-1.5 - 1j,
+                      max_coordinate=1.5 + 1j,
+                      width=800,
+                      height=600)
+    plt.axis('off')
+    plt.imshow(image,
+               cmap='nipy_spectral_r',
+               origin='lower')
+    plt.show()
+ 
+

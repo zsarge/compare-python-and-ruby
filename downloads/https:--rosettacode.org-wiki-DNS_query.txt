@@ -1,0 +1,36 @@
+====RUBY=====
+require "socket"
+ 
+Socket::Addrinfo.resolve(
+	"www.kame.net",
+	80,
+	type: Socket::Type::STREAM
+).each { |a|
+	puts a.ip_address.address
+}
+
+====RUBY=====
+irb(main):001:0> require 'socket'
+=> true
+irb(main):002:0> Addrinfo.getaddrinfo("www.kame.net", nil, nil, :DGRAM) \
+irb(main):003:0*   .map! { |ai| ai.ip_address }
+=> ["203.178.141.194", "2001:200:dff:fff1:216:3eff:feb1:44d7"]
+
+====RUBY=====
+var (err, *res) = Socket.getaddrinfo(
+        'www.kame.net', 0,
+        Hash.new(protocol => Socket.IPPROTO_TCP)
+);
+err && die err;
+res.each { |z|
+    say [Socket.getnameinfo(z{:addr}, Socket.NI_NUMERICHOST)][1];
+}
+
+====PYTHON=====
+>>> import socket
+>>> ips = set(i[4][0] for i in socket.getaddrinfo('www.kame.net', 80))
+>>> for ip in ips: print ip
+...
+2001:200:dff:fff1:216:3eff:feb1:44d7
+203.178.141.194
+

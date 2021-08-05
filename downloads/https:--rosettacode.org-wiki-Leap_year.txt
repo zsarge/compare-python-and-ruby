@@ -1,0 +1,41 @@
+====RUBY=====
+p Time.leap_year?(2020)
+p Time.leap_year?(2021)
+p Time.leap_year?(2022)
+
+====RUBY=====
+require 'date'
+ 
+Date.leap?(year)
+
+====RUBY=====
+func isleap(year) {
+    if (year %% 100) {
+        return (year %% 400);
+    }
+    return (year %% 4);
+}
+
+====RUBY=====
+func isleap(year) { year %% 100 ? (year %% 400) : (year %% 4) };
+
+====PYTHON=====
+import calendar
+calendar.isleap(year)
+
+====PYTHON=====
+def is_leap_year(year):
+    if year % 100 == 0:
+        return year % 400 == 0
+    return year % 4 == 0
+
+====PYTHON=====
+import datetime
+ 
+def is_leap_year(year):
+    try:
+        datetime.date(year, 2, 29)
+    except ValueError:
+        return False
+    return True
+

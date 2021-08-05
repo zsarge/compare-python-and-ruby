@@ -1,0 +1,40 @@
+====RUBY=====
+puts gets.not_nil!.split.map(&.to_i).sum
+
+====RUBY=====
+if line = gets
+  puts line.split.map(&.to_i).sum
+else
+  puts "No input"
+end
+
+====RUBY=====
+puts gets.split.sum(&:to_i)
+
+====RUBY=====
+say STDIN.readline.words.map{.to_i}.sum
+
+====RUBY=====
+say read(String).words»to_i»()«+»
+
+====RUBY=====
+var (a, b) = read(String).words.map{.to_i}...
+say a+b
+
+====PYTHON=====
+try: raw_input
+except: raw_input = input
+ 
+print(sum(map(int, raw_input().split())))
+
+====PYTHON=====
+import sys
+ 
+for line in sys.stdin:
+    print(sum(map(int, line.split())))
+
+====PYTHON=====
+a = int(input("First number: "))
+b = int(input("Second number: "))
+print("Result:", a+b)
+

@@ -1,0 +1,77 @@
+====RUBY=====
+foo_hist = []
+trace_var(:$foo){|v| foo_hist.unshift(v)}
+ 
+$foo = "apple"
+$foo = "pear"
+$foo = "banana"
+ 
+p foo_hist # => ["banana", "pear", "apple"]
+ 
+
+====RUBY=====
+class HistoryVar(v) {
+ 
+    has history = []
+    has variable = v
+ 
+    method ≔(value) {
+        history << variable
+        variable = value
+    }
+ 
+    method to_s {
+        "#{variable}"
+    }
+ 
+    method AUTOLOAD(_, name, *args) {
+        variable.(name)(args...)
+    }
+}
+ 
+var foo = HistoryVar(0)
+ 
+foo ≔ 1
+foo ≔ 2
+foo ≔ foo+3
+foo ≔ 42
+ 
+say "History: #{foo.history}"
+say "Current value: #{foo}"
+
+====PYTHON=====
+import sys
+ 
+HIST = {}
+ 
+def trace(frame, event, arg):
+    for name,val in frame.f_locals.items():
+        if name not in HIST:
+            HIST[name] = []
+        else:
+            if HIST[name][-1] is val:
+                continue
+        HIST[name].append(val)
+    return trace
+ 
+def undo(name):
+    HIST[name].pop(-1)
+    return HIST[name][-1]
+ 
+def main():
+    a = 10
+    a = 20
+ 
+    for i in range(5):
+        c = i
+ 
+    print "c:", c, "-> undo x3 ->",
+    c = undo('c')
+    c = undo('c')
+    c = undo('c')
+    print c
+    print 'HIST:', HIST
+ 
+sys.settrace(trace)
+main()
+

@@ -1,0 +1,15 @@
+====RUBY=====
+irb(main):001:0> y = ( 5**4**3**2 ).to_s
+puts "5**4**3**2 = #{y[0..19]}...#{y[-20..-1]} and has #{y.length} digits"
+ 
+
+====RUBY=====
+var x = 5**(4**(3**2));
+var y = x.to_s;
+printf("5**4**3**2 = %s...%s and has %i digits\n", y.ft(0,19), y.ft(-20), y.len);
+
+====PYTHON=====
+>>> y = str( 5**4**3**2 )
+>>> print ("5**4**3**2 = %s...%s and has %i digits" % (y[:20], y[-20:], len(y)))
+5**4**3**2 = 62060698786608744707...92256259918212890625 and has 183231 digits
+

@@ -1,0 +1,160 @@
+====RUBY=====
+def lcp(*strs)
+  return "" if strs.empty?
+  min, max = strs.minmax
+  idx = min.size.times{|i| break i if min[i] != max[i]}
+  min[0...idx]
+end
+ 
+data = [
+  ["interspecies","interstellar","interstate"],
+  ["throne","throne"],
+  ["throne","dungeon"],
+  ["throne","","throne"],
+  ["cheese"],
+  [""],
+  [],
+  ["prefix","suffix"],
+  ["foo","foobar"]
+]
+ 
+data.each do |set|
+  puts "lcp(#{set.inspect[1..-2]}) = #{lcp(*set).inspect}"
+end
+
+====RUBY=====
+# Finds the first point where the tree bifurcates
+func find_common_prefix(hash, acc) {
+    if (hash.len == 1) {
+        var pair = hash.to_a[0]
+        return __FUNC__(pair.value, acc+pair.key)
+    }
+    return acc
+}
+ 
+# Creates a tree like: {a => {b => {c => {}}}}
+func lcp(*strings) {
+    var hash = Hash()
+ 
+    for str in (strings.sort_by{.len}) {
+        var ref = hash
+        str.is_empty && return ''
+        for char in str {
+            if (ref.contains(char)) {
+                ref = ref{char}
+                ref.len == 0 && break
+            }
+            else {
+                ref = (ref{char} = Hash())
+            }
+        }
+    }
+ 
+    return find_common_prefix(hash, '')
+}
+
+====RUBY=====
+var data = [
+  ["interspecies","interstellar","interstate"],
+  ["throne","throne"],
+  ["throne","dungeon"],
+  ["throne","","throne"],
+  ["cheese"],
+  [""],
+  [],
+  ["prefix","suffix"],
+  ["foo","foobar"]
+];
+ 
+data.each { |set|
+    say "lcp(#{set.dump.substr(1,-1)}) = #{lcp(set...).dump}";
+};
+
+====PYTHON=====
+import os.path
+ 
+def lcp(*s):
+    return os.path.commonprefix(s)
+ 
+assert lcp("interspecies","interstellar","interstate") == "inters"
+assert lcp("throne","throne") == "throne"
+assert lcp("throne","dungeon") == ""
+assert lcp("cheese") == "cheese"
+assert lcp("") == ""
+assert lcp("prefix","suffix") == ""
+assert lcp("foo","foobar") == "foo"
+
+====PYTHON=====
+from itertools import takewhile
+ 
+def lcp(*s):
+    return ''.join(ch[0] for ch in takewhile(lambda x: min(x) == max(x),
+					     zip(*s)))
+ 
+assert lcp("interspecies","interstellar","interstate") == "inters"
+assert lcp("throne","throne") == "throne"
+assert lcp("throne","dungeon") == ""
+assert lcp("cheese") == "cheese"
+assert lcp("") == ""
+assert lcp("prefix","suffix") == ""
+assert lcp("foo","foobar") == "foo"
+
+====PYTHON=====
+from itertools import takewhile
+ 
+def lcp(*s):
+    return ''.join(a for a,b in takewhile(lambda x: x[0] == x[1],
+					  zip(min(s), max(s))))
+
+====PYTHON=====
+from itertools import (takewhile)
+ 
+ 
+# lcp :: [String] -> String
+def lcp(xs):
+    return ''.join(
+        x[0] for x in takewhile(allSame, transpose(xs))
+    )
+ 
+ 
+# TEST --------------------------------------------------
+ 
+# main :: IO ()
+def main():
+    def showPrefix(xs):
+        return ''.join(
+            ['[' + ', '.join(xs), '] -> ', lcp(xs)]
+        )
+ 
+    print (*list(map(showPrefix, [
+        ["interspecies", "interstellar", "interstate"],
+        ["throne", "throne"],
+        ["throne", "dungeon"],
+        ["cheese"],
+        [""],
+        ["prefix", "suffix"],
+        ["foo", "foobar"]])), sep='\n'
+    )
+ 
+ 
+# GENERIC FUNCTIONS -------------------------------------
+ 
+ 
+# allSame :: [a] -> Bool
+def allSame(xs):
+    if 0 < len(xs):
+        x = xs[0]
+        return all(map(lambda y: x == y, xs))
+    else:
+        return True
+ 
+ 
+# transpose :: [[a]] -> [[a]]
+def transpose(xs):
+    return map(list, zip(*xs))
+ 
+ 
+# TEST ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,109 @@
+====RUBY=====
+ 
+# create tmp fasta file in /tmp/
+tmpfile = "/tmp/tmp"+Random.rand.to_s+".fasta"
+File.write(tmpfile, ">Rosetta_Example_1
+THERECANBENOSPACE
+>Rosetta_Example_2
+THERECANBESEVERAL
+LINESBUTTHEYALLMUST
+BECONCATENATED")
+ 
+# read tmp fasta file and store to hash
+ref = tmpfile
+id = seq = ""
+fasta = {} of String => String
+File.each_line(ref) do |line|
+  if line.starts_with?(">")
+    fasta[id] = seq.sub(/\s/, "") if id != ""
+    id = line.split(/\s/)[0].lstrip(">")
+    seq = ""
+  else
+    seq += line
+  end
+end
+fasta[id] = seq.sub(/\s/, "")
+ 
+# show fasta component
+fasta.each { |k,v| puts "#{k}: #{v}"}
+ 
+
+====RUBY=====
+def fasta_format(strings)
+  out, text = [], ""
+  strings.split("\n").each do |line|
+    if line[0] == '>'
+      out << text unless text.empty?
+      text = line[1..-1] + ": "
+    else
+      text << line
+    end
+  end
+  out << text unless text.empty?
+end
+ 
+data = <<'EOS'
+>Rosetta_Example_1
+THERECANBENOSPACE
+>Rosetta_Example_2
+THERECANBESEVERAL
+LINESBUTTHEYALLMUST
+BECONCATENATED
+EOS
+ 
+puts fasta_format(data)
+
+====RUBY=====
+func fasta_format(strings) {
+    var out = []
+    var text = ''
+    for line in (strings.lines) {
+        if (line.begins_with('>')) {
+            text.len && (out << text)
+            text = line.substr(1)+': '
+        }
+        else {
+            text += line
+        }
+    }
+    text.len && (out << text)
+    return out
+}
+ 
+fasta_format(DATA.slurp).each { .say }
+ 
+__DATA__
+>Rosetta_Example_1
+THERECANBENOSPACE
+>Rosetta_Example_2
+THERECANBESEVERAL
+LINESBUTTHEYALLMUST
+BECONCATENATED
+
+====PYTHON=====
+import io
+ 
+FASTA='''\
+>Rosetta_Example_1
+THERECANBENOSPACE
+>Rosetta_Example_2
+THERECANBESEVERAL
+LINESBUTTHEYALLMUST
+BECONCATENATED'''
+ 
+infile = io.StringIO(FASTA)
+ 
+def fasta_parse(infile):
+    key = ''
+    for line in infile:
+        if line.startswith('>'):
+            if key:
+                yield key, val
+            key, val = line[1:].rstrip().split()[0], ''
+        elif key:
+            val += line.rstrip()
+    if key:
+        yield key, val
+ 
+print('\n'.join('%s: %s' % keyval for keyval in fasta_parse(infile)))
+

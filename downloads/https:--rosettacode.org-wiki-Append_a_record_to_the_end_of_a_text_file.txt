@@ -1,0 +1,188 @@
+====RUBY=====
+Gecos = Struct.new :fullname, :office, :extension, :homephone, :email 
+class Gecos
+  def to_s
+    "%s,%s,%s,%s,%s" % to_a
+  end
+end
+ 
+# Another way define 'to_s' method
+Passwd = Struct.new(:account, :password, :uid, :gid, :gecos, :directory, :shell) do
+  def to_s
+    to_a.join(':')
+  end
+end
+ 
+jsmith = Passwd.new('jsmith','x',1001, 1000, Gecos.new('Joe Smith', 'Room 1007', '(234)555-8917', '(234)555-0077', '[email protected]'), '/home/jsmith', '/bin/bash')
+jdoe = Passwd.new('jdoe','x',1002, 1000, Gecos.new('Jane Doe', 'Room 1004', '(234)555-8914', '(234)555-0044', '[email protected]'), '/home/jdoe', '/bin/bash')
+xyz = Passwd.new('xyz','x',1003, 1000, Gecos.new('X Yz', 'Room 1003', '(234)555-8913', '(234)555-0033', '[email protected]'), '/home/xyz', '/bin/bash')
+ 
+filename = 'append.records.test'
+ 
+# create the passwd file with two records
+File.open(filename, 'w') do |io|
+  io.puts jsmith
+  io.puts jdoe
+end
+ 
+puts "before appending:"
+puts File.readlines(filename)
+ 
+# append the third record
+File.open(filename, 'a') do |io|
+  io.puts xyz
+end
+ 
+puts "after appending:"
+puts File.readlines(filename)
+
+====RUBY=====
+define (
+    RECORD_FIELDS = %w(account password UID GID GECOS directory shell),
+    GECOS_FIELDS  = %w(fullname office extension homephone email),
+    RECORD_SEP    = ':',
+    GECOS_SEP     = ',',
+    PASSWD_FILE   = 'passwd.txt',
+)
+ 
+# here's our three records
+var records_to_write = [
+    Hash(
+        account  => 'jsmith',
+        password => 'x',
+        UID      => 1001,
+        GID      => 1000,
+        GECOS    => Hash(
+            fullname  => 'John Smith',
+            office    => 'Room 1007',
+            extension => '(234)555-8917',
+            homephone => '(234)555-0077',
+            email     => '[email protected]',
+        ),
+        directory => '/home/jsmith',
+        shell     => '/bin/bash',
+    ),
+    Hash(
+        account  => 'jdoe',
+        password => 'x',
+        UID      => 1002,
+        GID      => 1000,
+        GECOS    => Hash(
+            fullname  => 'Jane Doe',
+            office    => 'Room 1004',
+            extension => '(234)555-8914',
+            homephone => '(234)555-0044',
+            email     => '[email protected]',
+        ),
+        directory => '/home/jdoe',
+        shell     => '/bin/bash',
+    ),
+];
+ 
+var record_to_append = Hash(
+    account  => 'xyz',
+    password => 'x',
+    UID      => 1003,
+    GID      => 1000,
+    GECOS    => Hash(
+        fullname  => 'X Yz',
+        office    => 'Room 1003',
+        extension => '(234)555-8913',
+        homephone => '(234)555-0033',
+        email     => '[email protected]',
+    ),
+    directory => '/home/xyz',
+    shell     => '/bin/bash',
+);
+ 
+func record_to_string(rec, sep = RECORD_SEP, fields = RECORD_FIELDS) {
+    gather {
+        fields.each { |field|
+            var r = rec{field} \\ die "Field #{field} not found"
+            take(field == 'GECOS' ? record_to_string(r, GECOS_SEP, GECOS_FIELDS)
+                                  : r)
+        }
+    }.join(sep)
+}
+ 
+func write_records_to_file(records, filename = PASSWD_FILE, append = false) {
+    File(filename).(append ? :open_a : :open_w)(\var fh, \var err)
+    err && die "Can't open #{filename}: #{err}";
+    fh.flock(File.LOCK_EX) || die "Can't lock #{filename}: $!"
+    fh.seek(0, File.SEEK_END) || die "Can't seek #{filename}: $!"
+    records.each { |record| fh.say(record_to_string(record)) }
+    fh.flock(File.LOCK_UN) || die "Can't unlock #{filename}: $!"
+    fh.close
+}
+ 
+# write two records to file
+write_records_to_file(records: records_to_write);
+ 
+# append one more record to file
+write_records_to_file(records: [record_to_append], append: true);
+ 
+# test
+ 
+File(PASSWD_FILE).open_r(\var fh, \var err)
+err && die "Can't open file #{PASSWD_FILE}: #{err}"
+var lines = fh.lines
+ 
+# There should be more than one line
+assert(lines.len > 1)
+ 
+# Check the last line
+assert_eq(lines[-1], 'xyz:x:1003:1000:X Yz,Room 1003,(234)555-8913,' +
+                     '(234)555-0033,[email protected]:/home/xyz:/bin/bash')
+ 
+say "** Test passed!"
+
+====PYTHON=====
+#############################
+# Create a passwd text file
+#############################
+# note that UID & gid are of type "text"
+passwd_list=[
+  dict(account='jsmith', password='x', UID=1001, GID=1000, # UID and GID are type int
+       GECOS=dict(fullname='Joe Smith', office='Room 1007', extension='(234)555-8917',
+                  homephone='(234)555-0077', email='[email protected]osettacode.org'),
+                  directory='/home/jsmith', shell='/bin/bash'),
+  dict(account='jdoe', password='x', UID=1002, GID=1000,
+       GECOS=dict(fullname='Jane Doe', office='Room 1004', extension='(234)555-8914',
+                  homephone='(234)555-0044', email='[email protected]'),
+       directory='/home/jdoe', shell='/bin/bash')
+]
+ 
+passwd_fields="account password UID GID GECOS directory shell".split()
+GECOS_fields="fullname office extension homephone email".split()
+ 
+def passwd_text_repr(passwd_rec):
+# convert individual fields to string type
+  passwd_rec["GECOS"]=",".join([ passwd_rec["GECOS"][field] for field in GECOS_fields])
+  for field in passwd_rec: # convert "int" fields
+    if not isinstance(passwd_rec[field], str):
+      passwd_rec[field]=`passwd_rec[field]`
+  return ":".join([ passwd_rec[field] for field in passwd_fields ])
+ 
+passwd_text=open("passwd.txt","w")
+for passwd_rec in passwd_list:
+  print >> passwd_text,passwd_text_repr(passwd_rec)
+passwd_text.close()
+ 
+#################################
+# Load text ready for appending
+#################################
+passwd_text=open("passwd.txt","a+")
+new_rec=dict(account='xyz', password='x', UID=1003, GID=1000,
+             GECOS=dict(fullname='X Yz', office='Room 1003', extension='(234)555-8913',
+                        homephone='(234)555-0033', email='[email protected]'),
+             directory='/home/xyz', shell='/bin/bash')
+print >> passwd_text,  passwd_text_repr(new_rec)
+passwd_text.close()
+ 
+##############################################
+# Finally reopen and check record was appended
+##############################################
+passwd_list=list(open("passwd.txt","r"))
+if "xyz" in passwd_list[-1]:
+  print "Appended record:",passwd_list[-1][:-1]
+

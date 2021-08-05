@@ -1,0 +1,48 @@
+====RUBY=====
+out = 0
+max_out = -1
+max_times = []
+ 
+File.foreach('mlijobs.txt') do |line|
+  out += line.include?("OUT") ? 1 : -1
+  if out > max_out
+    max_out = out
+    max_times = []
+  end
+  max_times << line.split[3]  if out == max_out
+end
+ 
+puts "Maximum simultaneous license use is #{max_out} at the following times:"
+max_times.each {|time| puts "  #{time}"}
+
+====RUBY=====
+var out = 0
+var max_out = -1
+var max_times = []
+ 
+ARGF.each { |line|
+    out += (line ~~ /OUT/ ? 1 : -1)
+    if (out > max_out) {
+        max_out = out
+        max_times = []
+    }
+    if (out == max_out) {
+        max_times << line.split(' ')[3]
+    }
+}
+ 
+say "Maximum simultaneous license use is #{max_out} at the following times:"
+max_times.each {|t| say "  #{t}" }
+
+====PYTHON=====
+out, max_out, max_times = 0, -1, []
+for job in open('mlijobs.txt'):
+    out += 1 if "OUT" in job else -1
+    if out > max_out:
+        max_out, max_times = out, []
+    if out == max_out:
+        max_times.append(job.split()[3])
+ 
+print("Maximum simultaneous license use is %i at the following times:" % max_out)
+print('  ' + '\n  '.join(max_times))
+

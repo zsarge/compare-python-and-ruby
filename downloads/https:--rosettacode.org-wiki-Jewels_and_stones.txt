@@ -1,0 +1,43 @@
+====RUBY=====
+stones, jewels = "aAAbbbb", "aA"
+stones.count(jewels) # => 3
+ 
+# The above solution works for that case, but fails with certain other "jewels":
+stones, jewels = "aA^Bb", "^b"
+stones.count(jewels) # => 4
+# '^b' in the "jewels" is read as "characters other than 'b'".
+ 
+# This works as intended though:
+stones.count { |c| jewels.chars.includes?(c) } # => 2
+
+====RUBY=====
+stones, jewels = "aAAbbbb", "aA"
+ 
+stones.count(jewels)  # => 3
+ 
+
+====RUBY=====
+func countJewels(s, j) {
+    s.chars.count { |c|
+        j.contains(c)
+    }
+}
+ 
+say countJewels("aAAbbbb", "aA")    #=> 3
+say countJewels("ZZ", "z")          #=> 0
+
+====PYTHON=====
+def countJewels(s, j):
+    return sum(x in j for x in s)
+ 
+print countJewels("aAAbbbb", "aA")
+print countJewels("ZZ", "z")
+
+====PYTHON=====
+def countJewels(stones, jewels):
+    jewelset = set(jewels)
+    return sum(1 for stone in stones if stone in jewelset)
+ 
+print(countJewels("aAAbbbb", "aA"))
+print(countJewels("ZZ", "z"))
+

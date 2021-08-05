@@ -1,0 +1,243 @@
+====RUBY=====
+puts [1, 2, 3].permutations
+
+====RUBY=====
+p [1,2,3].permutation.to_a
+
+====RUBY=====
+[0,1,2].permutations { |p|
+    say p
+}
+
+====RUBY=====
+func forperm(callback, n) {
+    var idx = @^n
+ 
+    loop {
+        callback([idx...])
+ 
+        var p = n-1
+        while (idx[p-1] > idx[p]) {--p}
+        p == 0 && return()
+ 
+        var d = p
+        idx += idx.splice(p).reverse
+ 
+        while (idx[p-1] > idx[d]) {++d}
+        idx.swap(p-1, d)
+    }
+ 
+    return()
+}
+ 
+forperm({|p| say p }, 3)
+
+====RUBY=====
+func permutations(callback, set, perm=[]) {
+    set.is_empty && callback(perm)
+    for i in ^set {
+        __FUNC__(callback, [
+            set[(0 ..^ i)..., (i+1 ..^ set.len)...]
+        ], [perm..., set[i]])
+    }
+    return()
+}
+ 
+permutations({|p| say p }, [0,1,2])
+
+====PYTHON=====
+import itertools
+for values in itertools.permutations([1,2,3]):
+    print (values)
+
+====PYTHON=====
+def perm1(n):
+    a = list(range(n))
+    def sub(i):
+        if i == n - 1:
+            yield tuple(a)
+        else:
+            for k in range(i, n):
+                a[i], a[k] = a[k], a[i]
+                yield from sub(i + 1)
+                a[i], a[k] = a[k], a[i]
+    yield from sub(0)
+ 
+def perm2(n):
+    a = list(range(n))
+    def sub(i):
+        if i == n - 1:
+            yield tuple(a)
+        else:
+            for k in range(i, n):
+                a[i], a[k] = a[k], a[i]
+                yield from sub(i + 1)
+            x = a[i]
+            for k in range(i + 1, n):
+                a[k - 1] = a[k]
+            a[n - 1] = x
+    yield from sub(0)
+
+====PYTHON=====
+for u in perm1(3): print(u)
+(0, 1, 2)
+(0, 2, 1)
+(1, 0, 2)
+(1, 2, 0)
+(2, 1, 0)
+(2, 0, 1)
+ 
+for u in perm2(3): print(u)
+(0, 1, 2)
+(0, 2, 1)
+(1, 0, 2)
+(1, 2, 0)
+(2, 0, 1)
+(2, 1, 0)
+
+====PYTHON=====
+def nextperm(a):
+    n = len(a)
+    i = n - 1
+    while i > 0 and a[i - 1] > a[i]:
+        i -= 1
+    j = i
+    k = n - 1
+    while j < k:
+        a[j], a[k] = a[k], a[j]
+        j += 1
+        k -= 1
+    if i == 0:
+        return False
+    else:
+        j = i
+        while a[j] < a[i - 1]:
+            j += 1
+        a[i - 1], a[j] = a[j], a[i - 1]
+        return True
+ 
+def perm3(n):
+    if type(n) is int:
+        if n < 1:
+            return []
+        a = list(range(n))
+    else:
+        a = sorted(n)
+    u = [tuple(a)]
+    while nextperm(a):
+        u.append(tuple(a))
+    return u
+ 
+for p in perm3(3): print(p)
+(0, 1, 2)
+(0, 2, 1)
+(1, 0, 2)
+(1, 2, 0)
+(2, 0, 1)
+(2, 1, 0)
+
+====PYTHON=====
+ 
+def permutations(xs):
+    ac = [[]]
+    for x in xs:
+        ac_new = []
+        for ts in ac:
+            for n in range(0,ts.__len__()+1):
+                new_ts = ts[:]  #(shallow) copy of ts
+                new_ts.insert(n,x)
+                ac_new.append(new_ts)
+        ac=ac_new
+    return ac
+ 
+print(permutations([1,2,3,4]))
+ 
+
+====PYTHON=====
+'''Permutations of a list, string or tuple'''
+ 
+from functools import (reduce)
+from itertools import (chain)
+ 
+ 
+# permutations :: [a] -> [[a]]
+def permutations(xs):
+    '''Type-preserving permutations of xs.
+    '''
+    ps = reduce(
+        lambda a, x: concatMap(
+            lambda xs: (
+                xs[n:] + [x] + xs[0:n] for n in range(0, 1 + len(xs)))
+        )(a),
+        xs, [[]]
+    )
+    t = type(xs)
+    return ps if list == t else (
+        [''.join(x) for x in ps] if str == t else [
+            t(x) for x in ps
+        ]
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+ 
+# main :: IO ()
+def main():
+    '''Permutations of lists, strings and tuples.'''
+ 
+    print(
+        fTable(__doc__ + ':\n')(repr)(showList)(
+            permutations
+        )([
+            [1, 2, 3],
+            'abc',
+            (1, 2, 3),
+        ])
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f):
+    '''A concatenated list over which a function has been mapped.
+       The list monad can be derived by using a function f which
+       wraps its output in a list,
+       (using an empty list to represent computational failure).'''
+    return lambda xs: list(
+        chain.from_iterable(map(f, xs))
+    )
+ 
+ 
+# FORMATTING ----------------------------------------------
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+                     f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# showList :: [a] -> String
+def showList(xs):
+    '''Stringification of a list.'''
+    return '[' + ','.join(showList(x) for x in xs) + ']' if (
+        isinstance(xs, list)
+    ) else repr(xs)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

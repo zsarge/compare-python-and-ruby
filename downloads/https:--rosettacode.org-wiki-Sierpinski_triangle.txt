@@ -1,0 +1,101 @@
+====RUBY=====
+ruby -le'16.times{|y|print" "*(15-y),*(0..y).map{|x|~y&x>0?"  ":" *"}}'
+
+====RUBY=====
+def sierpinski_triangle(n)
+  triangle = ["*"]
+  n.times do |i|
+    sp = " " * (2**i)
+    triangle = triangle.collect {|x| sp + x + sp} +
+               triangle.collect {|x| x + " " + x}
+  end
+  triangle
+end
+ 
+puts sierpinski_triangle(4)
+
+====RUBY=====
+def sierpinski_triangle(n)
+  (0...n).inject(["*"]) {|triangle, i| 
+    space = " " * (2**i)
+    triangle.map {|x| space + x + space} + triangle.map {|x| x + " " + x}
+  }
+end
+ 
+puts sierpinski_triangle(4)
+
+====RUBY=====
+func sierpinski_triangle(n) {
+    var triangle = ['*']
+    { |i|
+        var sp = (' ' * 2**i)
+        triangle = (triangle.map {|x| sp + x + sp} +
+                    triangle.map {|x| x + ' ' + x})
+    } * n
+    triangle.join("\n")
+}
+ 
+say sierpinski_triangle(4)
+
+====PYTHON=====
+def sierpinski(n):
+    d = ["*"]
+    for i in xrange(n):
+        sp = " " * (2 ** i)
+        d = [sp+x+sp for x in d] + [x+" "+x for x in d]
+    return d
+ 
+print "\n".join(sierpinski(4))
+
+====PYTHON=====
+import functools
+ 
+def sierpinski(n):
+ 
+    def aggregate(TRIANGLE, I):
+        SPACE = " " * (2 ** I)
+        return [SPACE+X+SPACE for X in TRIANGLE] + [X+" "+X for X in TRIANGLE]
+ 
+    return functools.reduce(aggregate, range(n), ["*"])
+ 
+print("\n".join(sierpinski(4)))
+
+====PYTHON=====
+'''Sierpinski triangle'''
+ 
+from functools import reduce
+from operator import add
+ 
+ 
+# sierpinski :: Int -> String
+def sierpinski(n):
+    '''Nth iteration of a Sierpinksi triangle.'''
+    def go(xs, i):
+        s = ' ' * (2 ** i)
+        return concatMap(lambda x: [s + x + s])(xs) + (
+            concatMap(lambda x: [x + ' ' + x])(xs)
+        )
+    return '\n'.join(reduce(go, range(n), '*'))
+ 
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f):
+    '''A concatenated list or string over which a function f
+       has been mapped.
+       The list monad can be derived by using an (a -> [b])
+       function which wraps its output in a list (using an
+       empty list to represent computational failure).
+    '''
+    return lambda xs: (
+        reduce(add, map(f, xs), [])
+    )
+ 
+ 
+print(sierpinski(4))
+
+====PYTHON=====
+x = 1
+while True:
+	print(bin(x)[2:].replace('0', ' '))
+	x ^= x<<1
+

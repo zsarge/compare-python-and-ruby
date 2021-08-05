@@ -1,0 +1,69 @@
+====RUBY=====
+class Example
+    def foo
+        puts "this is foo"
+    end
+    def bar
+        puts "this is bar"
+    end
+    def method_missing(name, *args, &block)
+        puts "tried to handle unknown method %s" % name # name is a symbol
+        unless args.empty?
+            puts "it had arguments: %p" % [args]
+        end
+    end
+end
+ 
+example = Example.new
+ 
+example.foo          # prints “this is foo”
+example.bar          # prints “this is bar”
+example.grill        # prints “tried to handle unknown method grill”
+example.ding("dong") # prints “tried to handle unknown method ding”
+                     # prints “it had arguments: ["dong"]”
+
+====RUBY=====
+class Example {
+    method foo {
+        say "this is foo"
+    }
+    method bar {
+        say "this is bar"
+    }
+    method AUTOLOAD(_, name, *args) {
+        say ("tried to handle unknown method %s" % name);
+        if (args.len > 0) {
+            say ("it had arguments: %s" % args.join(', '));
+        }
+    }
+}
+ 
+var example = Example.new;
+ 
+example.foo;          # prints “this is foo”
+example.bar;          # prints “this is bar”
+example.grill;        # prints “tried to handle unknown method grill”
+example.ding("dong"); # prints “tried to handle unknown method ding”
+                      # prints “it had arguments: dong”
+
+====PYTHON=====
+class Example(object):
+    def foo(self):
+        print("this is foo")
+    def bar(self):
+        print("this is bar")
+    def __getattr__(self, name):
+        def method(*args):
+            print("tried to handle unknown method " + name)
+            if args:
+                print("it had arguments: " + str(args))
+        return method
+ 
+example = Example()
+ 
+example.foo()        # prints “this is foo”
+example.bar()        # prints “this is bar”
+example.grill()      # prints “tried to handle unknown method grill”
+example.ding("dong") # prints “tried to handle unknown method ding”
+                     # prints “it had arguments: ('dong',)”
+

@@ -1,0 +1,88 @@
+====RUBY=====
+class U0 < Exception
+end
+ 
+class U1 < Exception
+end
+ 
+def foo
+  2.times do |i|
+    begin
+      bar(i)
+    rescue e : U0
+      puts "rescued #{e}"
+    end
+  end
+end
+ 
+def bar(i : Int32)
+    baz(i)
+end
+ 
+def baz(i : Int32)
+  raise U0.new("this is u0") if i == 0
+    raise U1.new("this is u1") if i == 1
+end
+ 
+foo
+
+====RUBY=====
+def foo
+  2.times do |i|
+    begin
+      bar(i)
+    rescue U0
+      $stderr.puts "captured exception U0"
+    end
+  end
+end
+ 
+def bar(i)
+  baz(i)
+end
+ 
+def baz(i)
+  raise i == 0 ? U0 : U1
+end
+ 
+class U0 < StandardError; end
+ 
+class U1 < StandardError; end
+ 
+foo
+
+====RUBY=====
+func baz(i) { die "U#{i}" };
+func bar(i) { baz(i)      };
+ 
+func foo {
+    [0, 1].each { |i|
+        try   { bar(i) }
+        catch { |_, msg|
+            msg ~~ /^U0/ ? say "Function foo() caught exception U0"
+                         : die msg;       # re-raise the exception
+        };
+    }
+}
+ 
+foo();
+
+====PYTHON=====
+class U0(Exception): pass
+class U1(Exception): pass
+ 
+def foo():
+    for i in range(2):
+        try:
+            bar(i)
+        except U0:
+            print("Function foo caught exception U0")
+ 
+def bar(i):
+    baz(i) # Nest those calls
+ 
+def baz(i):
+    raise U1 if i else U0
+ 
+foo()
+

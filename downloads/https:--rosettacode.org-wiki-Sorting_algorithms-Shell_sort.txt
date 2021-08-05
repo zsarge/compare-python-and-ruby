@@ -1,0 +1,54 @@
+====RUBY=====
+class Array
+  def shellsort!
+    inc = length / 2
+    while inc != 0
+      inc.step(length-1) do |i|
+        el = self[i]
+        while i >= inc and self[i - inc] > el
+          self[i] = self[i - inc]
+          i -= inc
+        end
+        self[i] = el
+      end
+      inc = (inc == 2 ? 1 : (inc * 5.0 / 11).to_i)
+    end
+    self
+  end
+end
+ 
+data = [22, 7, 2, -5, 8, 4]
+data.shellsort!
+p data # [-5, 2, 4, 7, 8, 22]
+
+====RUBY=====
+func shell_sort(a) {
+    var h = a.len;
+    while (h >>= 1) {
+        for i in (h .. a.end) {
+            var k = a[i];
+            for (var j = i; (j >= h) && (k < a[j - h]); j -= h) {
+                a[j] = a[j - h];
+            }
+            a[j] = k;
+        }
+    }
+    return a;
+}
+ 
+var a = 10.of {100.irand};
+say a;
+shell_sort(a);
+say a;
+
+====PYTHON=====
+def shell(seq):
+    inc = len(seq) // 2
+    while inc:
+        for i, el in enumerate(seq[inc:], inc):
+            while i >= inc and seq[i - inc] > el:
+                seq[i] = seq[i - inc]
+                i -= inc
+            seq[i] = el
+        inc = 1 if inc == 2 else inc * 5 // 11
+

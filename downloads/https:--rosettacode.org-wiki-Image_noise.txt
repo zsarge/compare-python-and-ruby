@@ -1,0 +1,129 @@
+====RUBY=====
+require 'rubygems'
+require 'gl'
+require 'glut'
+ 
+W, H = 320, 240
+SIZE = W * H
+ 
+Glut.glutInit ARGV
+Glut.glutInitWindowSize W, H
+ 
+Glut.glutIdleFunc lambda {
+  i = Time.now
+  noise = (1..SIZE).map { rand > 0.5 ? 0xFFFFFFFF : 0xFF000000 }.pack("I*")
+ 
+  Gl.glClear Gl::GL_COLOR_BUFFER_BIT
+  Gl.glDrawPixels W, H, Gl::GL_RGBA, Gl::GL_UNSIGNED_BYTE, noise
+  Gl.glFlush
+ 
+  puts 1.0 / (Time.now - i)
+}
+ 
+Glut.glutCreateWindow "noise"
+Glut.glutMainLoop
+
+====RUBY=====
+ 
+PALLETE = %w[#000000 #FFFFFF]
+attr_reader :black, :dim, :white
+def settings
+  size(320, 240)
+end
+ 
+def setup
+  sketch_title 'Image Noise'
+  @black = color(PALLETE[0])
+  @white = color(PALLETE[1])
+  @dim = width * height
+  load_pixels
+end
+ 
+def draw
+  dim.times { |idx| pixels[idx] = (rand < 0.5) ? black : white }
+  update_pixels
+  fill(0, 128)
+  rect(0, 0, 60, 20)
+  fill(255)
+  text(frame_rate, 5, 15)
+end
+ 
+
+====PYTHON=====
+black = color(0)
+white = color(255)
+ 
+def setup():
+    size(320, 240)
+    # frameRate(30) # 60 by default
+ 
+ 
+def draw():
+    loadPixels()
+    for i in range(len(pixels)):
+        if random(1) < 0.5:
+            pixels[i] = black
+        else:
+            pixels[i] = white
+ 
+    updatePixels()
+    fill(0, 128)
+    rect(0, 0, 60, 20)
+    fill(255)
+    text(frameRate, 5, 15)
+
+====PYTHON=====
+import time
+import random
+import Tkinter
+import Image, ImageTk # PIL libray
+ 
+class App(object):
+    def __init__(self, size, root):
+        self.root = root
+        self.root.title("Image Noise Test")
+ 
+        self.img = Image.new("RGB", size)
+        self.label = Tkinter.Label(root)
+        self.label.pack()
+ 
+        self.time = 0.0
+        self.frames = 0
+        self.size = size
+        self.loop()
+ 
+    def loop(self):
+        self.ta = time.time()
+        # 13 FPS boost. half integer idea from C#.
+        rnd = random.random
+        white = (255, 255, 255)
+        black = (0, 0, 0)
+        npixels = self.size[0] * self.size[1]
+        data = [white if rnd() > 0.5 else black for i in xrange(npixels)]
+        self.img.putdata(data)
+        self.pimg = ImageTk.PhotoImage(self.img)
+        self.label["image"] = self.pimg
+        self.tb = time.time()
+ 
+        self.time += (self.tb - self.ta)
+        self.frames += 1
+ 
+        if self.frames == 30:
+            try:
+                self.fps = self.frames / self.time
+            except:
+                self.fps = "INSTANT"
+            print ("%d frames in %3.2f seconds (%s FPS)" %
+                  (self.frames, self.time, self.fps))
+            self.time = 0
+            self.frames = 0
+ 
+        self.root.after(1, self.loop)
+ 
+def main():
+    root = Tkinter.Tk()
+    app = App((320, 240), root)
+    root.mainloop()
+ 
+main()
+

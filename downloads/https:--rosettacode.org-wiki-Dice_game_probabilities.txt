@@ -1,0 +1,134 @@
+====RUBY=====
+def roll_dice(n_dice, n_faces)
+  return [[0,1]] if n_dice.zero?
+  one  = [1] * n_faces
+  zero = [0] * (n_faces-1)
+  (1...n_dice).inject(one){|ary,_|
+    (zero + ary + zero).each_cons(n_faces).map{|a| a.inject(:+)}
+  }.map.with_index(n_dice){|n,sum| [sum,n]}  # sum: total of the faces
+end
+ 
+def game(dice1, faces1, dice2, faces2)
+  p1 = roll_dice(dice1, faces1)
+  p2 = roll_dice(dice2, faces2)
+  p1.product(p2).each_with_object([0,0,0]) do |((sum1, n1), (sum2, n2)), win|
+    win[sum1 <=> sum2] += n1 * n2        # [0]:draw, [1]:win, [-1]:lose
+  end
+end
+ 
+[[9, 4, 6, 6], [5, 10, 6, 7]].each do |d1, f1, d2, f2|
+  puts "player 1 has #{d1} dice with #{f1} faces each"
+  puts "player 2 has #{d2} dice with #{f2} faces each"
+  win = game(d1, f1, d2, f2)
+  sum = win.inject(:+)
+  puts "Probability for player 1 to win: #{win[1]} / #{sum}",
+       "                              -> #{win[1].fdiv(sum)}", ""
+end
+
+====RUBY=====
+func combos(sides, n) {
+    n || return [1]
+    var ret = ([0] * (n*sides.max + 1))
+    combos(sides, n-1).each_kv { |i,v|
+        v && for s in sides { ret[i + s] += v }
+    }
+    return ret
+}
+ 
+func winning(sides1, n1, sides2, n2) {
+    var (p1, p2) = (combos(sides1, n1), combos(sides2, n2))
+    var (win,loss,tie) = (0,0,0)
+    p1.each_kv { |i, x|
+        win  += x*p2.ft(0,i-1).sum
+        tie  += x*p2.ft(i, i).sum
+        loss += x*p2.ft(i+1).sum
+    }
+    [win, tie, loss] »/» p1.sum*p2.sum
+}
+ 
+func display_results(String title, Array res) {
+    say "=> #{title}"
+    for name, prob in (%w(p₁\ win tie p₂\ win) ~Z res) {
+        say "P(#{'%6s' % name}) =~ #{prob.round(-11)} (#{prob.as_frac})"
+    }
+    print "\n"
+}
+ 
+display_results('9D4 vs 6D6',  winning(range(1, 4), 9, range(1,6), 6))
+display_results('5D10 vs 6D7', winning(range(1,10), 5, range(1,7), 6))
+
+====PYTHON=====
+from itertools import product
+ 
+def gen_dict(n_faces, n_dice):
+    counts = [0] * ((n_faces + 1) * n_dice)
+    for t in product(range(1, n_faces + 1), repeat=n_dice):
+        counts[sum(t)] += 1
+    return counts, n_faces ** n_dice
+ 
+def beating_probability(n_sides1, n_dice1, n_sides2, n_dice2):
+    c1, p1 = gen_dict(n_sides1, n_dice1)
+    c2, p2 = gen_dict(n_sides2, n_dice2)
+    p12 = float(p1 * p2)
+ 
+    return sum(p[1] * q[1] / p12
+               for p, q in product(enumerate(c1), enumerate(c2))
+               if p[0] > q[0])
+ 
+print beating_probability(4, 9, 6, 6)
+print beating_probability(10, 5, 7, 6)
+
+====PYTHON=====
+from __future__ import print_function, division
+ 
+def combos(sides, n):
+    if not n: return [1]
+    ret = [0] * (max(sides)*n + 1)
+    for i,v in enumerate(combos(sides, n - 1)):
+        if not v: continue
+        for s in sides: ret[i + s] += v
+    return ret
+ 
+def winning(sides1, n1, sides2, n2):
+    p1, p2 = combos(sides1, n1), combos(sides2, n2)
+    win,loss,tie = 0,0,0 # 'win' is 1 beating 2
+    for i,x1 in enumerate(p1):
+        # using accumulated sum on p2 could save some time
+        win += x1*sum(p2[:i])
+        tie += x1*sum(p2[i:i+1])
+        loss+= x1*sum(p2[i+1:])
+    s = sum(p1)*sum(p2)
+    return win/s, tie/s, loss/s
+ 
+print(winning(range(1,5), 9, range(1,7), 6))
+print(winning(range(1,11), 5, range(1,8), 6)) # this seem hardly fair
+ 
+# mountains of dice test case
+# print(winning((1, 2, 3, 5, 9), 700, (1, 2, 3, 4, 5, 6), 800))
+
+====PYTHON=====
+from __future__ import division, print_function
+from itertools import accumulate # Python3 only
+ 
+def combos(sides, n):
+    ret = [1] + [0]*(n + 1)*sides # extra length for negative indices
+    for p in range(1, n + 1):
+        rolling_sum = 0
+        for i in range(p*sides, p - 1, -1):
+            rolling_sum += ret[i - sides] - ret[i]
+            ret[i] = rolling_sum
+        ret[p - 1] = 0
+    return ret
+ 
+def winning(d1, n1, d2, n2):
+    c1, c2 = combos(d1, n1), combos(d2, n2)
+    ac = list(accumulate(c2 + [0]*(len(c1) - len(c2))))
+ 
+    return sum(v*a for  v,a in zip(c1[1:], ac)) / (ac[-1]*sum(c1))
+ 
+ 
+print(winning(4, 9, 6, 6))
+print(winning(5, 10, 6, 7))
+ 
+#print(winning(6, 700, 8, 540))
+

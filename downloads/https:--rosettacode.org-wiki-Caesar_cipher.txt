@@ -1,0 +1,101 @@
+====RUBY=====
+class String
+  ALFABET = ("A".."Z").to_a
+ 
+  def caesar_cipher(num)
+    self.tr(ALFABET.join, ALFABET.rotate(num).join)
+  end
+ 
+end
+ 
+#demo:
+encypted  = "THEYBROKEOURCIPHEREVERYONECANREADTHIS".caesar_cipher(3)
+decrypted = encypted.caesar_cipher(-3)
+ 
+
+====RUBY=====
+func caesar(msg, key, decode=false) {
+    decode && (key = (26 - key));
+    msg.gsub(/([A-Z])/i, {|c| ((c.uc.ord - 65 + key) % 26) + 65 -> chr});
+};
+ 
+var msg = 'THE FIVE BOXING WIZARDS JUMP QUICKLY';
+ 
+var enc = caesar(msg, 10);
+var dec = caesar(enc, 10, true);
+ 
+say "msg: #{msg}";
+say "enc: #{enc}";
+say "dec: #{dec}";
+
+====PYTHON=====
+fun caesar(s, k, decode: false):
+    if decode:
+        k = 26 - k
+    result = ''
+    for i in s.uppercase() where 65 <= ord(i) <= 90:
+        result.push! char(ord(i) - 65 + k) mod 26 + 65
+    return result
+ 
+let message = "The quick brown fox jumped over the lazy dogs"
+let encrypted = caesar(msg, 11)
+let decrypted = caesar(enc, 11, decode: true)
+ 
+print(message, encrypted, decrypted, sep: '\n')
+
+====PYTHON=====
+def caesar(s, k, decode = False):
+	if decode: k = 26 - k
+	return "".join([chr((ord(i) - 65 + k) % 26 + 65)
+				for i in s.upper()
+				if ord(i) >= 65 and ord(i) <= 90 ])
+ 
+msg = "The quick brown fox jumped over the lazy dogs"
+print msg
+enc = caesar(msg, 11)
+print enc
+print caesar(enc, 11, decode = True)
+
+====PYTHON=====
+import string
+def caesar(s, k, decode = False):
+   if decode: k = 26 - k
+   return s.translate(
+       string.maketrans(
+           string.ascii_uppercase + string.ascii_lowercase,
+           string.ascii_uppercase[k:] + string.ascii_uppercase[:k] +
+           string.ascii_lowercase[k:] + string.ascii_lowercase[:k]
+           )
+       )
+msg = "The quick brown fox jumped over the lazy dogs"
+print msg
+enc = caesar(msg, 11)
+print enc
+print caesar(enc, 11, decode = True)
+
+====PYTHON=====
+import string
+def caesar(s, k = 13, decode = False, *, memo={}):
+  if decode: k = 26 - k
+  k = k % 26
+  table = memo.get(k)
+  if table is None:
+    table = memo[k] = str.maketrans(
+                        string.ascii_uppercase + string.ascii_lowercase,
+                        string.ascii_uppercase[k:] + string.ascii_uppercase[:k] +
+                        string.ascii_lowercase[k:] + string.ascii_lowercase[:k])
+  return s.translate(table)
+
+====PYTHON=====
+ 
+from string import ascii_uppercase as abc
+ 
+def caesar(s, k, decode = False):
+    trans = dict(zip(abc, abc[(k,26-k)[decode]:] + abc[:(k,26-k)[decode]]))
+    return ''.join(trans[L] for L in s.upper() if L in abc)
+ 
+msg = "The quick brown fox jumped over the lazy dogs"
+print(caesar(msg, 11))
+print(caesar(caesar(msg, 11), 11, True))
+ 
+

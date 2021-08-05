@@ -1,0 +1,177 @@
+====RUBY=====
+ary = [1, 1, 2, 2, "a", [1, 2, 3], [1, 2, 3], "a"]
+p ary.uniq
+
+====RUBY=====
+ary = [1,1,2,1,'redundant',[1,2,3],[1,2,3],'redundant']
+p ary.uniq              # => [1, 2, "redundant", [1, 2, 3]]
+
+====RUBY=====
+class Array
+  # used Hash
+  def uniq1
+    each_with_object({}) {|elem, h| h[elem] = true}.keys
+  end
+  # sort (requires comparable)
+  def uniq2
+    sorted = sort
+    pre = sorted.first
+    sorted.each_with_object([pre]){|elem, uniq| uniq << (pre = elem) if elem != pre}
+  end
+  # go through the list
+  def uniq3
+    each_with_object([]) {|elem, uniq| uniq << elem unless uniq.include?(elem)}
+  end
+end
+ 
+ary = [1,1,2,1,'redundant',[1,2,3],[1,2,3],'redundant']
+p ary.uniq1             #=> [1, 2, "redundant", [1, 2, 3]]
+p ary.uniq2 rescue nil  #   Error (not comparable)
+p ary.uniq3             #=> [1, 2, "redundant", [1, 2, 3]]
+ 
+ary = [1,2,3,7,6,5,2,3,4,5,6,1,1,1]
+p ary.uniq1             #=> [1, 2, 3, 7, 6, 5, 4]
+p ary.uniq2             #=> [1, 2, 3, 4, 5, 6, 7]
+p ary.uniq3             #=> [1, 2, 3, 7, 6, 5, 4]
+
+====RUBY=====
+def unique(array)
+    pure = Array.new
+    for i in array
+        flag = false
+        for j in pure
+            flag = true if j==i
+        end
+        pure << i unless flag
+    end
+    return pure
+end
+ 
+unique ["hi","hey","hello","hi","hey","heyo"]   # => ["hi", "hey", "hello", "heyo"]
+unique [1,2,3,4,1,2,3,5,1,2,3,4,5]              # => [1,2,3,4,5]
+
+====RUBY=====
+var ary = [1,1,2,1,'redundant',[1,2,3],[1,2,3],'redundant'];
+say ary.uniq.dump;
+say ary.last_uniq.dump;
+
+====PYTHON=====
+items = [1, 2, 3, 'a', 'b', 'c', 2, 3, 4, 'b', 'c', 'd']
+unique = list(set(items))
+
+====PYTHON=====
+items = [1, 2, 3, 'a', 'b', 'c', 2, 3, 4, 'b', 'c', 'd']
+unique = []
+helperset = set()
+for x in items:
+    if x not in helperset:
+        unique.append(x)
+        helperset.add(x)
+
+====PYTHON=====
+import itertools
+items = [1, 2, 3, 'a', 'b', 'c', 2, 3, 4, 'b', 'c', 'd']
+unique = [k for k,g in itertools.groupby(sorted(items))]
+
+====PYTHON=====
+items = [1, 2, 3, 'a', 'b', 'c', 2, 3, 4, 'b', 'c', 'd']
+unique = []
+for x in items:
+    if x not in unique:
+        unique.append(x)
+
+====PYTHON=====
+ 
+from collections import OrderedDict as od
+ 
+print(list(od.fromkeys([1, 2, 3, 'a', 'b', 'c', 2, 3, 4, 'b', 'c', 'd']).keys()))
+ 
+
+====PYTHON=====
+from itertools import (groupby)
+ 
+ 
+# nubByKey :: (a -> b) -> [a] -> [a]
+def nubByKey(k, xs):
+    return list(list(v)[0] for _, v in groupby(sorted(xs, key=k), key=k))
+ 
+ 
+xs = [
+    'apple', 'apple',
+    'ampersand', 'aPPLE', 'Apple',
+    'orange', 'ORANGE', 'Orange', 'orange', 'apple'
+]
+for k in [
+    id,                      # default case sensitive uniqueness
+    lambda x: x.lower(),     # case-insensitive uniqueness
+    lambda x: x[0],          # unique first character (case-sensitive)
+    lambda x: x[0].lower(),  # unique first character (case-insensitive)
+]:
+    print (
+        nubByKey(k, xs)
+    )
+
+====PYTHON=====
+# nubByEq :: (a -> a -> Bool) -> [a] -> [a]
+def nubByEq(eq, xs):
+    def go(yys, xxs):
+        if yys:
+            y = yys[0]
+            ys = yys[1:]
+            return go(ys, xxs) if (
+                elemBy(eq, y, xxs)
+            ) else (
+                [y] + go(ys, [y] + xxs)
+            )
+        else:
+            return []
+    return go(xs, [])
+ 
+ 
+# elemBy :: (a -> a -> Bool) -> a -> [a] -> Bool
+def elemBy(eq, x, xs):
+    if xs:
+        return eq(x, xs[0]) or elemBy(eq, x, xs[1:])
+    else:
+        return False
+ 
+ 
+xs = [
+    'apple', 'apple',
+    'ampersand', 'aPPLE', 'Apple',
+    'orange', 'ORANGE', 'Orange', 'orange', 'apple'
+]
+for eq in [
+    lambda a, b: a == b,                   # default case sensitive uniqueness
+    lambda a, b: a.lower() == b.lower(),   # case-insensitive uniqueness
+    lambda a, b: a[0] == b[0],             # unique first char (case-sensitive)
+    lambda a, b: a[0].lower() == b[0].lower(),   # unique first char (any case)
+]:
+    print (
+        nubByEq(eq, xs)
+    )
+
+====PYTHON=====
+# nubBy :: (a -> a -> Bool) -> [a] -> [a]
+def nubBy(p, xs):
+    def go(xs):
+        if xs:
+            x = xs[0]
+            return [x] + go(
+                list(filter(
+                    lambda y: not p(x, y),
+                    xs[1:]
+                ))
+            )
+        else:
+            return []
+    return go(xs)
+
+====PYTHON=====
+def (dedup l)
+  let exists (table)
+    collect+each x l
+      unless exists.x
+        yield x
+      exists.x <- 1
+

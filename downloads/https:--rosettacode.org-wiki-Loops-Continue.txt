@@ -1,0 +1,35 @@
+====RUBY=====
+for i in 1..10 do
+   print i
+   if i % 5 == 0 then
+      puts
+      next
+   end
+   print ', '
+end
+
+====RUBY=====
+(1..10).each do |i| ...
+1.upto(10) do |i| ...
+10.times do |n| i=n+1; ...
+
+====RUBY=====
+(1..10).each_slice(5){|ar| puts ar.join(", ")}
+
+====RUBY=====
+for i in (1..10) {
+    print i
+    if (i %% 5) {
+        print "\n"
+        next
+    }
+    print ', '
+}
+
+====PYTHON=====
+for i in xrange(1,11):
+    if i % 5 == 0:
+        print i
+        continue
+    print i, ",",
+

@@ -1,0 +1,28 @@
+====RUBY=====
+module FiveDogs
+  dog = "Benjamin"
+  dOg = "Dogley"
+  doG = "Fido"
+  Dog = "Samba"   # this constant is FiveDogs::Dog
+  DOG = "Bernie"  # this constant is FiveDogs::DOG
+ 
+  names = [dog, dOg, doG, Dog, DOG]
+  names.uniq!
+  puts "There are %d dogs named %s." % [names.length, names.join(", ")]
+  puts
+  puts "The local variables are %s." % local_variables.join(", ")
+  puts "The constants are %s." % constants.join(", ")
+end
+
+====RUBY=====
+var dog = 'Benjamin';
+var Dog = 'Samba';
+var DOG = 'Bernie';
+say "The three dogs are named #{dog}, #{Dog}, and #{DOG}.";
+
+====PYTHON=====
+>>> dog = 'Benjamin'; Dog = 'Samba'; DOG = 'Bernie'
+>>> print ('The three dogs are named ',dog,', ',Dog,', and ',DOG)
+The three dogs are named  Benjamin ,  Samba , and  Bernie
+>>> 
+

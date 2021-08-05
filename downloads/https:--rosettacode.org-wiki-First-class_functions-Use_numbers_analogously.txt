@@ -1,0 +1,62 @@
+====RUBY=====
+multiplier = proc {|n1, n2| proc {|m| n1 * n2 * m}}
+numlist = [x=2, y=4, x+y]
+invlist = [0.5, 0.25, 1.0/(x+y)]
+p numlist.zip(invlist).map {|n, invn| multiplier[invn, n][0.5]}
+# => [0.5, 0.5, 0.5]
+
+====RUBY=====
+func multiplier(n1, n2) {
+    func (n3) {
+        n1 * n2 * n3
+    }
+}
+ 
+var x  = 2.0
+var xi = 0.5
+var y  = 4.0
+var yi = 0.25
+var z  = (x + y)
+var zi = (1 / (x + y))
+ 
+var numbers = [x, y, z]
+var inverses = [xi, yi, zi]
+ 
+for f,g (numbers ~Z inverses) {
+    say multiplier(f, g)(0.5)
+}
+
+====PYTHON=====
+IDLE 2.6.1      
+>>> # Number literals
+>>> x,xi, y,yi = 2.0,0.5, 4.0,0.25
+>>> # Numbers from calculation
+>>> z  = x + y
+>>> zi = 1.0 / (x + y)
+>>> # The multiplier function is similar to 'compose' but with numbers
+>>> multiplier = lambda n1, n2: (lambda m: n1 * n2 * m)
+>>> # Numbers as members of collections
+>>> numlist = [x, y, z]
+>>> numlisti = [xi, yi, zi]
+>>> # Apply numbers from list
+>>> [multiplier(inversen, n)(.5) for n, inversen in zip(numlist, numlisti)]
+[0.5, 0.5, 0.5]
+>>>
+
+====PYTHON=====
+>>> # Some built in functions and their inverses
+>>> from math import sin, cos, acos, asin
+>>> # Add a user defined function and its inverse
+>>> cube = lambda x: x * x * x
+>>> croot = lambda x: x ** (1/3.0)
+>>> # First class functions allow run-time creation of functions from functions
+>>> # return function compose(f,g)(x) == f(g(x))
+>>> compose = lambda f1, f2: ( lambda x: f1(f2(x)) )
+>>> # first class functions should be able to be members of collection types
+>>> funclist = [sin, cos, cube]
+>>> funclisti = [asin, acos, croot]
+>>> # Apply functions from lists as easily as integers
+>>> [compose(inversef, f)(.5) for f, inversef in zip(funclist, funclisti)]
+[0.5, 0.4999999999999999, 0.5]
+>>>
+

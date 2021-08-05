@@ -1,0 +1,33 @@
+====RUBY=====
+var f = FIFO();
+say f.empty;        # true
+f.push('foo');
+f.push('bar', 'baz');
+say f.pop;          # foo
+say f.empty;        # false
+ 
+var g = FIFO('xxx', 'yyy');
+say g.pop;          # xxx
+say f.pop;          # bar
+
+====PYTHON=====
+let my_queue = Queue()
+ 
+my_queue.push!('foo')
+my_queue.push!('bar')
+my_queue.push!('baz')
+ 
+print my_queue.pop!() # 'foo'
+print my_queue.pop!() # 'bar'
+print my_queue.pop!() # 'baz'
+
+====PYTHON=====
+import Queue
+my_queue = Queue.Queue()
+my_queue.put("foo")
+my_queue.put("bar")
+my_queue.put("baz")
+print my_queue.get()  # foo
+print my_queue.get()  # bar
+print my_queue.get()  # baz
+

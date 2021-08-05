@@ -1,0 +1,55 @@
+====RUBY=====
+for i in collection do
+  puts i
+end
+
+====RUBY=====
+collection.each do |i|
+  puts i
+end
+
+====RUBY=====
+foreach [1,2,3] { |i|
+    say i
+}
+
+====RUBY=====
+for i in [1,2,3] {
+    say i
+}
+
+====RUBY=====
+[1,2,3].each { |i|
+    say i
+}
+
+====PYTHON=====
+for i in collection:
+   print i
+
+====PYTHON=====
+lines = words = characters = 0
+f = open('somefile','r')
+for eachline in f:
+    lines += 1
+    for eachword in eachline.split():
+        words += 1
+        for eachchar in eachword:
+            characters += 1
+ 
+print lines, words, characters
+
+====PYTHON=====
+d = {3: "Earth", 1: "Mercury", 4: "Mars", 2: "Venus"}
+for k in sorted(d):
+    print("%i: %s" % (k, d[k]))
+ 
+d = {"London": "United Kingdom", "Berlin": "Germany", "Rome": "Italy", "Paris": "France"}
+for k in sorted(d):
+    print("%s: %s" % (k, d[k]))
+
+====PYTHON=====
+d = {"fortytwo": 42, 3.14159: "pi", 23: "twentythree", "zero": 0, 13: "thirteen"}
+for k in sorted(d):
+    print("%s: %s" % (k, d[k]))
+

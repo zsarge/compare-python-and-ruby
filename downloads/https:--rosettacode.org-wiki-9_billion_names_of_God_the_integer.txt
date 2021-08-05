@@ -1,0 +1,167 @@
+====RUBY=====
+def g(n, g)
+  return 1 unless 1 < g && g < n-1
+  (2..g).reduce(1){ |res, q| res + (q > n-g ? 0 : g(n-g, q)) }
+end
+ 
+(1..25).each { |n| puts (1..n).map { |g| "%4s" % g(n, g) }.join }
+
+====RUBY=====
+ 
+# Generate IPF triangle
+# Nigel_Galloway: May 1st., 2013.
+def g(n,g)
+  return 1 unless 1 < g and g < n-1
+  (2..g).inject(1){|res,q| res + (q > n-g ? 0 : g(n-g,q))}
+end
+ 
+(1..25).each {|n|
+  puts (1..n).map {|g| "%4s" % g(n,g)}.join
+}
+ 
+
+====RUBY=====
+ 
+# Find large values of IPF
+# Nigel_Galloway: May 1st., 2013.
+N = 12345
+@ng = []
+@ipn1 = []
+@ipn2 = []
+def g(n,g)
+  t = n-g-2
+  return 1 if n<4 or t<0
+  return @ng[g-2][n-4] unless n/2<g
+  return @ipn1[t]
+end
+@ng[0] = []
+(4..N).each {|q| @ng[0][q-4] = 1 + g(q-2,2)}
+@ipn1[0] = @ng[0][0]
+@ipn2[0] = @ng[0][N-4]
+(1...(N/2-1)).each {|n|
+  @ng[n] = []
+  (n*2+4..N).each {|q| @ng[n][q-4] = g(q-1,n+1) + g(q-n-2,n+2)}
+  @ipn1[n] = @ng[n][n*2]
+  @ipn2[n] = @ng[n][N-4]
+  @ng[n-1] = nil
+}
+@ipn2.pop if N.even?
+ 
+puts "G(23) = #{@ipn1[21]}"
+puts "G(123) = #{@ipn1[121]}"
+puts "G(1234) = #{@ipn1[1232]}"
+n = 3 + @ipn1.inject(:+) + @ipn2.inject(:+)
+puts "G(12345) = #{n}"
+ 
+
+====RUBY=====
+var cache = [[1]]
+ 
+func cumu (n) {
+    for l (cache.len .. n) {
+        var r = [0]
+        for i (1..l) {
+            r << (r[-1] + cache[l-i][min(i, l-i)])
+        }
+        cache << r
+    }
+    cache[n]
+}
+ 
+func row (n) {
+    var r = cumu(n)
+    n.of {|i| r[i+1] - r[i] }
+}
+ 
+say "rows:"
+for i (1..15) {
+    "%2s: %s\n".printf(i, row(i))
+}
+ 
+say "\nsums:"
+ 
+for i in [23, 123, 1234, 12345] {
+    "%2s : %4s\n".printf(i, cumu(i)[-1])
+}
+
+====PYTHON=====
+cache = [[1]]
+def cumu(n):
+    for l in range(len(cache), n+1):
+        r = [0]
+        for x in range(1, l+1):
+            r.append(r[-1] + cache[l-x][min(x, l-x)])
+        cache.append(r)
+    return cache[n]
+ 
+def row(n):
+    r = cumu(n)
+    return [r[i+1] - r[i] for i in range(n)]
+ 
+print "rows:"
+for x in range(1, 11): print "%2d:"%x, row(x)
+ 
+ 
+print "\nsums:"
+for x in [23, 123, 1234, 12345]: print x, cumu(x)[-1]
+
+====PYTHON=====
+def partitions(N):
+    diffs,k,s = [],1,1
+    while k * (3*k-1) < 2*N:
+        diffs.extend([(2*k - 1, s), (k, s)])
+	k,s = k+1,-s
+ 
+    out = [1] + [0]*N
+    for p in range(0, N+1):
+        x = out[p]
+	for (o,s) in diffs:
+           p += o
+           if p > N: break
+           out[p] += x*s
+ 
+    return out
+ 
+p = partitions(12345)
+for x in [23,123,1234,12345]: print x, p[x]
+
+====PYTHON=====
+def partitions(n):
+    partitions.p.append(0)
+ 
+    for k in xrange(1, n + 1):
+        d = n - k * (3 * k - 1) // 2
+        if d < 0:
+            break
+ 
+        if k & 1:
+            partitions.p[n] += partitions.p[d]
+        else:
+            partitions.p[n] -= partitions.p[d]
+ 
+        d -= k
+        if d < 0:
+            break
+ 
+        if k & 1:
+            partitions.p[n] += partitions.p[d]
+        else:
+            partitions.p[n] -= partitions.p[d]
+ 
+    return partitions.p[-1]
+ 
+partitions.p = [1]
+ 
+def main():
+    ns = set([23, 123, 1234, 12345])
+    max_ns = max(ns)
+ 
+    for i in xrange(1, max_ns + 1):
+        if i > max_ns:
+            break
+        p = partitions(i)
+        if i in ns:
+            print "%6d: %s" % (i, p)
+ 
+main()
+

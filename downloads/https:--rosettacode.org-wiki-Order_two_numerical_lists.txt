@@ -1,0 +1,35 @@
+====RUBY=====
+>> ([1,2,1,3,2] <=> [1,2,0,4,4,0,0,0]) < 0
+=> false
+
+====RUBY=====
+func ordered(a, b) {
+    (a <=> b) < 0
+}
+ 
+for p in [
+    Pair([1,2,4], [1,2,4]),
+    Pair([1,2,4], [1,2]  ),
+    Pair([1,2],   [1,2,4]),
+] {
+    var a = p.first
+    var b = p.second
+    var before = ordered(a, b)
+    say "#{a} comes before #{b} : #{before}"
+}
+
+====PYTHON=====
+>>> [1,2,1,3,2] < [1,2,0,4,4,0,0,0]
+False
+
+====PYTHON=====
+def (a < b) :case (or list?.a list?.b)
+  if not.b
+       nil
+     not.a
+       b
+     (car.a = car.b)
+       (cdr.a < cdr.b)
+     :else
+       (car.a < car.b)
+

@@ -1,0 +1,96 @@
+====RUBY=====
+class Array
+  def insertionsort!
+    1.upto(length - 1) do |i|
+      value = self[i]
+      j = i - 1
+      while j >= 0 and self[j] > value
+        self[j+1] = self[j]
+        j -= 1
+      end
+      self[j+1] = value
+    end
+    self
+  end
+end
+ary = [7,6,5,9,8,4,3,1,2,0]
+p ary.insertionsort!
+# => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+====RUBY=====
+class Array
+  def insertionsort!
+    1.upto(length - 1) do |i|
+      value = delete_at i
+      j = i - 1
+      j -= 1 while j >= 0 && value < self[j]
+      insert(j + 1, value)
+    end
+    self
+  end
+end
+ 
+ary = [7,6,5,9,8,4,3,1,2,0]
+p ary.insertionsort!
+# => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+====RUBY=====
+class Array {
+    method insertion_sort {
+        { |i|
+            var j = i-1
+            var k = self[i]
+            while ((j >= 0) && (k < self[j])) {
+                self[j+1] = self[j]
+                j--
+            }
+            self[j+1] = k
+        } << 1..self.end
+        return self
+    }
+}
+ 
+var a = 10.of { 100.irand }
+say a.insertion_sort
+
+====PYTHON=====
+def insertion_sort(L):
+    for i in xrange(1, len(L)):
+        j = i-1 
+        key = L[i]
+        while j >= 0 and L[j] > key:
+           L[j+1] = L[j]
+           j -= 1
+        L[j+1] = key
+
+====PYTHON=====
+def insertion_sort(L):
+    for i, value in enumerate(L):
+        for j in range(i - 1, -1, -1):
+            if L[j] > value:
+                L[j + 1] = L[j]
+                L[j] = value
+
+====PYTHON=====
+def insertion_sort_bin(seq):
+    for i in range(1, len(seq)):
+        key = seq[i]
+        # invariant: ``seq[:i]`` is sorted        
+        # find the least `low' such that ``seq[low]`` is not less then `key'.
+        #   Binary search in sorted sequence ``seq[low:up]``:
+        low, up = 0, i
+        while up > low:
+            middle = (low + up) // 2
+            if seq[middle] < key:
+                low = middle + 1              
+            else:
+                up = middle
+        # insert key at position ``low``
+        seq[:] = seq[:low] + [key] + seq[low:i] + seq[i + 1:]
+
+====PYTHON=====
+import bisect
+def insertion_sort_bin(seq):
+    for i in range(1, len(seq)):
+        bisect.insort(seq, seq.pop(i), 0, i)
+

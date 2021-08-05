@@ -1,0 +1,376 @@
+====RUBY=====
+class Array
+  def binary_search(val, low = 0, high = (size - 1))
+    return nil if high < low
+    #mid = (low + high) >> 1
+    mid = low + ((high - low) >> 1)
+    case val <=> self[mid]
+      when -1
+        binary_search(val, low, mid - 1)
+      when 1
+        binary_search(val, mid + 1, high)
+      else mid
+    end
+  end
+end
+ 
+ary = [0,1,4,5,6,7,8,9,12,26,45,67,78,90,98,123,211,234,456,769,865,2345,3215,14345,24324]
+ 
+[0, 42, 45, 24324, 99999].each do |val|
+  i = ary.binary_search(val)
+  if i
+    puts "found #{val} at index #{i}: #{ary[i]}"
+  else
+    puts "#{val} not found in array"
+  end
+end
+
+====RUBY=====
+class Array
+  def binary_search_iterative(val)
+    low, high = 0, size - 1
+    while low <= high
+      #mid = (low + high) >> 1
+      mid = low + ((high - low) >> 1)
+      case val <=> self[mid]
+        when 1
+          low = mid + 1
+        when -1
+          high = mid - 1
+        else
+          return mid
+      end
+    end
+    nil
+  end
+end
+ 
+ary = [0,1,4,5,6,7,8,9,12,26,45,67,78,90,98,123,211,234,456,769,865,2345,3215,14345,24324]
+ 
+[0, 42, 45, 24324, 99999].each do |val|
+  i = ary.binary_search_iterative(val)
+  if i
+    puts "found #{val} at index #{i}: #{ary[i]}"
+  else
+    puts "#{val} not found in array"
+  end
+end
+
+====RUBY=====
+class Array
+  def binary_search(val, low=0, high=(length - 1))
+    return nil if high < low
+    mid = (low + high) >> 1
+    case val <=> self[mid]
+      when -1
+        binary_search(val, low, mid - 1)
+      when 1
+        binary_search(val, mid + 1, high)
+      else mid
+    end
+  end
+end
+ 
+ary = [0,1,4,5,6,7,8,9,12,26,45,67,78,90,98,123,211,234,456,769,865,2345,3215,14345,24324]
+ 
+[0,42,45,24324,99999].each do |val|
+  i = ary.binary_search(val)
+  if i
+    puts "found #{val} at index #{i}: #{ary[i]}"
+  else
+    puts "#{val} not found in array"
+  end
+end
+
+====RUBY=====
+class Array
+  def binary_search_iterative(val)
+    low, high = 0, length - 1
+    while low <= high
+      mid = (low + high) >> 1
+      case val <=> self[mid]
+        when 1
+          low = mid + 1
+        when -1
+          high = mid - 1
+        else
+          return mid
+      end
+    end
+    nil
+  end
+end
+ 
+ary = [0,1,4,5,6,7,8,9,12,26,45,67,78,90,98,123,211,234,456,769,865,2345,3215,14345,24324]
+ 
+[0,42,45,24324,99999].each do |val|
+  i = ary.binary_search_iterative(val)
+  if i
+    puts "found #{val} at index #{i}: #{ary[i]}"
+  else
+    puts "#{val} not found in array"
+  end
+end
+
+====RUBY=====
+haystack = [0,1,4,5,6,7,8,9,12,26,45,67,78,90,98,123,211,234,456,769,865,2345,3215,14345,24324]
+needles = [0,42,45,24324,99999]
+ 
+needles.select{|needle| haystack.bsearch{|hay| needle <=> hay} } # => [0, 45, 24324]
+ 
+
+====RUBY=====
+func binary_search(a, i) {
+ 
+    var l = 0
+    var h = a.end
+ 
+    while (l <= h) {
+        var mid = (h+l / 2 -> int)
+        a[mid] > i && (h = mid-1; next)
+        a[mid] < i && (l = mid+1; next)
+        return mid
+    }
+ 
+    return -1
+}
+
+====RUBY=====
+func binary_search(arr, value, low=0, high=arr.end) {
+    high < low && return -1
+    var middle = ((high+low) // 2)
+ 
+    given (arr[middle]) { |item|
+        case (value < item) {
+            binary_search(arr, value, low, middle-1)
+        }
+        case (value > item) {
+            binary_search(arr, value, middle+1, high)
+        }
+        case (value == item) {
+            middle
+        }
+    }
+}
+
+====RUBY=====
+say binary_search([34, 42, 55, 778], 55);       #=> 2
+
+====PYTHON=====
+def binary_search(l, value):
+    low = 0
+    high = len(l)-1
+    while low <= high: 
+        mid = (low+high)//2
+        if l[mid] > value: high = mid-1
+        elif l[mid] < value: low = mid+1
+        else: return mid
+    return -1
+
+====PYTHON=====
+# findIndexBinary :: (a -> Ordering) -> [a] -> Maybe Int
+def findIndexBinary(p):
+    def isFound(bounds):
+        (lo, hi) = bounds
+        return lo > hi or 0 == hi
+ 
+    def half(xs):
+        def choice(lh):
+            (lo, hi) = lh
+            mid = (lo + hi) // 2
+            cmpr = p(xs[mid])
+            return (lo, mid - 1) if cmpr < 0 else (
+                (1 + mid, hi) if cmpr > 0 else (
+                    mid, 0
+                )
+            )
+        return lambda bounds: choice(bounds)
+ 
+    def go(xs):
+        (lo, hi) = until(isFound)(
+            half(xs)
+        )((0, len(xs) - 1)) if xs else None
+        return None if 0 != hi else lo
+ 
+    return lambda xs: go(xs)
+ 
+ 
+# COMPARISON CONSTRUCTORS ---------------------------------
+ 
+# compare :: a -> a -> Ordering
+def compare(a):
+    '''Simple comparison of x and y -> LT|EQ|GT'''
+    return lambda b: -1 if a < b else (1 if a > b else 0)
+ 
+ 
+# byKV :: (a -> b) -> a -> a -> Ordering
+def byKV(f):
+    '''Property accessor function -> target value -> x -> LT|EQ|GT'''
+    def go(v, x):
+        fx = f(x)
+        return -1 if v < fx else 1 if v > fx else 0
+    return lambda v: lambda x: go(v, x)
+ 
+ 
+# TESTS ---------------------------------------------------
+def main():
+ 
+    # BINARY SEARCH FOR WORD IN AZ-SORTED LIST
+ 
+    mb1 = findIndexBinary(compare('iota'))(
+        # Sorted AZ
+        ['alpha', 'beta', 'delta', 'epsilon', 'eta', 'gamma', 'iota',
+         'kappa', 'lambda', 'mu', 'theta', 'zeta']
+    )
+ 
+    print (
+        'Not found' if None is mb1 else (
+            'Word found at index ' + str(mb1)
+        )
+    )
+ 
+    # BINARY SEARCH FOR WORD OF GIVEN LENGTH (IN WORD-LENGTH SORTED LIST)
+ 
+    mb2 = findIndexBinary(byKV(len)(7))(
+        # Sorted by rising length
+        ['mu', 'eta', 'beta', 'iota', 'zeta', 'alpha', 'delta', 'gamma',
+         'kappa', 'theta', 'lambda', 'epsilon']
+    )
+ 
+    print (
+        'Not found' if None is mb2 else (
+            'Word of given length found at index ' + str(mb2)
+        )
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+if __name__ == '__main__':
+    main()
+ 
+
+====PYTHON=====
+def binary_search(l, value, low = 0, high = -1):
+    if not l: return -1
+    if(high == -1): high = len(l)-1
+    if low >= high:
+        if l[low] == value: return low
+        else: return -1
+    mid = (low+high)//2
+    if l[mid] > value: return binary_search(l, value, low, mid-1)
+    elif l[mid] < value: return binary_search(l, value, mid+1, high)
+    else: return mid
+
+====PYTHON=====
+# findIndexBinary_ :: (a -> Ordering) -> [a] -> Maybe Int
+def findIndexBinary_(p):
+    def go(xs):
+        def bin(lo, hi):
+            if hi < lo:
+                return None
+            else:
+                mid = (lo + hi) // 2
+                cmpr = p(xs[mid])
+                return bin(lo, mid - 1) if -1 == cmpr else (
+                    bin(mid + 1, hi) if 1 == cmpr else (
+                        mid
+                    )
+                )
+        n = len(xs)
+        return bin(0, n - 1) if 0 < n else None
+    return lambda xs: go(xs)
+ 
+ 
+# COMPARISON CONSTRUCTORS ---------------------------------
+ 
+# compare :: a -> a -> Ordering
+def compare(a):
+    '''Simple comparison of x and y -> LT|EQ|GT'''
+    return lambda b: -1 if a < b else (1 if a > b else 0)
+ 
+ 
+# byKV :: (a -> b) -> a -> a -> Ordering
+def byKV(f):
+    '''Property accessor function -> target value -> x -> LT|EQ|GT'''
+    def go(v, x):
+        fx = f(x)
+        return -1 if v < fx else 1 if v > fx else 0
+    return lambda v: lambda x: go(v, x)
+ 
+ 
+# TESTS ---------------------------------------------------
+ 
+ 
+if __name__ == '__main__':
+ 
+    # BINARY SEARCH FOR WORD IN AZ-SORTED LIST
+ 
+    mb1 = findIndexBinary_(compare('mu'))(
+        # Sorted AZ
+        ['alpha', 'beta', 'delta', 'epsilon', 'eta', 'gamma', 'iota',
+         'kappa', 'lambda', 'mu', 'theta', 'zeta']
+    )
+ 
+    print (
+        'Not found' if None is mb1 else (
+            'Word found at index ' + str(mb1)
+        )
+    )
+ 
+    # BINARY SEARCH FOR WORD OF GIVEN LENGTH (IN WORD-LENGTH SORTED LIST)
+ 
+    mb2 = findIndexBinary_(byKV(len)(6))(
+        # Sorted by rising length
+        ['mu', 'eta', 'beta', 'iota', 'zeta', 'alpha', 'delta', 'gamma',
+         'kappa', 'theta', 'lambda', 'epsilon']
+    )
+ 
+    print (
+        'Not found' if None is mb2 else (
+            'Word of given length found at index ' + str(mb2)
+        )
+    )
+
+====PYTHON=====
+index = bisect.bisect_left(list, item) # leftmost insertion point
+index = bisect.bisect_right(list, item) # rightmost insertion point
+index = bisect.bisect(list, item) # same as bisect_right
+ 
+# same as above but actually insert the item into the list at the given place:
+bisect.insort_left(list, item)
+bisect.insort_right(list, item)
+bisect.insort(list, item)
+
+====PYTHON=====
+from bisect import bisect_left
+ 
+def binary_search(a, x, lo=0, hi=None):   # can't use a to specify default for hi
+    hi = hi if hi is not None else len(a) # hi defaults to len(a)   
+    pos = bisect_left(a,x,lo,hi)          # find insertion position
+    return (pos if pos != hi and a[pos] == x else -1) # don't walk off the end
+
+====PYTHON=====
+def binary_search(l, value):
+    low = 0
+    high = len(l)-1
+    while low + 1 < high:
+        mid = (low+high)//2
+        if l[mid] > value:
+            high = mid
+        elif l[mid] < value:
+            low = mid
+        else:
+            return mid
+    return high if abs(l[high] - value) < abs(l[low] - value) else low
+

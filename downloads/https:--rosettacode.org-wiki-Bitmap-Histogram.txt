@@ -1,0 +1,87 @@
+====RUBY=====
+class Pixmap
+  def histogram
+    histogram = Hash.new(0)
+    @height.times do |y|
+      @width.times do |x|
+        histogram[self[x,y].luminosity] += 1
+      end
+    end
+    histogram 
+  end
+ 
+  def to_blackandwhite
+    hist = histogram
+ 
+    # find the median luminosity
+    median = nil
+    sum = 0
+    hist.keys.sort.each do |lum|
+      sum += hist[lum]
+      if sum > @height * @width / 2
+        median = lum
+        break
+      end
+    end
+ 
+    # create the black and white image
+    bw = self.class.new(@width, @height)
+    @height.times do |y|
+      @width.times do |x|
+        bw[x,y] = self[x,y].luminosity < median ? RGBColour::BLACK : RGBColour::WHITE
+      end
+    end
+    bw
+  end
+ 
+  def save_as_blackandwhite(filename)
+    to_blackandwhite.save(filename)
+  end
+end
+ 
+Pixmap.open('file.ppm').save_as_blackandwhite('file_bw.ppm')
+
+====PYTHON=====
+from PIL import Image
+ 
+# Open the image
+image = Image.open("lena.jpg")
+# Get the width and height of the image
+width, height = image.size
+# Calculate the amount of pixels
+amount = width * height
+ 
+# Total amount of greyscale
+total = 0
+# B/W image
+bw_image = Image.new('L', (width, height), 0)
+# Bitmap image
+bm_image = Image.new('1', (width, height), 0)
+ 
+for h in range(0, height):
+    for w in range(0, width):
+        r, g, b = image.getpixel((w, h))
+ 
+        greyscale = int((r + g + b) / 3)
+        total += greyscale
+ 
+        bw_image.putpixel((w, h), gray_scale)
+ 
+# The average greyscale
+avg = total / amount
+ 
+black = 0
+white = 1
+ 
+for h in range(0, height):
+    for w in range(0, width):
+        v = bw_image.getpixel((w, h))
+ 
+        if v >= avg:
+            bm_image.putpixel((w, h), white)
+        else:
+            bm_image.putpixel((w, h), black)
+ 
+bw_image.show()
+bm_image.show()
+

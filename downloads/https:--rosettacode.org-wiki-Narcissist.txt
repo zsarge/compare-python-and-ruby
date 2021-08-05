@@ -1,0 +1,22 @@
+====RUBY=====
+s = "s = %s%s%s; puts(gets.chomp == (s %% [34.chr, s, 34.chr]) ? 'accept' : 'reject')"; puts(gets.chomp == (s % [34.chr, s, 34.chr]) ? 'accept' : 'reject')
+
+====RUBY=====
+say (File.new(__FILE__).open_r.slurp == ARGF.slurp);
+
+====PYTHON=====
+ 
+import sys
+with open(sys.argv[0]) as quine:
+    code = raw_input("Enter source code: ")
+    if code == quine.read():
+        print("Accept")
+    else:
+        print("Reject")
+ 
+
+====PYTHON=====
+ 
+_='_=%r;print (_%%_==input())';print (_%_==input())
+ 
+

@@ -1,0 +1,165 @@
+====RUBY=====
+require "big"
+include Math
+ 
+struct Int
+ 
+  def permutation(k)
+    (self-k+1..self).product(1.to_big_i)
+  end
+ 
+  def combination(k)
+    self.permutation(k) / (1..k).product(1.to_big_i)
+  end
+ 
+  def big_permutation(k)
+    exp(lgamma_plus(self) - lgamma_plus(self-k)) 
+  end
+ 
+  def big_combination(k)
+    exp( lgamma_plus(self) - lgamma_plus(self - k) - lgamma_plus(k))
+  end
+ 
+  private def lgamma_plus(n)
+    lgamma(n+1)  #lgamma is the natural log of gamma
+  end
+ 
+end
+ 
+p 12.permutation(9)               #=> 79833600
+p 12.big_permutation(9)           #=> 79833600.00000021
+p 60.combination(53)              #=> 386206920
+p 145.big_permutation(133)        #=> 1.6801459655817956e+243
+p 900.big_combination(450)        #=> 2.247471882064647e+269
+p 1000.big_combination(969)       #=> 7.602322407770517e+58
+p 15000.big_permutation(73)       #=> 6.004137561717704e+304
+#That's about the maximum of Float:
+p 15000.big_permutation(74)       #=> Infinity
+#Fixnum has no maximum:
+p 15000.permutation(74)           #=> 896237613852967826239917238565433149353074416025197784301593335243699358040738127950872384197159884905490054194835376498534786047382445592358843238688903318467070575184552953997615178973027752714539513893159815472948987921587671399790410958903188816684444202526779550201576117111844818124800000000000000000000
+ 
+ 
+
+====RUBY=====
+include Math
+ 
+class Integer
+ 
+  def permutation(k)
+    (self-k+1 .. self).inject( :*)
+  end
+ 
+  def combination(k)
+    self.permutation(k) / (1 .. k).inject( :*)
+  end
+ 
+  def big_permutation(k)
+    exp( lgamma_plus(self) - lgamma_plus(self -k)) 
+  end
+ 
+  def big_combination(k)
+    exp( lgamma_plus(self) - lgamma_plus(self - k) - lgamma_plus(k))
+  end
+ 
+  private
+  def lgamma_plus(n)
+    lgamma(n+1)[0]  #lgamma is the natural log of gamma
+  end
+ 
+end
+ 
+p 12.permutation(9)               #=> 79833600
+p 12.big_permutation(9)           #=> 79833600.00000021
+p 60.combination(53)              #=> 386206920
+p 145.big_permutation(133)        #=> 1.6801459655817956e+243
+p 900.big_combination(450)        #=> 2.247471882064647e+269
+p 1000.big_combination(969)       #=> 7.602322407770517e+58
+p 15000.big_permutation(73)       #=> 6.004137561717704e+304
+#That's about the maximum of Float:
+p 15000.big_permutation(74)       #=> Infinity
+#Fixnum has no maximum:
+p 15000.permutation(74)           #=> 896237613852967826239917238565433149353074416025197784301593335243699358040738127950872384197159884905490054194835376498534786047382445592358843238688903318467070575184552953997615178973027752714539513893159815472948987921587671399790410958903188816684444202526779550201576117111844818124800000000000000000000
+ 
+
+====RUBY=====
+(1..60).to_a.combination(53).size  #=> 386206920
+
+====RUBY=====
+func P(n, k) { n! / ((n-k)!) }
+func C(n, k) { binomial(n, k) }
+ 
+class Logarithm(value) {
+    method to_s {
+        var e = int(value/10.log)
+        "%.8fE%+d" % (exp(value - e*10.log), e)
+    }
+}
+ 
+func lstirling(n) {
+    n < 10 ? (lstirling(n+1) - log(n+1))
+           : (0.5*log(2*Num.pi*n) + n*log(n/Num.e + 1/(12*Num.e*n)))
+}
+ 
+func P_approx(n, k) {
+    Logarithm((lstirling(n) - lstirling(n -k)))
+}
+ 
+func C_approx(n, k) {
+    Logarithm((lstirling(n) - lstirling(n -k) - lstirling(k)))
+}
+ 
+say "=> Exact results:"
+for n (1..12) {
+    var p = n//3
+    say "P(#{n}, #{p}) = #{P(n, p)}"
+}
+ 
+for n (10..60 `by` 10) {
+    var p = n//3
+    say "C(#{n}, #{p}) = #{C(n, p)}"
+}
+ 
+say '';
+say "=> Floating point approximations:"
+for n ([5, 50, 500, 1000, 5000, 15000]) {
+    var p = n//3
+    say "P(#{n}, #{p}) = #{P_approx(n, p)}"
+}
+ 
+for n (100..1000 `by` 100) {
+    var p = n//3
+    say "C(#{n}, #{p}) = #{C_approx(n, p)}"
+}
+
+====PYTHON=====
+from __future__ import print_function
+ 
+from scipy.misc import factorial as fact
+from scipy.misc import comb
+ 
+def perm(N, k, exact=0):
+    return comb(N, k, exact) * fact(k, exact)
+ 
+exact=True
+print('Sample Perms 1..12')
+for N in range(1, 13):
+    k = max(N-2, 1)
+    print('%iP%i =' % (N, k), perm(N, k, exact), end=', ' if N % 5 else '\n')
+ 
+print('\n\nSample Combs 10..60')
+for N in range(10, 61, 10):
+    k = N-2
+    print('%iC%i =' % (N, k), comb(N, k, exact), end=', ' if N % 50 else '\n')
+ 
+exact=False
+print('\n\nSample Perms 5..1500 Using FP approximations')
+for N in [5, 15, 150, 1500, 15000]:
+    k = N-2
+    print('%iP%i =' % (N, k), perm(N, k, exact))
+ 
+print('\nSample Combs 100..1000 Using FP approximations')
+for N in range(100, 1001, 100):
+    k = N-2
+    print('%iC%i =' % (N, k), comb(N, k, exact))
+ 
+

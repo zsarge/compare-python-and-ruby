@@ -1,0 +1,53 @@
+====RUBY=====
+def f(x) x.abs ** 0.5 + 5 * x ** 3 end
+ 
+puts "Please enter 11 numbers:"
+nums = 11.times.map{ gets.to_f }
+ 
+nums.reverse_each do |n|
+  print "f(#{n}) = "
+  res = f(n)
+  puts res > 400 ? "Overflow!" : res
+end
+
+====RUBY=====
+var nums; do {
+    nums = Sys.readln("Please type 11 space-separated numbers: ").nums
+} while(nums.len != 11)
+ 
+nums.reverse.each { |n|
+    var r = (n.abs.sqrt + (5 * n**3));
+    say "#{n}\t#{ r > 400 ? 'Urk!' : r }";
+}
+
+====PYTHON=====
+Python 3.2.2 (default, Sep  4 2011, 09:51:08) [MSC v.1500 32 bit (Intel)] on win32
+Type "copyright", "credits" or "license()" for more information.
+>>> def f(x): return abs(x) ** 0.5 + 5 * x**3
+ 
+>>> print(', '.join('%s:%s' % (x, v if v<=400 else "TOO LARGE!")
+	           for x,v in ((y, f(float(y))) for y in input('\nnumbers: ').strip().split()[:11][::-1])))
+ 
+11 numbers: 1 2 3 4 5 6 7 8 9 10 11
+11:TOO LARGE!, 10:TOO LARGE!, 9:TOO LARGE!, 8:TOO LARGE!, 7:TOO LARGE!, 6:TOO LARGE!, 5:TOO LARGE!, 4:322.0, 3:136.73205080756887, 2:41.41421356237309, 1:6.0
+>>> 
+
+====PYTHON=====
+def f(x):
+    return abs(x) ** 0.5 + 5 * x**3
+ 
+def ask():
+    return [float(y)
+            for y in input('\n11 numbers: ').strip().split()[:11]]
+ 
+if __name__ == '__main__':
+    s = ask()
+    s.reverse()
+    for x in s:
+        result = f(x)
+        if result > 400:
+            print(' %s:%s' % (x, "TOO LARGE!"), end='')
+        else:
+            print(' %s:%s' % (x, result), end='')
+    print('')
+

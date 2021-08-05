@@ -1,0 +1,87 @@
+====RUBY=====
+def dec2bin(dec, precision=16)    # String => String
+  int, df = dec.split(".")
+  minus = int.delete!("-")
+  bin = (minus ? "-" : "") + int.to_i.to_s(2) + "."
+  if df and df.to_i>0
+    fp = ("."+df).to_f
+    digit = 1
+    until fp.zero? or digit>precision
+      fp *= 2
+      n = fp.to_i
+      bin << n.to_s
+      fp -= n
+      digit += 1
+    end
+  else
+    bin << "0"
+  end
+  bin
+end
+ 
+def bin2dec(bin)              # String => String
+  int, df = bin.split(".")
+  minus = int.delete!("-")
+  dec = (minus ? "-" : "") + int.to_i(2).to_s
+  if df
+    dec << (df.to_i(2) / 2.0**(df.size)).to_s[1..-1]
+  else
+    dec << ".0"
+  end
+end
+ 
+data = %w[23.34375 11.90625 -23.34375 -11.90625]
+data.each do |dec|
+  bin  = dec2bin(dec)
+  dec2 = bin2dec(bin)
+  puts "%10s => %12s =>%10s" % [dec, bin, dec2]
+end
+
+====RUBY=====
+func dec2bin(String n) {
+    Num(Num(n, 10).base(2), 10)
+}
+ 
+func bin2dec(String n) {
+    Num(Num(n, 10).base(10), 2)
+}
+ 
+with("23.34375")   { |s| say ("  #{s} => ", dec2bin(s)) }
+with("1011.11101") { |s| say (  "#{s} => ", bin2dec(s)) }
+
+====PYTHON=====
+hex2bin = dict('{:x} {:04b}'.format(x,x).split() for x in range(16))
+bin2hex = dict('{:b} {:x}'.format(x,x).split() for x in range(16))
+ 
+def float_dec2bin(d):
+    neg = False
+    if d < 0:
+        d = -d
+        neg = True
+    hx = float(d).hex()
+    p = hx.index('p')
+    bn = ''.join(hex2bin.get(char, char) for char in hx[2:p])
+    return (('-' if neg else '') + bn.strip('0') + hx[p:p+2]
+            + bin(int(hx[p+2:]))[2:])
+ 
+def float_bin2dec(bn):
+    neg = False
+    if bn[0] == '-':
+        bn = bn[1:]
+        neg = True
+    dp = bn.index('.')
+    extra0 = '0' * (4 - (dp % 4))
+    bn2 = extra0 + bn
+    dp = bn2.index('.')
+    p = bn2.index('p')
+    hx = ''.join(bin2hex.get(bn2[i:min(i+4, p)].lstrip('0'), bn2[i])
+                 for i in range(0, dp+1, 4))
+    bn3 = bn2[dp+1:p]
+    extra0 = '0' * (4 - (len(bn3) % 4))
+    bn4 = bn3 + extra0
+    hx += ''.join(bin2hex.get(bn4[i:i+4].lstrip('0'))
+                  for i in range(0, len(bn4), 4))
+    hx = (('-' if neg else '') + '0x' + hx + bn2[p:p+2]
+          + str(int('0b' + bn2[p+2:], 2)))
+    return float.fromhex(hx)
+

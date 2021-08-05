@@ -1,0 +1,166 @@
+====RUBY=====
+def nthroot(n, a, precision = 1e-5)
+  x = Float(a)
+  begin
+    prev = x
+    x = ((n - 1) * prev + a / (prev ** (n - 1))) / n
+  end while (prev - x).abs > precision
+  x 
+end
+ 
+p nthroot(5,34)  # => 2.02439745849989
+
+====RUBY=====
+func nthroot(n, a, precision=1e-5) {
+  var x    = 1.float
+  var prev = 0.float
+  while ((prev-x).abs > precision) {
+    prev = x;
+    x = (((n-1)*prev + a/(prev**(n-1))) / n)
+  }
+  return x
+}
+ 
+say nthroot(5, 34)  # => 2.024397458501034082599817835297912829678314204
+
+====RUBY=====
+func nthroot_fast(n, a, precision=1e-5) {
+  { a = nthroot(2, a, precision) } * int(n-1)
+  a ** (2**int(n-1) / n)
+}
+ 
+say nthroot_fast(5, 34, 1e-64)  # => 2.02439745849988504251081724554193741911462170107
+
+====PYTHON=====
+from decimal import Decimal, getcontext
+ 
+def nthroot (n, A, precision):
+    getcontext().prec = precision
+ 
+    n = Decimal(n)
+    x_0 = A / n #step 1: make a while guess.
+    x_1 = 1     #need it to exist before step 2
+    while True:
+        #step 2:
+        x_0, x_1 = x_1, (1 / n)*((n - 1)*x_0 + (A / (x_0 ** (n - 1))))
+        if x_0 == x_1:
+            return x_1
+
+====PYTHON=====
+print nthroot(5, 34, 10)
+print nthroot(10,42, 20)
+print nthroot(2, 5, 400)
+
+====PYTHON=====
+'''Nth Root'''
+ 
+from decimal import Decimal, getcontext
+from operator import eq
+ 
+ 
+# nthRoot :: Int -> Int -> Int -> Real
+def nthRoot(precision):
+    '''The nth root of x at the given precision.'''
+    def go(n, x):
+        getcontext().prec = precision
+        dcn = Decimal(n)
+ 
+        def same(ab):
+            return eq(*ab)
+ 
+        def step(ab):
+            a, b = ab
+            predn = pred(dcn)
+            return (
+                b,
+                reciprocal(dcn) * (
+                    predn * a + (
+                        x / (a ** predn)
+                    )
+                )
+            )
+        return until(same)(step)(
+            (x / dcn, 1)
+        )[0]
+    return lambda n: lambda x: go(n, x)
+ 
+ 
+# --------------------------TEST---------------------------
+def main():
+    '''Nth roots at various precisions'''
+ 
+    def xShow(tpl):
+        p, n, x = tpl
+        return rootName(n) + (
+            ' of ' + str(x) + ' at precision ' + str(p)
+        )
+ 
+    def f(tpl):
+        p, n, x = tpl
+        return nthRoot(p)(n)(x)
+ 
+    print(
+        fTable(main.__doc__ + ':\n')(xShow)(str)(f)(
+            [(10, 5, 34), (20, 10, 42), (30, 2, 5)]
+        )
+    )
+ 
+ 
+# -------------------------DISPLAY-------------------------
+ 
+# fTable :: String -> (a -> String) ->
+# (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+       f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# -------------------------GENERIC-------------------------
+ 
+# rootName :: Int -> String
+def rootName(n):
+    '''English ordinal suffix.'''
+    return ['identity', 'square root', 'cube root'][n - 1] if (
+        4 > n or 1 > n
+    ) else (str(n) + 'th root')
+ 
+ 
+# pred ::  Enum a => a -> a
+def pred(x):
+    '''The predecessor of a value. For numeric types, (- 1).'''
+    return x - 1
+ 
+ 
+# reciprocal :: Num -> Num
+def reciprocal(x):
+    '''Arithmetic reciprocal of x.'''
+    return 1 / x
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.
+    '''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+if __name__ == '__main__':
+    main()
+

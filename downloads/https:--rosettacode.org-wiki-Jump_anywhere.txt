@@ -1,0 +1,41 @@
+====RUBY=====
+require 'continuation' unless defined? Continuation
+ 
+if a = callcc { |c| [c, 1] }
+  c, i = a
+  c[nil] if i > 100
+ 
+  case 0
+  when i % 3
+    print "Fizz"
+    case 0
+    when i % 5
+      print "Buzz"
+    end
+  when i % 5
+    print "Buzz"
+  else
+    print i
+  end
+ 
+  puts
+  c[c, i + 1]
+end
+
+====PYTHON=====
+ 
+# Example 2: Restarting a loop:
+from goto import goto, label
+label .start
+for i in range(1, 4):
+    print i
+    if i == 2:
+        try:
+            output = message
+        except NameError:
+            print "Oops - forgot to define 'message'!  Start again."
+            message = "Hello world"
+            goto .start
+print output, "\n"
+ 
+

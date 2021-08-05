@@ -1,0 +1,18 @@
+====RUBY=====
+n = 13
+p (1..n).sort_by(&:to_s)
+ 
+
+====RUBY=====
+func lex_order (n) {
+    [range(1, n, n.sgn)...].sort_by { Str(_) }
+}
+ 
+[13, 21, -22].each {|n|
+    printf("%4s: %s\n", n, lex_order(n))
+}
+
+====PYTHON=====
+n=13
+print(sorted(range(1,n+1), key=str))
+

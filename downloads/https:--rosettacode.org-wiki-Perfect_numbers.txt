@@ -1,0 +1,157 @@
+====RUBY=====
+def perf(n)
+  sum = 0
+  for i in 1...n
+    sum += i  if n % i == 0
+  end
+  sum == n
+end
+
+====RUBY=====
+def perf(n)
+  n == (1...n).select {|i| n % i == 0}.inject(:+)
+end
+
+====RUBY=====
+def perf(n)
+  divisors = []
+  for i in 1..Integer.sqrt(n)
+    divisors << i << n/i  if n % i == 0
+  end
+  divisors.uniq.inject(:+) == 2*n
+end
+
+====RUBY=====
+for n in 1..10000
+  puts n if perf(n)
+end
+
+====RUBY=====
+require "prime"
+ 
+def mersenne_prime_pow?(p)
+  # Lucas-Lehmer test; expects prime as argument
+  return true  if p == 2
+  m_p = ( 1 << p ) - 1 
+  s = 4
+  (p-2).times{ s = (s**2 - 2) % m_p }
+  s == 0
+end
+ 
+@perfect_numerator = Prime.each.lazy.select{|p| mersenne_prime_pow?(p)}.map{|p| 2**(p-1)*(2**p-1)}
+@perfects = @perfect_numerator.take(1).to_a
+ 
+def perfect?(num)
+  @perfects << @perfect_numerator.next until @perfects.last >= num
+  @perfects.include? num
+end
+ 
+# demo
+p (1..10000).select{|num| perfect?(num)}
+t1 = Time.now
+p perfect?(13164036458569648337239753460458722910223472318386943117783728128)
+p Time.now - t1  
+ 
+
+====RUBY=====
+func is_perfect(n) {
+    n.sigma == 2*n
+}
+ 
+for n in (1..10000) {
+    say n if is_perfect(n)
+}
+
+====RUBY=====
+func is_even_perfect(n) {
+ 
+    var square = (8*n + 1)
+    square.is_square || return false
+ 
+    var t = ((square.isqrt + 1) / 2)
+    t.is_smooth(2) || return false
+ 
+    t-1 -> is_prime
+}
+ 
+for n in (1..10000) {
+    say n if is_even_perfect(n)
+}
+
+====PYTHON=====
+def perf1(n):
+    sum = 0
+    for i in range(1, n):
+        if n % i == 0:
+            sum += i
+    return sum == n
+
+====PYTHON=====
+from itertools import chain, cycle, accumulate
+ 
+def factor2(n):
+    def prime_powers(n):
+        # c goes through 2, 3, 5, then the infinite (6n+1, 6n+5) series
+        for c in accumulate(chain([2, 1, 2], cycle([2,4]))):
+            if c*c > n: break
+            if n%c: continue
+            d,p = (), c
+            while not n%c:
+                n,p,d = n//c, p*c, d + (p,)
+            yield(d)
+        if n > 1: yield((n,))
+ 
+    r = [1]
+    for e in prime_powers(n):
+        r += [a*b for a in r for b in e]
+    return r
+ 
+def perf4(n):
+    "Using most efficient prime factoring routine from: http://rosettacode.org/wiki/Factors_of_an_integer#Python"
+    return 2 * n == sum(factor2(n))
+
+====PYTHON=====
+def perf2(n):
+    return n == sum(i for i in range(1, n) if n % i == 0)
+ 
+print (
+    list(filter(perf2, range(1, 10001)))
+)
+
+====PYTHON=====
+'''Perfect numbers'''
+ 
+from math import sqrt
+ 
+ 
+# perfect :: Int - > Bool
+def perfect(n):
+    '''Is n the sum of its proper divisors other than 1 ?'''
+ 
+    root = sqrt(n)
+    lows = [x for x in enumFromTo(2)(int(root)) if 0 == (n % x)]
+    return 1 < n and (
+        n == 1 + sum(lows + [n / x for x in lows if root != x])
+    )
+ 
+ 
+# main :: IO ()
+def main():
+    '''Test'''
+ 
+    print([
+        x for x in enumFromTo(1)(10000) if perfect(x)
+    ])
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+if __name__ == '__main__':
+    main()
+

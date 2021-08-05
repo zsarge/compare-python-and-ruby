@@ -1,0 +1,76 @@
+====RUBY=====
+# Any block of comments *directly* before (no blank lines) a module, class, or method is used as a doc comment
+# This one is for a module
+module Documentation
+ 
+  # This comment documents a class, *and* it uses markdown
+  class Foo
+ 
+    # This comment doesn't do anything, because it isn't directly above a module, class, or method
+ 
+    # Finally, this comment documents a method
+    def initialize
+    end
+  end
+end
+
+====RUBY=====
+=begin rdoc
+RDoc is documented here[http://www.ruby-doc.org/core/classes/RDoc.html].
+ 
+This is a class documentation comment.  This text shows at the top of the page
+for the class.
+ 
+Comments can be written inside "=begin rdoc"/"end" blocks or 
+in normal '#' comment blocks.
+ 
+There are no '@parameters' like javadoc, but 'name-value' lists can be written:
+Author:: Joe Schmoe
+Date:: today
+=end
+ 
+class Doc
+  # This is a comment for a Constant
+  Constant = nil
+ 
+  # This is a method comment.  Parameters and return values can be named
+  # with the "call-seq" directive.  
+  #
+  # call-seq:
+  #   a_method(first_arg, second_arg) -> return_value
+  #
+  def a_method(arg1, arg2='default value')
+    do_stuff 
+  end
+ 
+  # Class methods will be shown in a separate section of the generated documentation.
+  def self.class_method
+    Constant
+  end
+end
+ 
+# :include:boilerplate.txt
+
+====PYTHON=====
+class Doc(object):
+   """
+   This is a class docstring. Traditionally triple-quoted strings are used because
+   they can span multiple lines and you can include quotation marks without escaping.
+   """
+   def method(self, num):
+      """This is a method docstring."""
+      pass
+
+====PYTHON=====
+>>> def somefunction():
+	"takes no args and returns None after doing not a lot"
+ 
+ 
+>>> help(somefunction)
+Help on function somefunction in module __main__:
+ 
+somefunction()
+    takes no args and returns None after doing not a lot
+ 
+>>>
+

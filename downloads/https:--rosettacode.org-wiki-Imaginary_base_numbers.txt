@@ -1,0 +1,176 @@
+====RUBY=====
+func base (Number num, Number radix { _ ~~ (-36 .. -2) }, precision = -15) -> String {
+    num || return '0'
+ 
+    var place  = 0
+    var result = ''
+    var value  = num
+    var upper_bound = 1/(-radix + 1)
+    var lower_bound = radix*upper_bound
+ 
+    while (!(lower_bound <= value) || !(value < upper_bound)) {
+        value = num/(radix**++place)
+    }
+ 
+    while ((value || (place > 0)) && (place > precision)) {
+        var digit = (radix*value - lower_bound -> int)
+        value    =  (radix*value - digit)
+        result += '.' if (!place && !result.contains('.'))
+        result += ((digit == -radix) ? (digit-1 -> base(-radix) + '0') : digit.base(-radix))
+        place--
+    }
+ 
+    return result
+}
+ 
+func base (Number num, Number radix { .re == 0 }, precision = -8) -> String {
+ 
+    (radix.im.abs ~~ 2..6) || die "Base #{radix} out of range"
+ 
+    var (re, im)          = (num.re, num.im)
+    var (re_wh, re_fr='') = base(re,          -radix.im**2, precision).split('.')...
+    var (im_wh, im_fr='') = base(im/radix.im, -radix.im**2, precision).split('.')...
+ 
+    func zip (String a, String b) {
+        var l = ('0' * abs(a.len - b.len))
+        chars(a+l) ~Z chars(b+l) -> flat.join.sub(/0+\z/, '') || '0'
+    }
+ 
+    var whole = zip(re_wh.flip, im_wh.flip).flip
+    var fraction = zip(im_fr, re_fr)
+    fraction == '0' ? whole : "#{whole}.#{fraction}"
+}
+ 
+func parse_base (String str, Number radix { .re == 0 }) -> Number {
+ 
+    if (str.char(0) == '-') {
+        return (-1 * parse_base(str.substr(1), radix))
+    }
+ 
+    var (whole, frac='') = str.split('.')...
+ 
+    var fraction = frac.chars.map_kv {|k,v|
+        Number(v, radix.im**2) * radix**-(k+1)
+    }.sum
+ 
+    fraction += whole.flip.chars.map_kv {|k,v|
+        Number(v, radix.im**2) * radix**k
+    }.sum
+ 
+    return fraction
+}
+ 
+var tests = [0, 2i, 1, 2i, 5, 2i, -13, 2i, 9i, 2i, -3i, 2i, 7.75-7.5i, 2i, .25, 2i, # base 2i tests
+    5+5i,  2i, 5+5i,  3i, 5+5i,  4i, 5+5i,  5i, 5+5i,  6i, # same value, positive imaginary bases
+    5+5i, -2i, 5+5i, -3i, 5+5i, -4i, 5+5i, -5i, 5+5i, -6i, # same value, negative imaginary bases
+    227.65625+10.859375i, 4i] # larger test value
+ 
+tests.each_slice(2, {|v,r|
+    var ibase = base(v, r)
+    printf("base(%20s, %2si) = %-10s : parse_base(%12s, %2si) = %s\n",
+        v, r.im, ibase, "'#{ibase}'", r.im, parse_base(ibase, r).round(-8))
+})
+
+====PYTHON=====
+import math
+import re
+ 
+def inv(c):
+    denom = c.real * c.real + c.imag * c.imag
+    return complex(c.real / denom, -c.imag / denom)
+ 
+class QuaterImaginary:
+    twoI = complex(0, 2)
+    invTwoI = inv(twoI)
+ 
+    def __init__(self, str):
+        if not re.match("^[0123.]+$", str) or str.count('.') > 1:
+            raise Exception('Invalid base 2i number')
+        self.b2i = str
+ 
+    def toComplex(self):
+        pointPos = self.b2i.find('.')
+        posLen = len(self.b2i) if (pointPos < 0) else pointPos
+        sum = complex(0, 0)
+        prod = complex(1, 0)
+        for j in xrange(0, posLen):
+            k = int(self.b2i[posLen - 1 - j])
+            if k > 0:
+                sum += prod * k
+            prod *= QuaterImaginary.twoI
+        if pointPos != -1:
+            prod = QuaterImaginary.invTwoI
+            for j in xrange(posLen + 1, len(self.b2i)):
+                k = int(self.b2i[j])
+                if k > 0:
+                    sum += prod * k
+                prod *= QuaterImaginary.invTwoI
+        return sum
+ 
+    def __str__(self):
+        return str(self.b2i)
+ 
+def toQuaterImaginary(c):
+    if c.real == 0.0 and c.imag == 0.0:
+        return QuaterImaginary("0")
+ 
+    re = int(c.real)
+    im = int(c.imag)
+    fi = -1
+    ss = ""
+    while re != 0:
+        re, rem = divmod(re, -4)
+        if rem < 0:
+            rem += 4
+            re += 1
+        ss += str(rem) + '0'
+    if im != 0:
+        f = c.imag / 2
+        im = int(math.ceil(f))
+        f = -4 * (f - im)
+        index = 1
+        while im != 0:
+            im, rem = divmod(im, -4)
+            if rem < 0:
+                rem += 4
+                im += 1
+            if index < len(ss):
+                ss[index] = str(rem)
+            else:
+                ss += '0' + str(rem)
+            index = index + 2
+        fi = int(f)
+    ss = ss[::-1]
+    if fi != -1:
+        ss += '.' + str(fi)
+    ss = ss.lstrip('0')
+    if ss[0] == '.':
+        ss = '0' + ss
+    return QuaterImaginary(ss)
+ 
+for i in xrange(1,17):
+    c1 = complex(i, 0)
+    qi = toQuaterImaginary(c1)
+    c2 = qi.toComplex()
+    print "{0:8} -> {1:>8} -> {2:8}     ".format(c1, qi, c2),
+ 
+    c1 = -c1
+    qi = toQuaterImaginary(c1)
+    c2 = qi.toComplex()
+    print "{0:8} -> {1:>8} -> {2:8}".format(c1, qi, c2)
+print
+ 
+for i in xrange(1,17):
+    c1 = complex(0, i)
+    qi = toQuaterImaginary(c1)
+    c2 = qi.toComplex()
+    print "{0:8} -> {1:>8} -> {2:8}     ".format(c1, qi, c2),
+ 
+    c1 = -c1
+    qi = toQuaterImaginary(c1)
+    c2 = qi.toComplex()
+    print "{0:8} -> {1:>8} -> {2:8}".format(c1, qi, c2)
+ 
+print "done"
+ 
+

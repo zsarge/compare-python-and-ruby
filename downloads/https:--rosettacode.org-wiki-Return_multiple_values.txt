@@ -1,0 +1,34 @@
+====RUBY=====
+def addsub(x, y)
+  [x + y, x - y]
+end
+
+====RUBY=====
+def addsub(x, y)
+  return x + y, x - y
+end
+
+====RUBY=====
+sum, difference = addsub(33, 12)
+puts "33 + 12 = #{sum}"
+puts "33 - 12 = #{difference}"
+
+====RUBY=====
+func foo(a,b) {
+    return (a+b, a*b);
+}
+
+====RUBY=====
+var (x, y) = foo(4, 5);
+say x;   #=> 9
+say y;   #=> 20
+
+====PYTHON=====
+def addsub(x, y):
+  return x + y, x - y
+
+====PYTHON=====
+sum, difference = addsub(33, 12)
+print "33 + 12 = %s" % sum
+print "33 - 12 = %s" % difference
+

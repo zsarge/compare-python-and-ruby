@@ -1,0 +1,38 @@
+====RUBY=====
+loop do
+  a = rand(20)
+  print a
+  if a == 10
+    puts
+    break
+  end
+  b = rand(20)
+  puts "\t#{b}"
+end
+
+====RUBY=====
+loop do
+  print a = rand(20)
+  puts or break if a == 10
+  puts "\t#{rand(20)}"
+end
+
+====RUBY=====
+var lim = 20;
+loop {
+    say (var n = lim.rand.int);
+    n == 10 && break;
+    say lim.rand.int;
+}
+
+====PYTHON=====
+from random import randrange
+ 
+while True:
+    a = randrange(20)
+    print(a)
+    if a == 10:
+        break
+    b = randrange(20)
+    print(b)
+

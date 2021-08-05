@@ -1,0 +1,54 @@
+====RUBY=====
+['a','b','c'].zip(['A','B','C'], [1,2,3]) {|i,j,k| puts "#{i}#{j}#{k}"}
+
+====RUBY=====
+['a','b','c'].zip(['A','B','C'], [1,2,3]) {|a| puts a.join}
+
+====RUBY=====
+irb(main):001:0> ['a','b','c'].zip(['A','B'], [1,2,3,4]) {|a| puts a.join}
+aA1
+bB2
+c3
+=> nil
+irb(main):002:0> ['a','b','c'].zip(['A','B'], [1,2,3,4])
+=> [["a", "A", 1], ["b", "B", 2], ["c", nil, 3]]
+
+====RUBY=====
+[%w(a b c),%w(A B C),%w(1 2 3)].zip { |i,j,k|
+    say (i, j, k)
+}
+
+====PYTHON=====
+>>> print ( '\n'.join(''.join(x) for x in 
+zip('abc', 'ABC', '123')) )
+aA1
+bB2
+cC3
+>>>
+
+====PYTHON=====
+>>> print(*map(''.join, zip('abc', 'ABC', '123')), sep='\n')
+aA1
+bB2
+cC3
+>>>
+
+====PYTHON=====
+from itertools import imap
+ 
+def join3(a,b,c):
+   print a+b+c
+ 
+imap(join3,'abc','ABC','123')
+
+====PYTHON=====
+>>> from itertools import zip_longest
+>>> print ( '\n'.join(''.join(x) for x in zip_longest('abc', 
+'ABCD', '12345', fillvalue='#')) )
+aA1
+bB2
+cC3
+#D4
+##5
+>>>
+

@@ -1,0 +1,128 @@
+====RUBY=====
+@target = "METHINKS IT IS LIKE A WEASEL"
+Charset = [" ", *"A".."Z"]
+COPIES = 100
+ 
+def random_char; Charset.sample end
+ 
+def fitness(candidate)
+  sum = 0
+  candidate.chars.zip(@target.chars) {|x,y| sum += (x[0].ord - y[0].ord).abs}
+  100.0 * Math.exp(Float(sum) / -10.0)
+end
+ 
+def mutation_rate(candidate)
+  1.0 - Math.exp( -(100.0 - fitness(candidate)) / 400.0)
+end
+ 
+def mutate(parent, rate)
+  parent.each_char.collect {|ch| rand <= rate ? random_char : ch}.join
+end
+ 
+def log(iteration, rate, parent)
+  puts "%4d %.2f %5.1f %s" % [iteration, rate, fitness(parent), parent]
+end
+ 
+iteration = 0
+parent = Array.new(@target.length) {random_char}.join
+prev = ""
+ 
+while parent != @target
+  iteration += 1
+  rate = mutation_rate(parent)
+  if prev != parent
+    log(iteration, rate, parent)
+    prev = parent
+  end
+  copies = [parent] + Array.new(COPIES) {mutate(parent, rate)}
+  parent = copies.max_by {|c| fitness(c)}
+end
+log(iteration, rate, parent)
+
+====RUBY=====
+define target = "METHINKS IT IS LIKE A WEASEL"
+define mutate_chance = 0.08
+define alphabet = [('A'..'Z')..., ' ']
+define C = 100
+ 
+func fitness(str) { str.chars ~Z== target.chars -> count(true) }
+func mutate(str)  { str.gsub(/(.)/, {|s1| 1.rand < mutate_chance ? alphabet.pick : s1 }) }
+ 
+for (
+    var (i, parent) = (0, alphabet.rand(target.len).join);
+    parent != target;
+    parent = C.of{ mutate(parent) }.max_by(fitness)
+) { printf("%6d: '%s'\n", i++, parent) }
+
+====PYTHON=====
+from string import letters
+from random import choice, random
+ 
+target  = list("METHINKS IT IS LIKE A WEASEL")
+charset = letters + ' '
+parent  = [choice(charset) for _ in range(len(target))]
+minmutaterate  = .09
+C = range(100)
+ 
+perfectfitness = float(len(target))
+ 
+def fitness(trial):
+    'Sum of matching chars by position'
+    return sum(t==h for t,h in zip(trial, target))
+ 
+def mutaterate():
+    'Less mutation the closer the fit of the parent'
+    return 1-((perfectfitness - fitness(parent)) / perfectfitness * (1 - minmutaterate))
+ 
+def mutate(parent, rate):
+    return [(ch if random() <= rate else choice(charset)) for ch in parent]
+ 
+def que():
+    '(from the favourite saying of Manuel in Fawlty Towers)'
+    print ("#%-4i, fitness: %4.1f%%, '%s'" %
+           (iterations, fitness(parent)*100./perfectfitness, ''.join(parent)))
+ 
+def mate(a, b):
+    place = 0
+    if choice(xrange(10)) < 7:
+        place = choice(xrange(len(target)))
+    else:
+        return a, b
+ 
+    return a, b, a[:place] + b[place:], b[:place] + a[place:]
+ 
+iterations = 0
+center = len(C)/2
+while parent != target:
+    rate = mutaterate()
+    iterations += 1
+    if iterations % 100 == 0: que()
+    copies = [ mutate(parent, rate) for _ in C ]  + [parent]
+    parent1 = max(copies[:center], key=fitness)
+    parent2 = max(copies[center:], key=fitness)
+    parent = max(mate(parent1, parent2), key=fitness)
+que()
+
+====PYTHON=====
+from random import choice, random
+ 
+target  = list("METHINKS IT IS LIKE A WEASEL")
+alphabet = " ABCDEFGHIJLKLMNOPQRSTUVWXYZ"
+p = 0.05 # mutation probability
+c = 100  # number of children in each generation
+ 
+def neg_fitness(trial):
+    return sum(t != h for t,h in zip(trial, target))
+ 
+def mutate(parent):
+    return [(choice(alphabet) if random() < p else ch) for ch in parent]
+ 
+parent = [choice(alphabet) for _ in xrange(len(target))]
+i = 0
+print "%3d" % i, "".join(parent)
+while parent != target:
+    copies = (mutate(parent) for _ in xrange(c))
+    parent = min(copies, key=neg_fitness)
+    print "%3d" % i, "".join(parent)
+    i += 1
+

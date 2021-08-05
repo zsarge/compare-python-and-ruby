@@ -1,0 +1,49 @@
+====RUBY=====
+stream = $stdin
+stream.each do |line|
+  # process line
+end
+
+====RUBY=====
+# Create an array of lengths of every line.
+ary = stream.map {|line| line.chomp.length}
+
+====RUBY=====
+var file = File(__FILE__)
+file.open_r(\var fh, \var err) || die "#{file}: #{err}"
+ 
+fh.each { |line|              # iterates the lines of the fh
+    line.each_word { |word|   # iterates the words of the line
+        say word
+    }
+}
+
+====PYTHON=====
+while(True):
+      x = input("What is your age? ")
+      print(x)
+
+====PYTHON=====
+my_file = open(filename, 'r')
+try:
+    for line in my_file:
+        pass # process line, includes newline
+finally:
+    my_file.close()
+
+====PYTHON=====
+from __future__ import with_statement
+ 
+with open(filename, 'r') as f:
+    for line in f:
+        pass # process line, includes newline
+
+====PYTHON=====
+line = my_file.readline() # returns a line from the file
+lines = my_file.readlines() # returns a list of the rest of the lines from the file
+
+====PYTHON=====
+import fileinput
+for line in fileinput.input():
+    pass # process line, includes newline
+

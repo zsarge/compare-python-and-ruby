@@ -1,0 +1,39 @@
+====RUBY=====
+values.max
+
+====RUBY=====
+values.max
+
+====RUBY=====
+values.max;
+
+====PYTHON=====
+max(values)
+
+====PYTHON=====
+>>> floatstrings = ['1\n', ' 2.3\n', '4.5e-1\n', '0.01e4\n', '-1.2']
+>>> max(floatstrings, key = float)
+'0.01e4\n'
+>>>
+
+====PYTHON=====
+>>> max(float(x) for x in floatstrings)
+100.0
+>>>
+
+====PYTHON=====
+>>> mylist = [47, 11, 42, 102, 13]
+>>> reduce(lambda a,b: a if (a > b) else b, mylist)
+102
+
+====PYTHON=====
+def (best f seq)
+  if seq
+    ret winner car.seq
+      each elem cdr.seq
+        if (f elem winner)
+          winner <- elem
+ 
+def (max ... args)
+  (best (>) args)
+

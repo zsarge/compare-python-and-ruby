@@ -1,0 +1,239 @@
+====RUBY=====
+pal23 = Enumerator.new do |y|
+  y << 0
+  y << 1
+  for i in 1 .. 1.0/0.0                 # 1.step do |i|  (Ruby 2.1+)
+    n3 = i.to_s(3)
+    n = (n3 + "1" + n3.reverse).to_i(3)
+    n2 = n.to_s(2)
+    y << n  if n2.size.odd? and n2 == n2.reverse
+  end
+end
+ 
+puts "         decimal          ternary                          binary"
+6.times do |i|
+  n = pal23.next
+  puts "%2d: %12d %s %s" % [i, n, n.to_s(3).center(25), n.to_s(2).center(39)]
+end
+
+====RUBY=====
+var format = "%11s %24s %38s\n"
+format.printf("decimal", "ternary", "binary")
+format.printf(0, 0, 0)
+ 
+for n in (0 .. 2e5) {
+    var pal = n.base(3)||''
+    var b3 = (pal + '1' + pal.flip)
+    var b2 = Num(b3, 3).base(2)
+    if (b2 == b2.flip) {
+        format.printf(Num(b2, 2), b3, b2)
+    }
+}
+
+====PYTHON=====
+from itertools import islice
+ 
+digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+ 
+def baseN(num,b):
+  if num == 0: return "0"
+  result = ""
+  while num != 0:
+    num, d = divmod(num, b)
+    result += digits[d]
+  return result[::-1] # reverse
+ 
+def pal2(num):
+    if num == 0 or num == 1: return True
+    based = bin(num)[2:]
+    return based == based[::-1]
+ 
+def pal_23():
+    yield 0
+    yield 1
+    n = 1
+    while True:
+        n += 1
+        b = baseN(n, 3)
+        revb = b[::-1]
+        #if len(b) > 12: break
+        for trial in ('{0}{1}'.format(b, revb), '{0}0{1}'.format(b, revb),
+                      '{0}1{1}'.format(b, revb), '{0}2{1}'.format(b, revb)):
+            t = int(trial, 3)
+            if pal2(t):
+                yield t
+ 
+for pal23 in islice(pal_23(), 6):
+    print(pal23, baseN(pal23, 3), baseN(pal23, 2))
+
+====PYTHON=====
+'''Numbers with palindromic digit strings in both binary and ternary'''
+ 
+from itertools import (islice)
+ 
+ 
+# palinBoth :: Generator [Int]
+def palinBoth():
+    '''Non finite stream of dually palindromic integers.'''
+    yield (0, '0', '0')
+    ibt = (1, '1', '1')
+ 
+    yield ibt
+    while True:
+        ibt = until(isBoth)(psucc)(psucc(ibt))
+        yield (int(ibt[2], 3), ibt[1], ibt[2])
+ 
+ 
+# isBoth :: (Int, String, String) -> Bool
+def isBoth(ibt):
+    '''True if the binary string is palindromic (as
+       the ternary string is already known to be).
+    '''
+    b = ibt[1]
+    return b == b[::-1]
+ 
+ 
+# psucc :: (Int, String, String) -> (Int, String, String)
+def psucc(ibt):
+    '''The next triple of index, binary
+       and (palindromic) ternary string
+    '''
+    d = 1 + ibt[0]
+    s = showBase3(d)
+    pal = s + '1' + s[::-1]
+    return (d, bin(int(pal, 3))[2:], pal)
+ 
+ 
+# showBase3 :: Int -> String
+def showBase3(n):
+    '''Ternary digit string for integer n.'''
+    return showIntAtBase(3)(
+        lambda i: '012'[i]
+    )(n)('')
+ 
+ 
+# TEST ----------------------------------------------------
+def main():
+    '''Integers with palindromic digits in both binary and ternary'''
+ 
+    xs = take(6)(palinBoth())
+    d, b, t = xs[-1]
+    bw = len(b)
+    tw = len(t)
+ 
+    print(
+        fTable(
+            label('rjust')(('Decimal', len(str(d)))) +
+            ''.join(map(
+                label('center'),
+                [('Binary', bw), ('Ternary', tw)]
+            )) + '\n'
+        )(compose(str)(fst))(
+            lambda p: p[1].center(bw, ' ') +
+            '    ' + p[2].center(tw, ' ')
+        )(identity)(xs)
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# fst :: (a, b) -> a
+def fst(tpl):
+    '''First member of a pair.'''
+    return tpl[0]
+ 
+ 
+# identity :: a -> a
+def identity(x):
+    '''The identity function.'''
+    return x
+ 
+ 
+# showIntAtBase :: Int -> (Int -> String) -> Int -> String -> String
+def showIntAtBase(base):
+    '''String representation of an integer in a given base,
+       using a supplied function for the string representation
+       of digits.
+    '''
+    def wrap(toChr, n, rs):
+        def go(nd, r):
+            n, d = nd
+            r_ = toChr(d) + r
+            return go(divmod(n, base), r_) if 0 != n else r_
+        return 'unsupported base' if 1 >= base else (
+            'negative number' if 0 > n else (
+                go(divmod(n, base), rs))
+        )
+    return lambda toChr: lambda n: lambda rs: (
+        wrap(toChr, n, rs)
+    )
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    return lambda xs: (
+        xs[0:n]
+        if isinstance(xs, (list, tuple))
+        else list(islice(xs, n))
+    )
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.
+    '''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+# FORMATTING ----------------------------------------------
+ 
+# label :: Method String -> (String, Int)
+def label(k):
+    '''Stringification, using the named justification
+       method (ljust|centre|rjust) of the label,
+       and the specified amount of white space.
+    '''
+    def go(sw):
+        s, w = sw
+        return getattr(s, k)(w, ' ') + '    '
+    return lambda sw: go(sw)
+ 
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+                     f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

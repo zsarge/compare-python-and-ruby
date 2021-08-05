@@ -1,0 +1,199 @@
+====RUBY=====
+ 
+(1..7).to_a.permutation(3){|p| puts p.join if p.first.even? && p.sum == 12 }
+ 
+
+====RUBY=====
+@(1..7)->combinations(3, {|*a|
+    a.sum == 12 || next
+    a.permutations {|*b|
+        b[0].is_even || next
+        say (%w(police fire sanitation) ~Z b -> join(" "))
+    }
+})
+
+====PYTHON=====
+from itertools import permutations
+ 
+def solve():
+    c, p, f, s = "\\,Police,Fire,Sanitation".split(',')
+    print(f"{c:>3}  {p:^6} {f:^4} {s:^10}")
+    c = 1
+    for p, f, s in permutations(range(1, 8), r=3):
+        if p + s + f == 12 and p % 2 == 0:
+            print(f"{c:>3}: {p:^6} {f:^4} {s:^10}")
+            c += 1
+ 
+if __name__ == '__main__':
+    solve()
+
+====PYTHON=====
+'''Department numbers'''
+ 
+from itertools import (chain)
+from operator import (ne)
+ 
+ 
+# options :: Int -> Int -> Int -> [(Int, Int, Int)]
+def options(lo, hi, total):
+    '''Eligible integer triples.'''
+    ds = enumFromTo(lo)(hi)
+    return bind(filter(even, ds))(
+        lambda x: bind(filter(curry(ne)(x), ds))(
+            lambda y: bind([total - (x + y)])(
+                lambda z: [(x, y, z)] if (
+                    z != y and lo <= z <= hi
+                ) else []
+            )
+        )
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+ 
+    xs = options(1, 7, 12)
+    print(('Police', 'Sanitation', 'Fire'))
+    for tpl in xs:
+        print(tpl)
+    print('\nNo. of options: ' + str(len(xs)))
+ 
+ 
+# GENERIC ABSTRACTIONS ------------------------------------
+ 
+# bind (>>=) :: [a] -> (a -> [b]) -> [b]
+def bind(xs):
+    '''List monad injection operator.
+       Two computations sequentially composed,
+       with any value produced by the first
+       passed as an argument to the second.'''
+    return lambda f: list(
+        chain.from_iterable(
+            map(f, xs)
+        )
+    )
+ 
+ 
+# curry :: ((a, b) -> c) -> a -> b -> c
+def curry(f):
+    '''A curried function derived
+       from an uncurried function.'''
+    return lambda a: lambda b: f(a, b)
+ 
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+# even :: Int -> Bool
+def even(x):
+    '''True if x is an integer
+       multiple of two.'''
+    return 0 == x % 2
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+'''Department numbers'''
+ 
+from operator import ne
+ 
+ 
+# options :: Int -> Int -> Int -> [(Int, Int, Int)]
+def options(lo, hi, total):
+    '''Eligible triples.'''
+    ds = enumFromTo(lo)(hi)
+    return [
+        (x, y, z)
+        for x in filter(even, ds)
+        for y in filter(curry(ne)(x), ds)
+        for z in [total - (x + y)]
+        if y != z and lo <= z <= hi
+    ]
+ 
+ 
+# Or with less tightly-constrained generation,
+# and more winnowing work downstream:
+ 
+# options2 :: Int -> Int -> Int -> [(Int, Int, Int)]
+def options2(lo, hi, total):
+    '''Eligible triples.'''
+    ds = enumFromTo(lo)(hi)
+    return [
+        (x, y, z)
+        for x in ds
+        for y in ds
+        for z in [total - (x + y)]
+        if even(x) and y not in [x, z] and lo <= z <= hi
+    ]
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+ 
+# curry :: ((a, b) -> c) -> a -> b -> c
+def curry(f):
+    '''A curried function derived
+       from an uncurried function.'''
+    return lambda a: lambda b: f(a, b)
+ 
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+# even :: Int -> Bool
+def even(x):
+    '''True if x is an integer
+       multiple of two.'''
+    return 0 == x % 2
+ 
+ 
+# unlines :: [String] -> String
+def unlines(xs):
+    '''A single string derived by the intercalation
+       of a list of strings with the newline character.'''
+    return '\n'.join(xs)
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+ 
+    xs = options(1, 7, 12)
+    print(('Police', 'Sanitation', 'Fire'))
+    print(unlines(map(str, xs)))
+    print('\nNo. of options: ' + str(len(xs)))
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+ 
+# We start with the Police Department.
+# Range is the start, stop, and step. This returns only even numbers.
+for p in range(2, 7, 2):
+    #Next, the Sanitation Department. A simple range.
+    for s in range(1, 7):
+        # And now the Fire Department. After determining the Police and Fire
+        # numbers we just have to subtract those from 12 to get the FD number.
+        f = 12 - p -s
+        if s >= f: 
+            break
+        elif f > 7:
+            continue
+        print("Police: ", p, " Sanitation:", s, " Fire: ", f)
+        print("Police: ", p, " Sanitation:", f, " Fire: ", s)
+ 
+ 
+

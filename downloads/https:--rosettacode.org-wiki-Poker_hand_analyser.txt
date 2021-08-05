@@ -1,0 +1,371 @@
+====RUBY=====
+class Card
+  include Comparable
+  attr_accessor :ordinal
+  attr_reader :suit, :face 
+ 
+  SUITS = %i(♥ ♦ ♣ ♠)
+  FACES = %i(2 3 4 5 6 7 8 9 10 j q k a)
+ 
+  def initialize(str)
+    @face, @suit = parse(str)
+    @ordinal = FACES.index(@face)
+  end
+ 
+  def <=> (other) #used for sorting
+    self.ordinal <=> other.ordinal
+  end
+ 
+  def to_s
+    "#@face#@suit"
+  end
+ 
+  private
+  def parse(str)
+    face, suit = str.chop.to_sym, str[-1].to_sym
+    raise ArgumentError, "invalid card: #{str}" unless FACES.include?(face) && SUITS.include?(suit)
+    [face, suit]
+  end
+end
+ 
+class Hand
+  include Comparable
+  attr_reader :cards, :rank
+ 
+  RANKS       = %i(high-card one-pair two-pair three-of-a-kind straight flush
+                   full-house four-of-a-kind straight-flush five-of-a-kind)
+  WHEEL_FACES = %i(2 3 4 5 a)
+ 
+  def initialize(str_of_cards)
+    @cards = str_of_cards.downcase.tr(',',' ').split.map{|str| Card.new(str)}
+    grouped = @cards.group_by(&:face).values
+    @face_pattern = grouped.map(&:size).sort
+    @rank = categorize
+    @rank_num = RANKS.index(@rank)
+    @tiebreaker = grouped.map{|ar| [ar.size, ar.first.ordinal]}.sort.reverse
+  end
+ 
+  def <=> (other)    # used for sorting and comparing
+    self.compare_value <=> other.compare_value
+  end
+ 
+  def to_s
+    @cards.map(&:to_s).join(" ")
+  end
+ 
+  protected          # accessible for Hands
+  def compare_value
+    [@rank_num, @tiebreaker]
+  end
+ 
+  private
+  def one_suit?
+    @cards.map(&:suit).uniq.size == 1
+  end
+ 
+  def consecutive?
+    sort.each_cons(2).all? {|c1,c2| c2.ordinal - c1.ordinal == 1 }
+  end
+ 
+  def sort
+    if @cards.sort.map(&:face) == WHEEL_FACES
+      @cards.detect {|c| c.face == :a}.ordinal = -1
+    end 
+    @cards.sort
+  end
+ 
+  def categorize
+    if consecutive?
+      one_suit? ? :'straight-flush' : :straight
+    elsif one_suit?
+      :flush
+    else
+      case @face_pattern
+        when [1,1,1,1,1] then :'high-card'
+        when [1,1,1,2]   then :'one-pair'
+        when [1,2,2]     then :'two-pair'
+        when [1,1,3]     then :'three-of-a-kind'
+        when [2,3]       then :'full-house'
+        when [1,4]       then :'four-of-a-kind'
+        when [5]         then :'five-of-a-kind'
+      end
+    end
+  end
+end
+ 
+# Demo
+test_hands = <<EOS
+2♥ 2♦ 2♣ k♣ q♦
+2♥ 5♥ 7♦ 8♣ 9♠
+a♥ 2♦ 3♣ 4♣ 5♦
+2♥ 3♥ 2♦ 3♣ 3♦
+2♥ 7♥ 2♦ 3♣ 3♦
+2♥ 6♥ 2♦ 3♣ 3♦
+10♥ j♥ q♥ k♥ a♥
+4♥ 4♠ k♠ 2♦ 10♠
+4♥ 4♠ k♠ 3♦ 10♠
+q♣ 10♣ 7♣ 6♣ 4♣
+q♣ 10♣ 7♣ 6♣ 3♣
+9♥ 10♥ q♥ k♥ j♣
+2♥ 3♥ 4♥ 5♥ a♥
+2♥ 2♥ 2♦ 3♣ 3♦
+EOS
+ 
+hands = test_hands.each_line.map{|line| Hand.new(line) }
+puts "High to low"
+hands.sort.reverse.each{|hand| puts "#{hand}\t #{hand.rank}" }
+puts
+ 
+str = <<EOS
+joker  2♦  2♠  k♠  q♦
+joker  5♥  7♦  8♠  9♦
+joker  2♦  3♠  4♠  5♠
+joker  3♥  2♦  3♠  3♦
+joker  7♥  2♦  3♠  3♦
+joker  7♥  7♦  7♠  7♣
+joker  j♥  q♥  k♥  A♥
+joker  4♣  k♣  5♦ 10♠
+joker  k♣  7♣  6♣  4♣
+joker  2♦  joker  4♠  5♠
+joker  Q♦  joker  A♠ 10♠
+joker  Q♦  joker  A♦ 10♦
+joker  2♦  2♠  joker  q♦
+EOS
+ 
+# Neither the Card nor the Hand class supports jokers
+# but since hands are comparable, they are also sortable.
+# Try every card from a deck for a joker and pick the largest hand:
+ 
+DECK = Card::FACES.product(Card::SUITS).map(&:join)
+str.each_line do |line|
+  cards_in_arrays = line.split.map{|c| c == "joker" ? DECK.dup : [c]} #joker is array of all cards
+  all_tries  = cards_in_arrays.shift.product(*cards_in_arrays).map{|ar| Hand.new(ar.join" ")} #calculate the Whatshisname product
+  best = all_tries.max
+  puts "#{line.strip}: #{best.rank}"
+end
+
+====PYTHON=====
+:- initialization(main).
+ 
+ 
+faces([a,k,q,j,10,9,8,7,6,5,4,3,2]).
+ 
+face(F) :- faces(Fs), member(F,Fs).
+suit(S) :- member(S, ['♥','♦','♣','♠']).
+ 
+ 
+best_hand(Cards,H) :-
+    straight_flush(Cards,C) -> H = straight-flush(C)
+  ; many_kind(Cards,F,4)    -> H = four-of-a-kind(F)
+  ; full_house(Cards,F1,F2) -> H = full-house(F1,F2)
+  ; flush(Cards,S)          -> H = flush(S)
+  ; straight(Cards,F)       -> H = straight(F)
+  ; many_kind(Cards,F,3)    -> H = three-of-a-kind(F)
+  ; two_pair(Cards,F1,F2)   -> H = two-pair(F1,F2)
+  ; many_kind(Cards,F,2)    -> H = one-pair(F)
+  ; many_kind(Cards,F,1)    -> H = high-card(F)
+  ;                            H = invalid
+  .
+ 
+straight_flush(Cards, c(F,S)) :- straight(Cards,F), flush(Cards,S).
+ 
+full_house(Cards,F1,F2) :-
+    many_kind(Cards,F1,3), many_kind(Cards,F2,2), F1 \= F2.
+ 
+flush(Cards,S) :- maplist(has_suit(S), Cards).
+has_suit(S, c(_,S)).
+ 
+straight(Cards,F) :-
+    select(c(F,_), Cards, Cs), pred_face(F,F1), straight(Cs,F1).
+straight([],_).
+pred_face(F,F1) :- F = 2 -> F1 = a ; faces(Fs), append(_, [F,F1|_], Fs).
+ 
+two_pair(Cards,F1,F2) :-
+    many_kind(Cards,F1,2), many_kind(Cards,F2,2), F1 \= F2.
+ 
+many_kind(Cards,F,N) :-
+    face(F), findall(_, member(c(F,_), Cards), Xs), length(Xs,N).
+ 
+ 
+% utils/parser
+parse_line(Cards)  --> " ", parse_line(Cards).
+parse_line([C|Cs]) --> parse_card(C), parse_line(Cs).
+parse_line([])     --> [].
+ 
+parse_card(c(F,S)) --> parse_face(F), parse_suit(S).
+ 
+parse_suit(S,In,Out) :- suit(S), atom_codes(S,Xs), append(Xs,Out,In).
+parse_face(F,In,Out) :- face(F), face_codes(F,Xs), append(Xs,Out,In).
+ 
+face_codes(F,Xs) :- number(F) -> number_codes(F,Xs) ; atom_codes(F,Xs).
+ 
+ 
+% tests
+test(" 2♥  2♦ 2♣ k♣  q♦").
+test(" 2♥  5♥ 7♦ 8♣  9♠").
+test(" a♥  2♦ 3♣ 4♣  5♦").
+test(" 2♥  3♥ 2♦ 3♣  3♦").
+test(" 2♥  7♥ 2♦ 3♣  3♦").
+test(" 2♥  7♥ 7♦ 7♣  7♠").
+test("10♥  j♥ q♥ k♥  a♥").
+test(" 4♥  4♠ k♠ 5♦ 10♠").
+test(" q♣ 10♣ 7♣ 6♣  4♣").
+ 
+run_tests :-
+    test(Line), phrase(parse_line(Cards), Line), best_hand(Cards,H)
+  , write(Cards), write('\t'), write(H), nl
+  .
+main :- findall(_, run_tests, _), halt.
+
+====PYTHON=====
+from collections import namedtuple
+ 
+class Card(namedtuple('Card', 'face, suit')):
+    def __repr__(self):
+        return ''.join(self)
+ 
+ 
+suit = '♥ ♦ ♣ ♠'.split()
+# ordered strings of faces
+faces   = '2 3 4 5 6 7 8 9 10 j q k a'
+lowaces = 'a 2 3 4 5 6 7 8 9 10 j q k'
+# faces as lists
+face   = faces.split()
+lowace = lowaces.split()
+ 
+ 
+def straightflush(hand):
+    f,fs = ( (lowace, lowaces) if any(card.face == '2' for card in hand)
+             else (face, faces) )
+    ordered = sorted(hand, key=lambda card: (f.index(card.face), card.suit))
+    first, rest = ordered[0], ordered[1:]
+    if ( all(card.suit == first.suit for card in rest) and
+         ' '.join(card.face for card in ordered) in fs ):
+        return 'straight-flush', ordered[-1].face
+    return False
+ 
+def fourofakind(hand):
+    allfaces = [f for f,s in hand]
+    allftypes = set(allfaces)
+    if len(allftypes) != 2:
+        return False
+    for f in allftypes:
+        if allfaces.count(f) == 4:
+            allftypes.remove(f)
+            return 'four-of-a-kind', [f, allftypes.pop()]
+    else:
+        return False
+ 
+def fullhouse(hand):
+    allfaces = [f for f,s in hand]
+    allftypes = set(allfaces)
+    if len(allftypes) != 2:
+        return False
+    for f in allftypes:
+        if allfaces.count(f) == 3:
+            allftypes.remove(f)
+            return 'full-house', [f, allftypes.pop()]
+    else:
+        return False
+ 
+def flush(hand):
+    allstypes = {s for f, s in hand}
+    if len(allstypes) == 1:
+        allfaces = [f for f,s in hand]
+        return 'flush', sorted(allfaces,
+                               key=lambda f: face.index(f),
+                               reverse=True)
+    return False
+ 
+def straight(hand):
+    f,fs = ( (lowace, lowaces) if any(card.face == '2' for card in hand)
+             else (face, faces) )
+    ordered = sorted(hand, key=lambda card: (f.index(card.face), card.suit))
+    first, rest = ordered[0], ordered[1:]
+    if ' '.join(card.face for card in ordered) in fs:
+        return 'straight', ordered[-1].face
+    return False
+ 
+def threeofakind(hand):
+    allfaces = [f for f,s in hand]
+    allftypes = set(allfaces)
+    if len(allftypes) <= 2:
+        return False
+    for f in allftypes:
+        if allfaces.count(f) == 3:
+            allftypes.remove(f)
+            return ('three-of-a-kind', [f] +
+                     sorted(allftypes,
+                            key=lambda f: face.index(f),
+                            reverse=True))
+    else:
+        return False
+ 
+def twopair(hand):
+    allfaces = [f for f,s in hand]
+    allftypes = set(allfaces)
+    pairs = [f for f in allftypes if allfaces.count(f) == 2]
+    if len(pairs) != 2:
+        return False
+    p0, p1 = pairs
+    other = [(allftypes - set(pairs)).pop()]
+    return 'two-pair', pairs + other if face.index(p0) > face.index(p1) else pairs[::-1] + other
+ 
+def onepair(hand):
+    allfaces = [f for f,s in hand]
+    allftypes = set(allfaces)
+    pairs = [f for f in allftypes if allfaces.count(f) == 2]
+    if len(pairs) != 1:
+        return False
+    allftypes.remove(pairs[0])
+    return 'one-pair', pairs + sorted(allftypes,
+                                      key=lambda f: face.index(f),
+                                      reverse=True)
+ 
+def highcard(hand):
+    allfaces = [f for f,s in hand]
+    return 'high-card', sorted(allfaces,
+                               key=lambda f: face.index(f),
+                               reverse=True)
+ 
+handrankorder =  (straightflush, fourofakind, fullhouse,
+                  flush, straight, threeofakind,
+                  twopair, onepair, highcard)
+ 
+def rank(cards):
+    hand = handy(cards)
+    for ranker in handrankorder:
+        rank = ranker(hand)
+        if rank:
+            break
+    assert rank, "Invalid: Failed to rank cards: %r" % cards
+    return rank
+ 
+def handy(cards='2♥ 2♦ 2♣ k♣ q♦'):
+    hand = []
+    for card in cards.split():
+        f, s = card[:-1], card[-1]
+        assert f in face, "Invalid: Don't understand card face %r" % f
+        assert s in suit, "Invalid: Don't understand card suit %r" % s
+        hand.append(Card(f, s))
+    assert len(hand) == 5, "Invalid: Must be 5 cards in a hand, not %i" % len(hand)
+    assert len(set(hand)) == 5, "Invalid: All cards in the hand must be unique %r" % cards
+    return hand
+ 
+ 
+if __name__ == '__main__':
+    hands = ["2♥ 2♦ 2♣ k♣ q♦",
+     "2♥ 5♥ 7♦ 8♣ 9♠",
+     "a♥ 2♦ 3♣ 4♣ 5♦",
+     "2♥ 3♥ 2♦ 3♣ 3♦",
+     "2♥ 7♥ 2♦ 3♣ 3♦",
+     "2♥ 7♥ 7♦ 7♣ 7♠",
+     "10♥ j♥ q♥ k♥ a♥"] + [
+     "4♥ 4♠ k♠ 5♦ 10♠",
+     "q♣ 10♣ 7♣ 6♣ 4♣",
+     ]
+    print("%-18s %-15s %s" % ("HAND", "CATEGORY", "TIE-BREAKER"))
+    for cards in hands:
+        r = rank(cards)
+        print("%-18r %-15s %r" % (cards, r[0], r[1]))
+

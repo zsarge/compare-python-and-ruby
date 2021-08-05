@@ -1,0 +1,107 @@
+====RUBY=====
+require 'singleton'
+class MySingleton
+   include Singleton
+   # constructor and/or methods go here
+end
+ 
+a = MySingleton.instance # instance is only created the first time it is requested
+b = MySingleton.instance
+puts a.equal?(b) # outputs "true"
+
+====RUBY=====
+class Singleton(name) {
+    static instance;
+ 
+    method new(name) {
+        instance := Singleton.bless(Hash(:name => name));
+    }
+    method new {
+        Singleton.new(nil);
+    }
+}
+ 
+var s1 = Singleton('foo');
+say s1.name;                #=> 'foo'
+say s1.object_id;           #=> '30424504'
+ 
+var s2 = Singleton();
+say s2.name;                #=> 'foo'
+say s2.object_id;           #=> '30424504'
+ 
+s2.name = 'bar';            # change name in s2
+say s1.name;                #=> 'bar'
+
+====PYTHON=====
+>>> class Borg(object):
+	__state = {}
+	def __init__(self):
+		self.__dict__ = self.__state
+	# Any other class names/methods
+ 
+ 
+>>> b1 = Borg()
+>>> b2 = Borg()
+>>> b1 is b2
+False
+>>> b1.datum = range(5)
+>>> b1.datum
+[0, 1, 2, 3, 4]
+>>> b2.datum
+[0, 1, 2, 3, 4]
+>>> b1.datum is b2.datum
+True
+>>> # For any datum!
+
+====PYTHON=====
+ 
+import abc
+ 
+class Singleton(object):
+    """
+    Singleton class implementation
+    """
+    __metaclass__ = abc.ABCMeta
+ 
+    state = 1 #class attribute to be used as the singleton's attribute
+ 
+    @abc.abstractmethod
+    def __init__(self):
+        pass #this prevents instantiation!
+ 
+    @classmethod
+    def printSelf(cls):
+        print cls.state #prints out the value of the singleton's state
+ 
+#demonstration
+if __name__ == "__main__":
+    try:
+        a = Singleton() #instantiation will fail!
+    except TypeError as err:
+        print err
+    Singleton.printSelf()
+    print Singleton.state
+    Singleton.state = 2
+    Singleton.printSelf()
+    print Singleton.state
+ 
+
+====PYTHON=====
+ 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+ 
+class Logger(object):
+    __metaclass__ = Singleton
+ 
+
+====PYTHON=====
+ 
+class Logger(metaclass=Singleton):
+    pass
+ 
+

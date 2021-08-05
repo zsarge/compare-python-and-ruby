@@ -1,0 +1,171 @@
+====RUBY=====
+def sma(n) Proc(Float64, Float64)
+	a = Array(Float64).new
+	->(x : Float64) {
+		a.shift if a.size == n
+		a.push x
+		a.sum / a.size.to_f
+	}
+end
+ 
+sma3, sma5 = sma(3), sma(5)
+ 
+# Copied from the Ruby solution.
+(1.upto(5).to_a + 5.downto(1).to_a).each do |n|
+	printf "%d: sma3 = %.3f - sma5 = %.3f\n", n, sma3.call(n.to_f), sma5.call(n.to_f)
+end
+
+====RUBY=====
+def simple_moving_average(size)
+  nums = []
+  sum = 0.0
+  lambda do |hello|
+    nums << hello
+    goodbye = nums.length > size ? nums.shift : 0
+    sum += hello - goodbye
+    sum / nums.length
+  end
+end
+ 
+ma3 = simple_moving_average(3)
+ma5 = simple_moving_average(5)
+ 
+(1.upto(5).to_a + 5.downto(1).to_a).each do |num|
+  printf "Next number = %d, SMA_3 = %.3f, SMA_5 = %.1f\n", 
+    num, ma3.call(num), ma5.call(num)
+end
+
+====RUBY=====
+class MovingAverager
+  def initialize(size)
+    @size = size
+    @nums = []
+    @sum = 0.0
+  end
+  def <<(hello)
+    @nums << hello
+    goodbye = @nums.length > @size ? @nums.shift : 0
+    @sum += hello - goodbye
+    self
+  end
+  def average
+    @sum / @nums.length
+  end
+  alias to_f average
+  def to_s
+    average.to_s
+  end
+end
+ 
+ma3 = MovingAverager.new(3)
+ma5 = MovingAverager.new(5)
+ 
+(1.upto(5).to_a + 5.downto(1).to_a).each do |num|
+  printf "Next number = %d, SMA_3 = %.3f, SMA_5 = %.1f\n", 
+    num, ma3 << num, ma5 <<num
+end
+
+====RUBY=====
+func simple_moving_average(period) {
+ 
+    var list = []
+    var sum = 0
+ 
+    func (number) {
+        list.append(number)
+        sum += number
+        if (list.len > period) {
+            sum -= list.shift
+        }
+        (sum / list.length)
+    }
+}
+ 
+var ma3 = simple_moving_average(3)
+var ma5 = simple_moving_average(5)
+ 
+for num (1..5, flip(1..5)) {
+  printf("Next number = %d, SMA_3 = %.3f, SMA_5 = %.1f\n",
+    num, ma3.call(num), ma5.call(num))
+}
+
+====RUBY=====
+class sma_generator(period, list=[], sum=0) {
+ 
+    method SMA(number) {
+        list.append(number)
+        sum += number
+        if (list.len > period) {
+            sum -= list.shift
+        }
+        (sum / list.len)
+    }
+}
+ 
+var ma3 = sma_generator(3)
+var ma5 = sma_generator(5)
+ 
+for num (1..5, flip(1..5)) {
+  printf("Next number = %d, SMA_3 = %.3f, SMA_5 = %.1f\n",
+    num, ma3.SMA(num), ma5.SMA(num))
+}
+
+====PYTHON=====
+from collections import deque
+ 
+def simplemovingaverage(period):
+    assert period == int(period) and period > 0, "Period must be an integer >0"
+ 
+    summ = n = 0.0
+    values = deque([0.0] * period)     # old value queue
+ 
+    def sma(x):
+        nonlocal summ, n
+ 
+        values.append(x)
+        summ += x - values.popleft()
+        n = min(n+1, period)
+        return summ / n
+ 
+    return sma
+
+====PYTHON=====
+from collections import deque
+ 
+class Simplemovingaverage():
+    def __init__(self, period):
+        assert period == int(period) and period > 0, "Period must be an integer >0"
+        self.period = period
+        self.stream = deque()
+ 
+    def __call__(self, n):
+        stream = self.stream
+        stream.append(n)    # appends on the right
+        streamlength = len(stream)
+        if streamlength > self.period:
+            stream.popleft()
+            streamlength -= 1
+        if streamlength == 0:
+            average = 0
+        else:
+            average = sum( stream ) / streamlength
+ 
+        return average
+
+====PYTHON=====
+if __name__ == '__main__':
+    for period in [3, 5]:
+        print ("\nSIMPLE MOVING AVERAGE (procedural): PERIOD =", period)
+        sma = simplemovingaverage(period)
+        for i in range(1,6):
+            print ("  Next number = %-2g, SMA = %g " % (i, sma(i)))
+        for i in range(5, 0, -1):
+            print ("  Next number = %-2g, SMA = %g " % (i, sma(i)))
+    for period in [3, 5]:
+        print ("\nSIMPLE MOVING AVERAGE (class based): PERIOD =", period)
+        sma = Simplemovingaverage(period)
+        for i in range(1,6):
+            print ("  Next number = %-2g, SMA = %g " % (i, sma(i)))
+        for i in range(5, 0, -1):
+            print ("  Next number = %-2g, SMA = %g " % (i, sma(i)))
+

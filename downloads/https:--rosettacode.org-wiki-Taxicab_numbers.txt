@@ -1,0 +1,115 @@
+====RUBY=====
+def taxicab_number(nmax=1200)
+  [*1..nmax].repeated_combination(2).group_by{|x,y| x**3 + y**3}.select{|k,v| v.size>1}.sort
+end
+ 
+t = [0] + taxicab_number
+ 
+[*1..25, *2000...2007].each do |i|
+  puts "%4d: %10d" % [i, t[i][0]] + t[i][1].map{|a| " = %4d**3 + %4d**3" % a}.join
+end
+
+====RUBY=====
+var (start=1, end=25) = ARGV.map{.to_i}...
+ 
+func display (h, start, end) {
+    var i = start
+    for n in [h.grep {|_,v| v.len > 1 }.keys.sort_by{.to_i}[start-1 .. end-1]] {
+        printf("%4d %10d  =>\t%s\n", i++, n,
+            h{n}.map{ "%4d³ + %-s" % (.first, "#{.last}³") }.join(",\t"))
+    }
+}
+ 
+var taxi = Hash()
+var taxis = 0
+var terminate = 0
+ 
+for c1 (1..Inf) {
+    if (0<terminate && terminate<c1) {
+        display(taxi, start, end)
+        break
+    }
+    var c = c1**3
+    for c2 (1..c1) {
+        var this = (c2**3 + c)
+        taxi{this} := [] << [c2, c1]
+        ++taxis if (taxi{this}.len == 2)
+        if (taxis==end && !terminate) {
+            terminate = taxi.grep{|_,v| v.len > 1 }.keys.map{.to_i}.max.root(3)
+        }
+    }
+}
+
+====PYTHON=====
+from collections import defaultdict
+from itertools import product
+from pprint import pprint as pp
+ 
+cube2n = {x**3:x for x in range(1, 1201)}
+sum2cubes = defaultdict(set)
+for c1, c2 in product(cube2n, cube2n):
+	if c1 >= c2: sum2cubes[c1 + c2].add((cube2n[c1], cube2n[c2]))
+ 
+taxied = sorted((k, v) for k,v in sum2cubes.items() if len(v) >= 2)
+ 
+#pp(len(taxied))  # 2068
+for t in enumerate(taxied[:25], 1):
+    pp(t)
+print('...')    
+for t in enumerate(taxied[2000-1:2000+6], 2000):
+    pp(t)
+
+====PYTHON=====
+cubes, crev = [x**3 for x in range(1,1200)], {}
+# for cube root lookup
+for x,x3 in enumerate(cubes): crev[x3] = x + 1
+ 
+sums = sorted(x+y for x in cubes for y in cubes if y < x)
+ 
+idx = 0
+for i in range(1, len(sums)-1):
+    if sums[i-1] != sums[i] and sums[i] == sums[i+1]:
+        idx += 1
+        if idx > 25 and idx < 2000 or idx > 2006: continue
+ 
+        n,p = sums[i],[]
+        for x in cubes:
+            if n-x < x: break
+            if n-x in crev:
+                p.append((crev[x], crev[n-x]))
+        print "%4d: %10d"%(idx,n),
+        for x in p: print " = %4d^3 + %4d^3"%x,
+        print
+
+====PYTHON=====
+from heapq import heappush, heappop
+ 
+def cubesum():
+    h,n = [],1
+    while True:
+        while not h or h[0][0] > n**3: # could also pre-calculate cubes
+            heappush(h, (n**3 + 1, n, 1))
+            n += 1
+ 
+        (s, x, y) = heappop(h)
+        yield((s, x, y))
+        y += 1
+        if y < x:    # should be y <= x?
+            heappush(h, (x**3 + y**3, x, y))
+ 
+def taxis():
+    out = [(0,0,0)]
+    for s in cubesum():
+        if s[0] == out[-1][0]:
+            out.append(s)
+        else:
+            if len(out) > 1: yield(out)
+            out = [s]
+ 
+n = 0
+for x in taxis():
+    n += 1
+    if n >= 2006: break
+    if n <= 25 or n >= 2000:
+        print(n, x)
+

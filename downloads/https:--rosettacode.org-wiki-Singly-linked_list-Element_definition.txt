@@ -1,0 +1,67 @@
+====RUBY=====
+class ListNode
+  attr_accessor :value, :succ
+ 
+  def initialize(value, succ=nil)
+    self.value = value
+    self.succ = succ
+  end
+ 
+  def each(&b)
+    yield self
+    succ.each(&b) if succ
+  end
+ 
+  include Enumerable
+ 
+  def self.from_array(ary)
+    head = self.new(ary[0], nil)
+    prev = head
+    ary[1..-1].each do |val|
+      node = self.new(val, nil)
+      prev.succ = node
+      prev = node
+    end
+    head
+  end
+end
+ 
+list = ListNode.from_array([1,2,3,4])
+
+====RUBY=====
+var node = Hash.new(
+    data => 'say what',
+    next => foo_node,
+);
+ 
+node{:next} = bar_node;  # mutable
+
+====PYTHON=====
+class LinkedList(object):
+     """USELESS academic/classroom example of a linked list implemented in Python.
+        Don't ever consider using something this crude!  Use the built-in list() type!
+     """
+	class Node(object):
+		def __init__(self, item):
+			self.value  = item
+			self.next = None
+	def __init__(self, item=None):
+		if item is not None:
+			self.head = Node(item); self.tail = self.head
+		else:
+			self.head = None; self.tail = None
+	def append(self, item):
+		if not self.head:
+			self.head = Node(item)
+			self.tail = self.head
+		elif self.tail:
+			self.tail.next = Node(item)
+			self.tail = self.tail.next
+		else:
+			self.tail = Node(item)
+	def __iter__(self):
+		cursor = self.head
+		while cursor:
+			yield cursor.value
+			cursor = cursor.next
+

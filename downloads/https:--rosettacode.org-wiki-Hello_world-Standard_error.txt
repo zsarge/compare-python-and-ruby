@@ -1,0 +1,24 @@
+====RUBY=====
+STDERR.puts "Goodbye, World!"
+
+====RUBY=====
+warn "Goodbye, World!"
+
+====RUBY=====
+STDERR.println("Goodbye, World!");
+
+====PYTHON=====
+import sys
+ 
+print >> sys.stderr, "Goodbye, World!"
+
+====PYTHON=====
+import sys
+ 
+print("Goodbye, World!", file=sys.stderr)
+
+====PYTHON=====
+import sys
+ 
+sys.stderr.write("Goodbye, World!\n")
+

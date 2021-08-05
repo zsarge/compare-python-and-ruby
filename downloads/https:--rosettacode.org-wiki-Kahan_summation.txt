@@ -1,0 +1,95 @@
+====RUBY=====
+epsilon = 1.0
+epsilon /= 2 until 1.0 + epsilon == 1.0
+ 
+a = 1.0
+b = epsilon
+c = -b
+ 
+puts "epsilon    : #{epsilon}"
+puts "(a+b)+c    : #{(a+b)+c}"
+puts "[a,b,c].sum: #{[a,b,c].sum}" 
+ 
+
+====PYTHON=====
+epsilon = 1.0
+while 1.0 + epsilon != 1.0:
+    epsilon = epsilon / 2.0
+
+====PYTHON=====
+>>> from decimal import *
+>>> 
+>>> getcontext().prec = 6
+>>> 
+>>> def kahansum(input):
+    summ = c = 0
+    for num in input:
+        y = num - c
+        t = summ + y
+        c = (t - summ) - y
+        summ = t
+    return summ
+ 
+>>> a, b, c = [Decimal(n) for n in '10000.0 3.14159 2.71828'.split()]
+>>> a, b, c
+(Decimal('10000.0'), Decimal('3.14159'), Decimal('2.71828'))
+>>> 
+>>> (a + b) + c
+Decimal('10005.8')
+>>> kahansum([a, b, c])
+Decimal('10005.9')
+>>> 
+>>> 
+>>> sum([a, b, c])
+Decimal('10005.8')
+>>> # it seems Python's sum() doesn't make use of this technique.
+>>> 
+>>> # More info on the current Decimal context:
+>>> getcontext()
+Context(prec=6, rounding=ROUND_HALF_EVEN, Emin=-999999, Emax=999999, capitals=1, clamp=0, flags=[Inexact, Rounded], traps=[InvalidOperation, DivisionByZero, Overflow])
+>>> 
+>>> 
+>>> ## Lets try the simple summation with more precision for comparison
+>>> getcontext().prec = 20
+>>> (a + b) + c
+Decimal('10005.85987')
+>>> 
+
+====PYTHON=====
+>>> eps = 1.0
+>>> while 1.0 + eps != 1.0:
+	eps = eps / 2.0
+ 
+ 
+>>> eps
+1.1102230246251565e-16
+>>> (1.0 + eps) - eps
+0.9999999999999999
+>>> kahansum([1, eps, -eps])
+1.0
+>>> 
+>>> 
+>>> # Info on this implementation of floats
+>>> import sys
+>>> sys.float_info
+sys.float_info(max=1.7976931348623157e+308, max_exp=1024, max_10_exp=308, min=2.2250738585072014e-308, min_exp=-1021, min_10_exp=-307, dig=15, mant_dig=53, epsilon=2.220446049250313e-16, radix=2, rounds=1)
+>>> 
+
+====PYTHON=====
+>>> from decimal import localcontext, Decimal
+>>> 
+>>> with localcontext() as ctx:
+	one, ten = Decimal('1.0'), Decimal('10')
+	eps = one
+	while one + eps != one:
+		eps = eps / ten
+	print('eps is:', eps)
+	print('Simple sum is:', (one + eps) - eps)
+	print('Kahan sum is:', kahansum([one, eps, -eps]))
+ 
+ 
+eps is: 1E-28
+Simple sum is: 0.9999999999999999999999999999
+Kahan sum is: 1.000000000000000000000000000
+>>> 
+

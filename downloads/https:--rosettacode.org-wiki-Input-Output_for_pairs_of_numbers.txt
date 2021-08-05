@@ -1,0 +1,58 @@
+====RUBY=====
+n = gets.to_i
+n.times do
+  a, b = gets.split.map(&:to_i)
+  puts a + b
+end
+
+====PYTHON=====
+def do_stuff(a, b):
+	return a + b
+ 
+t = input()
+for x in range(0, t):
+	a, b = raw_input().strip().split()
+	print do_stuff(int(a), int(b))
+
+====PYTHON=====
+>>> try: raw_input
+except NameError: raw_input = input
+ 
+>>> for i in range(int(raw_input())):
+	print(sum(int(numberstring)
+		  for numberstring
+		  in raw_input().strip().split()))
+ 
+ 
+5
+1 2
+3
+10 20
+30
+-3 5
+2
+100 2
+102
+5 5
+10
+>>> 
+
+====PYTHON=====
+>>> for i in range(int(raw_input('lines: '))):
+	print(sum(int(numberstring) 
+                  for numberstring in raw_input('two numbers: ').strip().split()))
+ 
+ 
+lines: 5
+two numbers: 1 2
+3
+two numbers: 10 20
+30
+two numbers: -3 5
+2
+two numbers: 100 2
+102
+two numbers: 5 5
+10
+>>> 
+

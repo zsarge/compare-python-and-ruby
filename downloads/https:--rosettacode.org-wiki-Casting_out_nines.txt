@@ -1,0 +1,63 @@
+====RUBY=====
+N = 2
+base = 10
+c1 = 0
+c2 = 0
+ 
+for k in 1 .. (base ** N) - 1
+    c1 = c1 + 1
+    if k % (base - 1) == (k * k) % (base - 1) then
+        c2 = c2 + 1
+        print "%d " % [k]
+    end
+end
+ 
+puts
+print "Trying %d numbers instead of %d numbers saves %f%%" % [c2, c1, 100.0 - 100.0 * c2 / c1]
+
+====RUBY=====
+func cast_out(base = 10, min = 1, max = (base**2 - 1)) {
+ 
+    var b9  = base-1
+    var ran = b9.range.grep {|n| n%b9 == (n*n % b9) }
+ 
+    var x = min//b9
+    var r = []
+ 
+    loop {
+        ran.each {|n|
+            var k = (b9*x + n)
+            return r if (k > max)
+            r << k if (k >= min)
+        }
+        ++x
+    }
+ 
+    return r
+}
+ 
+say cast_out().join(' ')
+say cast_out(16).join(' ')
+say cast_out(17).join(' ')
+
+====PYTHON=====
+# Casting out Nines
+#
+# Nigel Galloway: June 27th., 2012,
+#
+def CastOut(Base=10, Start=1, End=999999):
+  ran = [y for y in range(Base-1) if y%(Base-1) == (y*y)%(Base-1)]
+  x,y = divmod(Start, Base-1)
+  while True:
+    for n in ran:
+      k = (Base-1)*x + n
+      if k < Start:
+        continue
+      if k > End:
+        return
+      yield k
+    x += 1
+ 
+for V in CastOut(Base=16,Start=1,End=255):
+  print(V, end=' ')
+

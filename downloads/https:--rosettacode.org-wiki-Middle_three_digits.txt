@@ -1,0 +1,174 @@
+====RUBY=====
+def middle_three_digits(num)
+  # minus sign doesn't factor into digit count,
+  # and calling #abs acts as a duck-type assertion
+  num = num.abs
+ 
+  # convert to string and find length
+  length = (str = num.to_s).length
+ 
+  # check validity
+  raise ArgumentError, "Number must have at least three digits" if length < 3
+  raise ArgumentError, "Number must have an odd number of digits" if length.even?
+ 
+  return str[length/2 - 1, 3].to_i
+end
+
+====RUBY=====
+samples = [ 
+  123, 12345, 1234567, 987654321, 10001, -10001, -123, -100, 100, -12345,
+  1, 2, -1, -10, 2002, -2002, 0 
+]
+ 
+left_column_width = samples.map { |n| n.to_s.length }.max
+samples.each do |n|
+  print "%#{left_column_width}d: " % n
+  begin
+    puts "%03d" % middle_three_digits(n)
+  rescue ArgumentError => e
+    puts e
+  end
+end
+
+====RUBY=====
+func middle_three(n) {
+  var l = n.len;
+  if (l < 3) {
+    "#{n} is too short"
+  } elsif (l.is_even) {
+    "#{n} has an even number of digits"
+  } else {
+    "The three middle digits of #{n} are: " + n.digits.ft(l-3 / 2, l/2 + 1).join
+  }
+}
+ 
+var nums = %n(
+    123 12345 1234567 987654321 10001 -10001 -123 -100 100 -12345
+    1 2 -1 -10 2002 -2002 0
+);
+nums.each { say middle_three(_) };
+
+====PYTHON=====
+>>> def middle_three_digits(i):
+	s = str(abs(i))
+	length = len(s)
+	assert length >= 3 and length % 2 == 1, "Need odd and >= 3 digits"
+	mid = length // 2
+	return s[mid-1:mid+2]
+ 
+>>> passing = [123, 12345, 1234567, 987654321, 10001, -10001, -123, -100, 100, -12345]
+>>> failing = [1, 2, -1, -10, 2002, -2002, 0]
+>>> for x in passing + failing:
+	try:
+		answer = middle_three_digits(x)
+	except AssertionError as error:
+		answer = error
+	print("middle_three_digits(%s) returned: %r" % (x, answer))
+ 
+ 
+middle_three_digits(123) returned: '123'
+middle_three_digits(12345) returned: '234'
+middle_three_digits(1234567) returned: '345'
+middle_three_digits(987654321) returned: '654'
+middle_three_digits(10001) returned: '000'
+middle_three_digits(-10001) returned: '000'
+middle_three_digits(-123) returned: '123'
+middle_three_digits(-100) returned: '100'
+middle_three_digits(100) returned: '100'
+middle_three_digits(-12345) returned: '234'
+middle_three_digits(1) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(2) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(-1) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(-10) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(2002) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(-2002) returned: AssertionError('Need odd and >= 3 digits',)
+middle_three_digits(0) returned: AssertionError('Need odd and >= 3 digits',)
+>>> 
+
+====PYTHON=====
+'''Middle 3 digits'''
+ 
+ 
+# mid3digits :: Int -> Either String String
+def mid3digits(n):
+    '''Either the middle three digits,
+       or an explanatory string.'''
+    m = abs(n)
+    s = str(m)
+    return Left('Less than 3 digits') if (100 > m) else (
+        Left('Even digit count') if even(len(s)) else Right(
+            s[(len(s) - 3) // 2:][0:3]
+        )
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+def main():
+    '''Test'''
+ 
+    def bracketed(x):
+        return '(' + str(x) + ')'
+ 
+    print(
+        tabulated('Middle three digits, where defined:\n')(str)(
+            either(bracketed)(str)
+        )(mid3digits)([
+            123, 12345, 1234567, 987654321, 10001, -10001, -123,
+            -100, 100, -12345, 1, 2, -1, -10, 2002, -2002, 0
+        ])
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# Left :: a -> Either a b
+def Left(x):
+    '''Constructor for an empty Either (option type) value
+       with an associated string.'''
+    return {'type': 'Either', 'Right': None, 'Left': x}
+ 
+ 
+# Right :: b -> Either a b
+def Right(x):
+    '''Constructor for a populated Either (option type) value'''
+    return {'type': 'Either', 'Left': None, 'Right': x}
+ 
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# either :: (a -> c) -> (b -> c) -> Either a b -> c
+def either(fl):
+    '''The application of fl to e if e is a Left value,
+       or the application of fr to e if e is a Right value.'''
+    return lambda fr: lambda e: fl(e['Left']) if (
+        None is e['Right']
+    ) else fr(e['Right'])
+ 
+ 
+# even :: Int -> Bool
+def even(x):
+    '''Is x even ?'''
+    return 0 == x % 2
+ 
+ 
+# tabulated :: String -> (b -> String) -> (a -> b) -> [a] -> String
+def tabulated(s):
+    '''Heading -> x display function -> fx display function ->
+                f -> value list -> tabular string.'''
+    def go(xShow, fxShow, f, xs):
+        w = max(map(compose(len)(str), xs))
+        return s + '\n' + '\n'.join(
+            xShow(x).rjust(w, ' ') + ' -> ' + fxShow(f(x)) for x in xs
+        )
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+if __name__ == '__main__':
+    main()
+

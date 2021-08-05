@@ -1,0 +1,195 @@
+====RUBY=====
+require 'tk'
+$str = TkVariable.new("Hello World! ")
+$dir = :right
+ 
+def animate
+  $str.value = shift_char($str.value, $dir)
+  $root.after(125) {animate}
+end
+ 
+def shift_char(str, dir)
+  case dir
+  when :right then str[-1,1] + str[0..-2]
+  when :left  then str[1..-1] + str[0,1]
+  end
+end
+ 
+$root = TkRoot.new("title" => "Basic Animation")
+ 
+TkLabel.new($root) do
+  textvariable $str
+  font "Courier 14"
+  pack {side 'top'}
+  bind("ButtonPress-1") {$dir = {:right=>:left,:left=>:right}[$dir]}
+end
+ 
+animate
+Tk.mainloop
+
+====RUBY=====
+Shoes.app do
+  @direction = 1
+  @label = para "Hello World! ", :family => 'monospace'
+ 
+  click {|button, left, top| @direction *= -1 if button == 1}
+ 
+  animate(8) do |f| 
+    t = @label.text
+    @label.text = @direction > 0 ? t[-1] + t[0..-2] : t[1..-1] + t[0]
+  end
+end
+
+====PYTHON=====
+txt = "Hello, world! "
+left = True
+ 
+def draw():
+    global txt
+    background(128)
+    text(txt, 10, height / 2)
+    if frameCount % 10 == 0:
+        if (left):
+            txt = rotate(txt, 1)
+        else:
+            txt = rotate(txt, -1)
+        println(txt)
+ 
+def mouseReleased():
+    global left
+    left = not left
+ 
+def rotate(text, startIdx):
+    rotated = text[startIdx:] + text[:startIdx]
+    return rotated
+ 
+
+====PYTHON=====
+#!/usr/bin/env python3
+import sys
+ 
+from PyQt5.QtCore import QBasicTimer, Qt
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QApplication, QLabel
+ 
+ 
+class Marquee(QLabel):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.right_to_left_direction = True
+        self.initUI()
+        self.timer = QBasicTimer()
+        self.timer.start(80, self)
+ 
+    def initUI(self):
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setText("Hello World! ")
+        self.setFont(QFont(None, 50, QFont.Bold))
+        # make more irritating for the authenticity with <marquee> element
+        self.setStyleSheet("QLabel {color: cyan; }")
+ 
+    def timerEvent(self, event):
+        i = 1 if self.right_to_left_direction else -1
+        self.setText(self.text()[i:] + self.text()[:i])  # rotate
+ 
+    def mouseReleaseEvent(self, event):  # change direction on mouse release
+        self.right_to_left_direction = not self.right_to_left_direction
+ 
+    def keyPressEvent(self, event):  # exit on Esc
+        if event.key() == Qt.Key_Escape:
+            self.close()
+ 
+ 
+app = QApplication(sys.argv)
+w = Marquee()
+# center widget on the screen
+w.adjustSize()  # update w.rect() now
+w.move(QApplication.instance().desktop().screen().rect().center()
+       - w.rect().center())
+w.show()
+sys.exit(app.exec())
+
+====PYTHON=====
+import pygame, sys
+from pygame.locals import *
+pygame.init()
+ 
+YSIZE = 40
+XSIZE = 150
+ 
+TEXT = "Hello World! "
+FONTSIZE = 32
+ 
+LEFT = False
+RIGHT = True
+ 
+DIR = RIGHT
+ 
+TIMETICK = 180
+TICK = USEREVENT + 2
+ 
+TEXTBOX = pygame.Rect(10,10,XSIZE,YSIZE)
+ 
+pygame.time.set_timer(TICK, TIMETICK)
+ 
+window = pygame.display.set_mode((XSIZE, YSIZE))
+pygame.display.set_caption("Animation")
+ 
+font = pygame.font.SysFont(None, FONTSIZE)
+screen = pygame.display.get_surface()
+ 
+def rotate():
+    index = DIR and -1 or 1
+    global TEXT
+    TEXT = TEXT[index:]+TEXT[:index]
+ 
+def click(position):
+    if TEXTBOX.collidepoint(position):
+        global DIR
+        DIR = not DIR
+ 
+def draw():
+    surface = font.render(TEXT, True, (255,255,255), (0,0,0))
+    global TEXTBOX
+    TEXTBOX = screen.blit(surface, TEXTBOX)
+ 
+def input(event):
+    if event.type == QUIT:
+        sys.exit(0)
+    elif event.type == MOUSEBUTTONDOWN:
+        click(event.pos)
+    elif event.type == TICK:
+        draw()
+        rotate()
+ 
+while True:
+    input(pygame.event.wait())
+    pygame.display.flip()
+
+====PYTHON=====
+import Tkinter as tki
+ 
+def scroll_text(s, how_many):
+    return s[how_many:] + s[:how_many]
+ 
+direction = 1
+tk = tki.Tk()
+var = tki.Variable(tk)
+ 
+def mouse_handler(point):
+    global direction
+    direction *= -1
+ 
+def timer_handler():
+    var.set(scroll_text(var.get(),direction))
+    tk.after(125, timer_handler)
+ 
+var.set('Hello, World! ')
+tki.Label(tk, textvariable=var).pack()
+tk.bind("<Button-1>", mouse_handler)
+tk.after(125, timer_handler)
+tk.title('Python Animation')
+tki.mainloop()
+ 
+

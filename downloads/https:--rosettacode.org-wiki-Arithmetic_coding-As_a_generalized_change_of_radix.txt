@@ -1,0 +1,321 @@
+====RUBY=====
+def cumulative_freq(freq)
+  cf = {}
+  total = 0
+  freq.keys.sort.each do |b|
+    cf[b] = total
+    total += freq[b]
+  end
+  return cf
+end
+ 
+def arithmethic_coding(bytes, radix)
+ 
+  # The frequency characters
+  freq = Hash.new(0)
+  bytes.each { |b| freq[b] += 1 }
+ 
+  # The cumulative frequency table
+  cf = cumulative_freq(freq)
+ 
+  # Base
+  base = bytes.size
+ 
+  # Lower bound
+  lower = 0
+ 
+  # Product of all frequencies
+  pf = 1
+ 
+  # Each term is multiplied by the product of the
+  # frequencies of all previously occurring symbols
+  bytes.each do |b|
+    lower = lower*base + cf[b]*pf
+    pf *= freq[b]
+  end
+ 
+  # Upper bound
+  upper = lower+pf
+ 
+  pow = 0
+  loop do
+    pf /= radix
+    break if pf==0
+    pow += 1
+  end
+ 
+  enc = ((upper-1) / radix**pow)
+  [enc, pow, freq]
+end
+ 
+def arithmethic_decoding(enc, radix, pow, freq)
+ 
+  # Multiply enc by radix^pow
+  enc *= radix**pow;
+ 
+  # Base
+  base = freq.values.reduce(:+)
+ 
+  # Create the cumulative frequency table
+  cf = cumulative_freq(freq)
+ 
+  # Create the dictionary
+  dict = {}
+  cf.each_pair do |k,v|
+    dict[v] = k
+  end
+ 
+  # Fill the gaps in the dictionary
+  lchar = nil
+  (0...base).each do |i|
+    if dict.has_key?(i)
+      lchar = dict[i]
+    elsif lchar != nil
+      dict[i] = lchar
+    end
+  end
+ 
+  # Decode the input number
+  decoded = []
+  (0...base).reverse_each do |i|
+    pow = base**i
+    div = enc/pow
+ 
+    c  = dict[div]
+    fv = freq[c]
+    cv = cf[c]
+ 
+    rem = ((enc - pow*cv) / fv)
+ 
+    enc = rem
+    decoded << c
+  end
+ 
+  # Return the decoded output
+  return decoded
+end
+ 
+radix = 10      # can be any integer greater or equal with 2
+ 
+%w(DABDDB DABDDBBDDBA ABRACADABRA TOBEORNOTTOBEORTOBEORNOT).each do |str|
+ 
+  enc, pow, freq = arithmethic_coding(str.bytes, radix)
+  dec = arithmethic_decoding(enc, radix, pow, freq).map{|b| b.chr }.join
+ 
+  printf("%-25s=> %19s * %d^%s\n", str, enc, radix, pow)
+ 
+  if str != dec
+    raise "\tHowever that is incorrect!"
+  end
+end
+
+====RUBY=====
+func cumulative_freq(freq) {
+    var cf = Hash()
+    var total = 0
+    256.range.each { |b|
+        if (freq.contains(b)) {
+            cf{b} = total
+            total += freq{b}
+        }
+    }
+    return cf
+}
+ 
+func arithmethic_coding(bytes, radix=10) {
+ 
+    # The frequency characters
+    var freq = Hash()
+    bytes.each { |b| freq{b} := 0 ++ }
+ 
+    # The cumulative frequency table
+    var cf = cumulative_freq(freq)
+ 
+    # Base
+    var base = bytes.len
+ 
+    # Lower bound
+    var L = 0
+ 
+    # Product of all frequencies
+    var pf = 1
+ 
+    # Each term is multiplied by the product of the
+    # frequencies of all previously occurring symbols
+    bytes.each { |b|
+        L = (L*base + cf{b}*pf)
+        pf *= freq{b}
+    }
+ 
+    # Upper bound
+    var U = L+pf
+ 
+    var pow = pf.log(radix).int
+    var enc = ((U-1) // radix**pow)
+ 
+    return (enc, pow, freq)
+}
+ 
+func arithmethic_decoding(enc, radix, pow, freq) {
+ 
+    # Multiply enc by radix^pow
+    enc *= radix**pow;
+ 
+    # Base
+    var base = freq.values.sum
+ 
+    # Create the cumulative frequency table
+    var cf = cumulative_freq(freq);
+ 
+    # Create the dictionary
+    var dict = Hash()
+    cf.each_kv { |k,v|
+        dict{v} = k
+    }
+ 
+    # Fill the gaps in the dictionary
+    var lchar = ''
+    base.range.each { |i|
+        if (dict.contains(i)) {
+            lchar = dict{i}
+        }
+        elsif (!lchar.is_empty) {
+            dict{i} = lchar
+        }
+    }
+ 
+    # Decode the input number
+    var decoded = []
+    base.range.reverse.each { |i|
+ 
+        var pow = base**i;
+        var div = enc//pow
+ 
+        var c  = dict{div}
+        var fv = freq{c}
+        var cv = cf{c}
+ 
+        var rem = ((enc - pow*cv) // fv)
+ 
+        enc = rem
+        decoded << c
+    }
+ 
+    # Return the decoded output
+    return decoded
+}
+ 
+var radix = 10;      # can be any integer greater or equal with 2
+ 
+%w(DABDDB DABDDBBDDBA ABRACADABRA TOBEORNOTTOBEORTOBEORNOT).each { |str|
+ 
+    var (enc, pow, freq) = arithmethic_coding(str.bytes, radix)
+    var dec = arithmethic_decoding(enc, radix, pow, freq).join_bytes('UTF-8')
+ 
+    printf("%-25s=> %19s * %d^%s\n", str, enc, radix, pow);
+ 
+    if (str != dec) {
+        die "\tHowever that is incorrect!"
+    }
+}
+
+====PYTHON=====
+from collections import Counter
+ 
+def cumulative_freq(freq):
+    cf = {}
+    total = 0
+    for b in range(256):
+        if b in freq:
+            cf[b] = total
+            total += freq[b]
+    return cf
+ 
+def arithmethic_coding(bytes, radix):
+ 
+    # The frequency characters
+    freq = Counter(bytes)
+ 
+    # The cumulative frequency table
+    cf = cumulative_freq(freq)
+ 
+    # Base
+    base = len(bytes)
+ 
+    # Lower bound
+    lower = 0
+ 
+    # Product of all frequencies
+    pf = 1
+ 
+    # Each term is multiplied by the product of the
+    # frequencies of all previously occurring symbols
+    for b in bytes:
+        lower = lower*base + cf[b]*pf
+        pf *= freq[b]
+ 
+    # Upper bound
+    upper = lower+pf
+ 
+    pow = 0
+    while True:
+        pf //= radix
+        if pf==0: break
+        pow += 1
+ 
+    enc = (upper-1) // radix**pow
+    return enc, pow, freq
+ 
+def arithmethic_decoding(enc, radix, pow, freq):
+ 
+    # Multiply enc by radix^pow
+    enc *= radix**pow;
+ 
+    # Base
+    base = sum(freq.values())
+ 
+    # Create the cumulative frequency table
+    cf = cumulative_freq(freq)
+ 
+    # Create the dictionary
+    dict = {}
+    for k,v in cf.items():
+        dict[v] = k
+ 
+    # Fill the gaps in the dictionary
+    lchar = None
+    for i in range(base):
+        if i in dict:
+            lchar = dict[i]
+        elif lchar is not None:
+            dict[i] = lchar
+ 
+    # Decode the input number
+    decoded = bytearray()
+    for i in range(base-1, -1, -1):
+        pow = base**i
+        div = enc//pow
+ 
+        c  = dict[div]
+        fv = freq[c]
+        cv = cf[c]
+ 
+        rem = (enc - pow*cv) // fv
+ 
+        enc = rem
+        decoded.append(c)
+ 
+    # Return the decoded output
+    return bytes(decoded)
+ 
+radix = 10      # can be any integer greater or equal with 2
+ 
+for str in b'DABDDB DABDDBBDDBA ABRACADABRA TOBEORNOTTOBEORTOBEORNOT'.split():
+    enc, pow, freq = arithmethic_coding(str, radix)
+    dec = arithmethic_decoding(enc, radix, pow, freq)
+ 
+    print("%-25s=> %19s * %d^%s" % (str, enc, radix, pow))
+ 
+    if str != dec:
+    	raise Exception("\tHowever that is incorrect!")
+

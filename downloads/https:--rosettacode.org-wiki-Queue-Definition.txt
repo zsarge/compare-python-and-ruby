@@ -1,0 +1,186 @@
+====RUBY=====
+require 'forwardable'
+ 
+# A FIFO queue contains elements in first-in, first-out order.
+# FIFO#push adds new elements to the end of the queue;
+# FIFO#pop or FIFO#shift removes elements from the front.
+class FIFO
+  extend Forwardable
+ 
+  # Creates a FIFO containing _objects_.
+  def self.[](*objects)
+    new.push(*objects)
+  end
+ 
+  # Creates an empty FIFO.
+  def initialize; @ary = []; end
+ 
+  # Appends _objects_ to the end of this FIFO. Returns self.
+  def push(*objects)
+    @ary.push(*objects)
+    self
+  end
+  alias << push
+  alias enqueue push
+ 
+  ##
+  # :method: pop
+  # :call-seq:
+  #   pop -> obj or nil
+  #   pop(n) -> ary
+  #
+  # Removes an element from the front of this FIFO, and returns it.
+  # Returns nil if the FIFO is empty.
+  #
+  # If passing a number _n_, removes the first _n_ elements, and returns
+  # an Array of them. If this FIFO contains fewer than _n_ elements,
+  # returns them all. If this FIFO is empty, returns an empty Array.
+  def_delegator :@ary, :shift, :pop
+  alias shift pop
+  alias dequeue shift
+ 
+  ##
+  # :method: empty?
+  # Returns true if this FIFO contains no elements.
+  def_delegator :@ary, :empty?
+ 
+  ##
+  # :method: size
+  # Returns the number of elements in this FIFO.
+  def_delegator :@ary, :size
+  alias length size
+ 
+  # Converts this FIFO to a String.
+  def to_s
+    "FIFO#{@ary.inspect}"
+  end
+  alias inspect to_s
+end
+
+====RUBY=====
+f = FIFO.new
+f.empty?                           # => true
+f.pop                              # => nil
+f.pop(2)                           # => []
+f.push(14)                         # => FIFO[14]
+f << "foo" << [1,2,3]              # => FIFO[14, "foo", [1, 2, 3]]
+f.enqueue("bar", Hash.new, "baz")
+# => FIFO[14, "foo", [1, 2, 3], "bar", {}, "baz"]
+f.size                             # => 6
+f.pop(3)                           # => [14, "foo", [1, 2, 3]]
+f.dequeue                          # => "bar"
+f.empty?                           # => false
+g = FIFO[:a, :b, :c]
+g.pop(2)                           # => [:a, :b]
+g.pop(2)                           # => [:c]
+g.pop(2)                           # => []
+
+====RUBY=====
+class FIFO(*array) {
+    method pop {
+        array.is_empty && die "underflow";
+        array.shift;
+    }
+    method push(*items) {
+        array += items;
+        self;
+    }
+    method empty {
+        array.len == 0;
+    }
+}
+
+====PYTHON=====
+   class FIFO(object):
+       def __init__(self, *args):
+           self.contents = list(args)
+       def __call__(self):
+           return self.pop()
+       def __len__(self):
+           return len(self.contents)
+       def pop(self):
+           return self.contents.pop(0)
+       def push(self, item):
+           self.contents.append(item)
+       def extend(self,*itemlist):
+           self.contents += itemlist
+       def empty(self):
+           return bool(self.contents)
+       def __iter__(self):
+           return self
+       def next(self):
+           if self.empty():
+               raise StopIteration
+           return self.pop()
+ 
+if __name__ == "__main__":
+    # Sample usage:
+    f = FIFO()
+    f.push(3)
+    f.push(2)
+    f.push(1)
+    while not f.empty():
+        print f.pop(),
+    # >>> 3 2 1
+    # Another simple example gives the same results:
+    f = FIFO(3,2,1)
+    while not f.empty():
+        print f(),
+    # Another using the default "truth" value of the object
+    # (implicitly calls on the length() of the object after
+    # checking for a __nonzero__ method
+    f = FIFO(3,2,1)
+    while f:
+        print f(),
+    # Yet another, using more Pythonic iteration:
+    f = FIFO(3,2,1)
+    for i in f:
+        print i,
+
+====PYTHON=====
+class FIFO:  ## NOT a new-style class, must not derive from "object"
+   def __init__(self,*args):
+       self.contents = list(args)
+   def __call__(self):
+       return self.pop()
+   def empty(self):
+       return bool(self.contents)
+   def pop(self):
+       return self.contents.pop(0)
+   def __getattr__(self, attr):
+       return getattr(self.contents,attr)
+   def next(self):
+       if not self:
+           raise StopIteration
+       return self.pop()
+
+====PYTHON=====
+from collections import deque
+fifo = deque()
+fifo. appendleft(value) # push
+value = fifo.pop()
+not fifo # empty
+fifo.pop() # raises IndexError when empty
+
+====PYTHON=====
+def (queue seq)
+  (tag queue (list seq lastcons.seq len.seq))
+ 
+def (enq x q)
+  do1 x
+    let (l last len) rep.q
+      rep.q.2 <- (len + 1)
+      if no.l
+        rep.q.1 <- (rep.q.0 <- list.x)
+        rep.q.1 <- (cdr.last <- list.x)
+ 
+def (deq q)
+  let (l last len) rep.q
+    ret ans car.l
+      unless zero?.len
+        rep.q.2 <- (len - 1)
+      rep.q.0 <- cdr.l
+ 
+def (len q) :case (isa queue q)
+  rep.q.2
+

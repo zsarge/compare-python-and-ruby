@@ -1,0 +1,253 @@
+====RUBY=====
+require 'gtk2'
+ 
+window = Gtk::Window.new
+window.title = 'Goodbye, World'
+window.signal_connect(:delete-event) { Gtk.main_quit }
+window.show_all
+ 
+Gtk.main
+
+====RUBY=====
+require 'tk'
+root = TkRoot.new("title" => "User Output")
+TkLabel.new(root, "text"=>"CHUNKY BACON!").pack("side"=>'top')
+Tk.mainloop
+
+====RUBY=====
+#_Note: this code MUST be executed through the Shoes GUI!!
+ 
+Shoes.app do
+  para "CHUNKY BACON!", :size => 72
+end
+
+====RUBY=====
+ 
+require 'gosu'
+ 
+class Window < Gosu::Window
+ 
+  def initialize
+    super(150, 50, false)
+    @font = Gosu::Font.new(self, "Arial", 32)
+  end
+ 
+  def draw
+    @font.draw("Hello world", 0, 10, 1, 1, 1)
+  end
+ 
+end
+ 
+Window.new.show
+
+====RUBY=====
+ 
+#_Note: this code must not be executed through a GUI
+require 'green_shoes'
+ 
+Shoes.app do
+  para "Hello world"
+end
+ 
+
+====RUBY=====
+ 
+require 'win32ole'
+WIN32OLE.new('WScript.Shell').popup("Hello world")
+ 
+
+====RUBY=====
+ 
+#!r6rs
+ 
+;; PS-TK example: display frame + label
+ 
+(import (rnrs) 
+        (lib pstk main) ; change this to refer to your PS/Tk installation
+        )
+ 
+(define tk (tk-start))
+(tk/wm 'title tk "PS-Tk Example: Label")
+ 
+(let ((label (tk 'create-widget 'label 'text: "Goodbye, world")))
+  (tk/place label 'height: 20 'width: 50 'x: 10 'y: 20))
+ 
+(tk-event-loop tk)
+ 
+
+====RUBY=====
+var tk = require('Tk');
+var main = %s'MainWindow'.new;
+main.Button(
+    '-text'    => 'Goodbye, World!',
+    '-command' => 'exit',
+).pack;
+tk.MainLoop;
+
+====RUBY=====
+var gtk2 = require('Gtk2') -> init;
+ 
+var window = %s'Gtk2::Window'.new;
+var label  = %s'Gtk2::Label'.new('Goodbye, World!');
+ 
+window.set_title('Goodbye, World!');
+window.signal_connect(destroy => func(*_){ gtk2.main_quit });
+ 
+window.add(label);
+window.show_all;
+ 
+gtk2.main;
+
+====PYTHON=====
+import tkMessageBox
+ 
+result = tkMessageBox.showinfo("Some Window Label", "Goodbye, World!")
+
+====PYTHON=====
+from tkinter import messagebox
+ 
+result = messagebox.showinfo("Some Window Label", "Goodbye, World!")
+
+====PYTHON=====
+import PyQt4.QtGui
+app = PyQt4.QtGui.QApplication([])
+pb = PyQt4.QtGui.QPushButton('Hello World')
+pb.connect(pb,PyQt4.QtCore.SIGNAL("clicked()"),pb.close)
+pb.show()
+exit(app.exec_())
+
+====PYTHON=====
+import pygtk
+pygtk.require('2.0')
+import gtk
+ 
+window = gtk.Window()
+window.set_title('Goodbye, World')
+window.connect('delete-event', gtk.main_quit)
+window.show_all()
+gtk.main()
+
+====PYTHON=====
+ 
+# HelloWorld for VPython - HaJo Gurt - 2014-09-20
+from visual import *
+ 
+scene.title = "VPython Demo"
+scene.background = color.gray(0.2)
+ 
+scene.width  = 600
+scene.height = 400
+scene.range  = 4
+#scene.autocenter = True
+ 
+S = sphere(pos=(0,0,0), radius=1, material=materials.earth)
+rot=0.005
+ 
+txPos=(0, 1.2, 0)
+ 
+from visual.text import *
+# Old 3D text machinery (pre-Visual 5.3): numbers and uppercase letters only:
+T1 = text(pos=txPos, string='HELLO', color=color.red, depth=0.3, justify='center')
+ 
+import vis
+# new text object, can render text from any font (default: "sans") :
+T2 = vis.text(pos=txPos, text="Goodbye", color=color.green, depth=-0.3, align='center')
+T2.visible=False
+ 
+Lbl_w = label(pos=(0,0,0), text='World', color=color.cyan,
+              xoffset=80, yoffset=-40)     # in screen-pixels
+ 
+L1 = label(pos=(0,-1.5,0), text='Drag with right mousebutton to rotate view',   box=0)
+L2 = label(pos=(0,-1.9,0), text='Drag up+down with middle mousebutton to zoom', box=0)
+L3 = label(pos=(0,-2.3,0), text='Left-click to change', color=color.orange,     box=0)
+ 
+print "Hello World"     # Console
+ 
+ 
+cCount = 0
+def change():
+    global rot, cCount
+    cCount=cCount+1
+    print "change:", cCount
+    rot=-rot
+    if T1.visible:
+        T1.visible=False
+        T2.visible=True
+    else:
+        T1.visible=True
+        T2.visible=False
+ 
+scene.bind( 'click', change )
+ 
+while True:
+  rate(100)
+  S.rotate( angle=rot, axis=(0,1,0) )
+ 
+ 
+
+====PYTHON=====
+import wx
+ 
+app = wx.App(False)
+frame = wx.Frame(None, wx.ID_ANY, "Hello, World")
+frame.Show(True)
+app.MainLoop()
+
+====PYTHON=====
+ 
+from kivy.app import App
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import Button
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+ 
+ 
+class GoodByeApp(App):
+    def build(self, *args, **kwargs):
+        layout = FloatLayout()
+        ppp = Popup(title='Goodbye, World!',
+                    size_hint=(0.75, 0.75), opacity=0.8,
+                    content=Label(font_size='50sp', text='Goodbye, World!'))
+        btn = Button(text='Goodbye', size_hint=(0.3, 0.3),
+                     pos_hint={'center': (0.5, 0.5)}, on_press=ppp.open)
+        layout.add_widget(btn)
+        return layout
+ 
+ 
+GoodByeApp().run()
+ 
+
+====PYTHON=====
+ 
+ 
+from kivy.app import App
+from kivy.lang.builder import Builder
+ 
+kv = '''
+#:import Factory kivy.factory.Factory
+ 
+FloatLayout:
+    Button:
+        text: 'Goodbye'
+        size_hint: (0.3, 0.3)
+        pos_hint: {'center': (0.5, 0.5)}
+        on_press: Factory.ThePopUp().open()
+ 
+<[email protected]>:
+    title: 'Goodbye, World!'
+    size_hint: (0.75, 0.75)
+    opacity: 0.8
+    Label:
+        text: 'Goodbye, World!'
+        font_size: '50sp'
+'''
+ 
+ 
+class GoodByeApp(App):
+    def build(self, *args, **kwargs):
+        return Builder.load_string(kv)
+ 
+ 
+GoodByeApp().run()
+ 
+

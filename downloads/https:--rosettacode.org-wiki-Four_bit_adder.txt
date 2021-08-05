@@ -1,0 +1,272 @@
+====RUBY=====
+# returns pair [sum, carry]
+def four_bit_adder(a, b)
+  a_bits = binary_string_to_bits(a,4)
+  b_bits = binary_string_to_bits(b,4)
+ 
+  s0, c0 = full_adder(a_bits[0], b_bits[0],  0)
+  s1, c1 = full_adder(a_bits[1], b_bits[1], c0)
+  s2, c2 = full_adder(a_bits[2], b_bits[2], c1)
+  s3, c3 = full_adder(a_bits[3], b_bits[3], c2)
+ 
+  [bits_to_binary_string([s0, s1, s2, s3]), c3.to_s]
+end
+ 
+# returns pair [sum, carry]
+def full_adder(a, b, c0)
+  s, c = half_adder(c0, a)
+  s, c1 = half_adder(s, b)
+  [s, _or(c,c1)]
+end
+ 
+# returns pair [sum, carry]
+def half_adder(a, b)
+  [xor(a, b), _and(a,b)]
+end
+ 
+def xor(a, b)
+  _or(_and(a, _not(b)), _and(_not(a), b))
+end
+ 
+# "and", "or" and "not" are Ruby keywords
+def _and(a, b)  a & b  end
+def _or(a, b)   a | b  end
+def _not(a)    ~a & 1  end
+ 
+def int_to_binary_string(n, length)
+  "%0#{length}b" % n
+end
+ 
+def binary_string_to_bits(s, length)
+  ("%#{length}s" % s).reverse.chars.map(&:to_i)
+end
+ 
+def bits_to_binary_string(bits)
+  bits.map(&:to_s).reverse.join
+end
+ 
+puts " A    B      A      B   C    S  sum" 
+0.upto(15) do |a|
+  0.upto(15) do |b|
+    bin_a = int_to_binary_string(a, 4)
+    bin_b = int_to_binary_string(b, 4)
+    sum, carry = four_bit_adder(bin_a, bin_b)
+    puts "%2d + %2d = %s + %s = %s %s = %2d" %
+         [a, b, bin_a, bin_b, carry, sum, (carry + sum).to_i(2)]
+  end
+end
+
+====RUBY=====
+func bxor(a, b) {
+  (~a & b) | (a & ~b)
+}
+ 
+func half_adder(a, b) {
+  return (bxor(a, b), a & b)
+}
+ 
+func full_adder(a, b, c) {
+  var (s1, c1) = half_adder(a, c)
+  var (s2, c2) = half_adder(s1, b)
+  return (s2, c1 | c2)
+}
+ 
+func four_bit_adder(a, b) {
+  var (s0, c0) = full_adder(a[0], b[0], 0)
+  var (s1, c1) = full_adder(a[1], b[1], c0)
+  var (s2, c2) = full_adder(a[2], b[2], c1)
+  var (s3, c3) = full_adder(a[3], b[3], c2)
+  return ([s3,s2,s1,s0].join, c3.to_s)
+}
+ 
+say " A    B      A      B   C    S  sum"
+for a in ^16 {
+  for b in ^16 {
+    var(abin, bbin) = [a,b].map{|n| "%04b"%n->chars.reverse.map{.to_i} }...
+    var(s, c) = four_bit_adder(abin, bbin)
+    printf("%2d + %2d = %s + %s = %s %s = %2d\n",
+        a, b, abin.join, bbin.join, c, s, "#{c}#{s}".bin)
+    }
+}
+
+====PYTHON=====
+"""  
+To run: 
+    python3 Four_bit_adder_011.py
+"""
+ 
+from myhdl import *
+ 
+#     define set of primitives 
+ 
+@block
+def NOTgate( a,  q ):   # define component name & interface
+   """ q <- not(a) """
+   @always_comb   # define asynchronous logic
+   def NOTgateLogic():
+      q.next = not a
+ 
+   return NOTgateLogic   # return defined logic function, named 'NOTgate'
+ 
+ 
+@block
+def ANDgate( a, b,  q ):
+   """ q <- a and b """
+   @always_comb 
+   def ANDgateLogic():
+      q.next = a and b
+ 
+   return ANDgateLogic
+ 
+ 
+@block
+def ORgate( a, b,  q ):
+   """ q <- a or b """   
+   @always_comb  
+   def ORgateLogic():
+      q.next = a or b
+ 
+   return ORgateLogic
+ 
+ 
+#     build components using defined primitive set
+ 
+@block
+def XORgate( a, b,  q ):
+   """ q <- a xor b """   
+   # define internal signals
+   nota, notb, annotb, bnnota = [Signal(bool(0)) for i in range(4)]
+   # name sub-components, and their interconnect 
+   inv0 = NOTgate( a,  nota )
+   inv1 = NOTgate( b,  notb )
+   and2a = ANDgate( a, notb,  annotb )
+   and2b = ANDgate( b, nota,  bnnota )
+   or2a = ORgate( annotb, bnnota,  q )
+ 
+   return inv0, inv1, and2a, and2b, or2a
+ 
+ 
+@block
+def HalfAdder( in_a, in_b,  summ, carry ):
+   """ carry,sum is the sum of in_a, in_b """ 
+   and2a =  ANDgate(in_a, in_b,  carry)
+   xor2a =  XORgate(in_a, in_b,  summ)
+ 
+   return and2a, xor2a
+ 
+ 
+@block
+def FullAdder( fa_c0, fa_a, fa_b,  fa_s, fa_c1 ):
+   """ fa_c1,fa_s is the sum of fa_c0, fa_a, fa_b """
+ 
+   ha1_s, ha1_c1, ha2_c1 = [Signal(bool(0)) for i in range(3)]
+ 
+   HalfAdder01 = HalfAdder( fa_c0, fa_a,  ha1_s, ha1_c1 )
+   HalfAdder02 = HalfAdder( ha1_s, fa_b,  fa_s,  ha2_c1 )
+   or2a = ORgate(ha1_c1, ha2_c1,  fa_c1)
+ 
+   return HalfAdder01, HalfAdder02, or2a
+ 
+ 
+@block
+def Adder4b( ina, inb,  cOut, sum4):
+   ''' assemble 4 full adders ''' 
+ 
+   cl = [Signal(bool()) for i in range(0,4)]  # carry signal list
+   sl = [Signal(bool()) for i in range(4)]  # sum signal list
+ 
+   HalfAdder0 = HalfAdder(        ina(0), inb(0),  sl[0], cl[1] )
+   FullAdder1 = FullAdder( cl[1], ina(1), inb(1),  sl[1], cl[2] ) 
+   FullAdder2 = FullAdder( cl[2], ina(2), inb(2),  sl[2], cl[3] ) 
+   FullAdder3 = FullAdder( cl[3], ina(3), inb(3),  sl[3], cOut ) 
+ 
+   sc = ConcatSignal(*reversed(sl))  # create internal bus for output list
+ 
+   @always_comb
+   def list2intbv():
+      sum4.next = sc  # assign internal bus to actual output
+ 
+   return HalfAdder0, FullAdder1, FullAdder2, FullAdder3, list2intbv
+ 
+ 
+"""   define signals and code for testing
+      -----------------------------------   """
+t_co, t_s, t_a, t_b, dbug =  [Signal(bool(0)) for i in range(5)]
+ina4, inb4, sum4 =  [Signal(intbv(0)[4:])  for i in range(3)]
+ 
+from random import randrange 
+ 
+@block
+def Test_Adder4b():
+   ''' Test Bench for Adder4b '''
+   dut = Adder4b( ina4, inb4,  t_co, sum4 )
+ 
+   @instance
+   def check():
+      print( "\n      b   a   |  c1    s   \n     -------------------" )
+      for i in range(15):
+         ina4.next, inb4.next = randrange(2**4), randrange(2**4)
+         yield delay(5)
+         print( "     %2d  %2d   |  %2d   %2d     " \
+                % (ina4,inb4, t_co,sum4) )
+         assert t_co * 16 + sum4 == ina4 + inb4  # test result
+      print()
+ 
+   return dut, check
+ 
+ 
+"""   instantiate components and run test
+      -----------------------------------   """
+ 
+def main():
+   simInst = Test_Adder4b()
+   simInst.name = "mySimInst"
+   simInst.config_sim(trace=True)  # waveform trace turned on
+   simInst.run_sim(duration=None)
+ 
+   inst = Adder4b( ina4, inb4,  t_co, sum4 )  #Multibit_Adder( a, b, s)
+   inst.convert(hdl='VHDL')  # export VHDL
+   inst.convert(hdl='Verilog')  # export Verilog
+ 
+ 
+if __name__ == '__main__':
+   main()
+ 
+
+====PYTHON=====
+def xor(a, b): return (a and not b) or (b and not a)
+ 
+def ha(a, b): return xor(a, b), a and b     # sum, carry
+ 
+def fa(a, b, ci):
+    s0, c0 = ha(ci, a)
+    s1, c1 = ha(s0, b)
+    return s1, c0 or c1     # sum, carry
+ 
+def fa4(a, b):
+    width = 4
+    ci = [None] * width
+    co = [None] * width
+    s  = [None] * width
+    for i in range(width):
+        s[i], co[i] = fa(a[i], b[i], co[i-1] if i else 0)
+    return s, co[-1]
+ 
+def int2bus(n, width=4):
+    return [int(c) for c in "{0:0{1}b}".format(n, width)[::-1]]
+ 
+def bus2int(b):
+    return sum(1 << i for i, bit in enumerate(b) if bit)
+ 
+def test_fa4():
+    width = 4
+    tot = [None] * (width + 1)
+    for a in range(2**width):
+        for b in range(2**width):
+            tot[:width], tot[width] = fa4(int2bus(a), int2bus(b))
+            assert a + b == bus2int(tot), "totals don't match: %i + %i != %s" % (a, b, tot)
+ 
+ 
+if __name__ == '__main__':
+   test_fa4()
+

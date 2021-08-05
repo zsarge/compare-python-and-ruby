@@ -1,0 +1,149 @@
+====RUBY=====
+def getitem(s, depth=0)
+  out = [""]
+  until s.empty?
+    c = s[0]
+    break  if depth>0 and (c == ',' or c == '}')
+    if c == '{' and x = getgroup(s[1..-1], depth+1)
+      out = out.product(x[0]).map{|a,b| a+b}
+      s = x[1]
+    else
+      s, c = s[1..-1], c + s[1]  if c == '\\' and s.size > 1
+      out, s = out.map{|a| a+c}, s[1..-1]
+    end
+  end
+  return out, s
+end
+ 
+def getgroup(s, depth)
+  out, comma = [], false
+  until s.empty?
+    g, s = getitem(s, depth)
+    break  if s.empty?
+    out += g
+    case s[0]
+      when '}' then return (comma ? out : out.map{|a| "{#{a}}"}), s[1..-1]
+      when ',' then comma, s = true, s[1..-1]
+    end
+  end
+end
+ 
+strs = <<'EOS'
+~/{Downloads,Pictures}/*.{jpg,gif,png}
+It{{em,alic}iz,erat}e{d,}, please.
+{,{,gotta have{ ,\, again\, }}more }cowbell!
+{}} some }{,{\\{ edge, edge} \,}{ cases, {here} \\\\\}
+EOS
+ 
+strs.each_line do |s|
+  puts s.chomp!
+  puts getitem(s)[0].map{|str| "\t"+str}
+  puts
+end
+
+====RUBY=====
+func brace_expand (input) {
+    var current = ['']
+    var stack = [[current]]
+ 
+    loop {
+        var t = input.match(
+            /\G ((?:[^\\{,}]++ | \\(?:.|\z))++ | . )/gx
+        )[0] \\ break
+ 
+        if (t == '{') {
+            stack << [current = ['']]
+        }
+        elsif ((t == ',') && (stack.len > 1)) {
+            stack[-1] << (current = [''])
+        }
+        elsif ((t == '}') && (stack.len > 1)) {
+            var group = stack.pop
+            current   = stack[-1][-1]
+ 
+            # handle the case of brace pairs without commas:
+            group[0][] = group[0].map{ '{'+_+'}' }... if (group.len == 1)
+ 
+            current[] = current.map { |c|
+                group.map { .map { c + _ }... }...
+            }...
+        }
+        else {
+            current[] = current.map { _ + t }...
+        }
+    }
+ 
+    # handle the case of missing closing braces:
+    while (stack.len > 1) {
+ 
+        var right = stack[-1].pop
+        var sep = ','
+ 
+        if (stack[-1].is_empty) {
+            sep = '{'
+            stack.pop
+        }
+ 
+        current = stack[-1][-1]
+        current[] = current.map  { |c|
+            right.map { c + sep + _ }...
+        }...
+    }
+ 
+    return current
+}
+ 
+DATA.each { |line|
+    say line
+    brace_expand(line).each { "\t#{_}".say }
+    say ''
+}
+ 
+__DATA__
+~/{Downloads,Pictures}/*.{jpg,gif,png}
+It{{em,alic}iz,erat}e{d,}, please.
+{,{,gotta have{ ,\, again\, }}more }cowbell!
+{}} some }{,{\\{ edge, edge} \,}{ cases, {here} \\\\\}
+
+====PYTHON=====
+def getitem(s, depth=0):
+    out = [""]
+    while s:
+        c = s[0]
+        if depth and (c == ',' or c == '}'):
+            return out,s
+        if c == '{':
+            x = getgroup(s[1:], depth+1)
+            if x:
+                out,s = [a+b for a in out for b in x[0]], x[1]
+                continue
+        if c == '\\' and len(s) > 1:
+            s, c = s[1:], c + s[1]
+ 
+        out, s = [a+c for a in out], s[1:]
+ 
+    return out,s
+ 
+def getgroup(s, depth):
+    out, comma = [], False
+    while s:
+        g,s = getitem(s, depth)
+        if not s: break
+        out += g
+ 
+        if s[0] == '}':
+            if comma: return out, s[1:]
+            return ['{' + a + '}' for a in out], s[1:]
+ 
+        if s[0] == ',':
+            comma,s = True, s[1:]
+ 
+    return None
+ 
+# stolen cowbells from Raku example
+for s in '''~/{Downloads,Pictures}/*.{jpg,gif,png}
+It{{em,alic}iz,erat}e{d,}, please.
+{,{,gotta have{ ,\, again\, }}more }cowbell!
+{}} some }{,{\\\\{ edge, edge} \,}{ cases, {here} \\\\\\\\\}'''.split('\n'):
+    print "\n\t".join([s] + getitem(s)[0]) + "\n"
+

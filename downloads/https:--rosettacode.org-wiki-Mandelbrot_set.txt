@@ -1,0 +1,412 @@
+====RUBY=====
+require 'complex'
+ 
+def mandelbrot(a)
+  Array.new(50).inject(0) { |z,c| z*z + a }
+end
+ 
+(1.0).step(-1,-0.05) do |y|
+  (-2.0).step(0.5,0.0315) do |x|
+    print mandelbrot(Complex(x,y)).abs < 2 ? '*' : ' '
+  end
+  puts
+end
+
+====RUBY=====
+# frozen_string_literal: true
+ 
+require_relative 'raster_graphics'
+ 
+class RGBColour
+  def self.mandel_colour(i)
+    self.new( 16*(i % 15), 32*(i % 7), 8*(i % 31) )
+  end
+end
+ 
+class Pixmap
+  def self.mandelbrot(width, height)
+    mandel = Pixmap.new(width,height)
+    pb = ProgressBar.new(width) if $DEBUG
+    width.times do |x|
+      height.times do |y|
+        x_ish = Float(x - width*11/15) / (width/3)
+        y_ish = Float(y - height/2) / (height*3/10)
+        mandel[x,y] = RGBColour.mandel_colour(mandel_iters(x_ish, y_ish))
+      end
+      pb.update(x) if $DEBUG
+    end
+    pb.close if $DEBUG
+    mandel
+  end
+ 
+  def self.mandel_iters(cx,cy)
+    x = y = 0.0
+    count = 0
+    while Math.hypot(x,y) < 2 and count < 255
+      x, y = (x**2 - y**2 + cx), (2*x*y + cy)
+      count += 1
+    end
+    count
+  end
+end
+ 
+Pixmap.mandelbrot(300,300).save('mandel.ppm')
+
+====RUBY=====
+ 
+# frozen_string_literal: true
+ 
+def setup
+  sketch_title 'Mandelbrot'
+  load_pixels
+  no_loop
+end
+ 
+def draw
+  grid(900, 600) do |x, y|
+    const = Complex(
+      map1d(x, (0...900), (-3..1.5)), map1d(y, (0...600), (-1.5..1.5))
+    )
+    pixels[x + y * 900] = color(
+      constrained_map(mandel(const, 20), (5..20), (255..0))
+    )
+  end
+  update_pixels
+end
+ 
+def mandel(z, max)
+  score = 0
+  const = z
+  while score < max
+    # z = z^2 + c
+    z *= z
+    z += const
+    break if z.abs > 2
+ 
+    score += 1
+  end
+  score
+end
+ 
+def settings
+  size(900, 600)
+end
+ 
+
+====RUBY=====
+func mandelbrot(z) {
+    var c = z
+    {   z = (z*z + c)
+        z.abs > 2 && return true
+    } * 20
+    return false
+}
+ 
+for y range(1, -1, -0.05) {
+    for x in range(-2, 0.5, 0.0315) {
+        print(mandelbrot(x + y.i) ? ' ' : '#')
+    }
+    print "\n"
+}
+
+====PYTHON=====
+function mandelbrot(a)
+    z = 0
+    for i=1:50
+        z = z^2 + a
+    end
+    return z
+end
+ 
+for y=1.0:-0.05:-1.0
+    for x=-2.0:0.0315:0.5
+        abs(mandelbrot(complex(x, y))) < 2 ? print("*") : print(" ")
+    end
+    println()
+end
+
+====PYTHON=====
+using Images
+ 
+@inline function hsv2rgb(h, s, v)
+    c = v * s
+    x = c * (1 - abs(((h/60) % 2) - 1))
+    m = v - c
+    r,g,b = if     h < 60   (c, x, 0)
+            elseif h < 120  (x, c, 0)
+            elseif h < 180  (0, c, x)
+            elseif h < 240  (0, x, c)
+            elseif h < 300  (x, 0, c)
+            else            (c, 0, x) end
+    (r + m), (b + m), (g + m)
+end
+ 
+function mandelbrot()
+    w       = 1600
+    h       = 1200
+    zoom    = 0.5
+    moveX   = -0.5
+    moveY   = 0
+    maxIter = 30
+    img = Array{RGB{Float64},2}(undef,h,w)
+    for x in 1:w
+      for y in 1:h
+        i = maxIter
+        z = c = Complex( (2*x - w) / (w * zoom) + moveX,
+                         (2*y - h) / (h * zoom) + moveY )
+        while abs(z) < 2 && (i -= 1) > 0
+            z = z^2 + c
+        end
+        r,g,b = hsv2rgb(i / maxIter * 360, 1, i / maxIter)
+        img[y,x] = RGB{Float64}(r, g, b)
+      end
+    end
+    return img
+end
+ 
+img = mandelbrot()
+save("mandelbrot.png", img)
+
+====PYTHON=====
+i = di = dj = 0
+fn1, fn2, fn3 = random(20), random(20), random(20)
+f = 10
+ 
+def setup():
+    global zmx1, zmx2, zmy1, zmy2
+    size(500, 500)
+    zmx1 = int(width / 4)
+    zmx2 = 2
+    zmy1 = int(height / 4)
+    zmy2 = 2
+ 
+ 
+def draw():
+    global i
+ 
+    if i <= width:
+        i += 1
+    x = float(i + di) / zmx1 - zmx2
+    for j in range(height + 1):
+        y = zmy2 - float(j + dj) / zmy1
+        zr = zi = zr2 = zi2 = 0
+        cr, ci = x, y
+        n = 1
+        while n < 200 and (zr2 + zi2) < 4:
+            zi2 = zi * zi
+            zr2 = zr * zr
+            zi = 2 * zi * zr + ci
+            zr = zr2 - zi2 + cr
+            n += 1
+ 
+        re = (n * fn1) % 255
+        gr = (n * fn2) % 255
+        bl = (n * fn3) % 255
+        stroke(re, gr, bl)
+        point(i, j)
+ 
+ 
+def mousePressed():
+    global zmx1, zmx2, zmy1, zmy2, di, dj
+    global i, j
+    background(200)
+    xt, yt = mouseX, mouseY
+    di = di + xt - width / 2.
+    dj = dj + yt - height / 2.
+    zmx1 = zmx1 * f
+    zmx2 = zmx2 * (1. / f)
+    zmy1 = zmy1 * f
+    zmy2 = zmy2 * (1. / f)
+    di, dj = di * f, dj * f
+    i = j = 0
+
+====PYTHON=====
+# Python 3.0+ and 2.5+
+try:
+    from functools import reduce
+except:
+    pass
+ 
+ 
+def mandelbrot(a):
+    return reduce(lambda z, _: z * z + a, range(50), 0)
+ 
+def step(start, step, iterations):
+    return (start + (i * step) for i in range(iterations))
+ 
+rows = (("*" if abs(mandelbrot(complex(x, y))) < 2 else " "
+        for x in step(-2.0, .0315, 80))
+        for y in step(1, -.05, 41))
+ 
+print("\n".join("".join(row) for row in rows))
+ 
+
+====PYTHON=====
+ 
+import math
+ 
+def mandelbrot(z , c , n=40):
+    if abs(z) > 1000:
+        return float("nan")
+    elif n > 0:
+        return mandelbrot(z ** 2 + c, c, n - 1) 
+    else:
+        return z ** 2 + c
+ 
+print("\n".join(["".join(["#" if not math.isnan(mandelbrot(0, x + 1j * y).real) else " "
+                 for x in [a * 0.02 for a in range(-80, 30)]]) 
+                 for y in [a * 0.05 for a in range(-20, 20)]])
+     )
+ 
+
+====PYTHON=====
+from pylab import *
+from numpy import NaN
+ 
+def m(a):
+	z = 0
+	for n in range(1, 100):
+		z = z**2 + a
+		if abs(z) > 2:
+			return n
+	return NaN
+ 
+X = arange(-2, .5, .002)
+Y = arange(-1,  1, .002)
+Z = zeros((len(Y), len(X)))
+ 
+for iy, y in enumerate(Y):
+	print (iy, "of", len(Y))
+	for ix, x in enumerate(X):
+		Z[iy,ix] = m(x + 1j * y)
+ 
+imshow(Z, cmap = plt.cm.prism, interpolation = 'none', extent = (X.min(), X.max(), Y.min(), Y.max()))
+xlabel("Re(c)")
+ylabel("Im(c)")
+savefig("mandelbrot_python.svg")
+show()
+
+====PYTHON=====
+import matplotlib.pyplot as plt
+import numpy as np
+ 
+npts = 300
+max_iter = 100
+ 
+X = np.linspace(-2, 1, 2 * npts)
+Y = np.linspace(-1, 1, npts)
+ 
+#broadcast X to a square array
+C = X[:, None] + 1J * Y
+#initial value is always zero
+Z = np.zeros_like(C)
+ 
+exit_times = max_iter * np.ones(C.shape, np.int32)
+mask = exit_times > 0
+ 
+for k in range(max_iter):
+    Z[mask] = Z[mask] * Z[mask] + C[mask]
+    mask, old_mask = abs(Z) < 2, mask
+    #use XOR to detect the area which has changed 
+    exit_times[mask ^ old_mask] = k
+ 
+plt.imshow(exit_times.T,
+           cmap=plt.cm.prism,
+           extent=(X.min(), X.max(), Y.min(), Y.max()))
+plt.show()
+
+====PYTHON=====
+import numpy as np
+import matplotlib.pyplot as plt
+ 
+d, h = 800, 600  # pixel density (= image width) and image height
+n, r = 100, 500  # number of iterations and escape radius (r > 2)
+ 
+x = np.linspace(0, 2, num=d+1)
+y = np.linspace(0, 2 * h / d, num=h+1)
+ 
+A, B = np.meshgrid(x - 1, y - h / d)
+C = 2.0 * (A + B * 1j) - 0.5
+ 
+Z, dZ = np.zeros_like(C), np.zeros_like(C)
+S, T, D = np.zeros(C.shape), np.zeros(C.shape), np.zeros(C.shape)
+ 
+for k in range(n):
+    M = abs(Z) < r
+    S[M], T[M] = S[M] + np.exp(-abs(Z[M])), T[M] + 1
+    Z[M], dZ[M] = Z[M] ** 2 + C[M], 2 * Z[M] * dZ[M] + 1
+ 
+plt.imshow(S ** 0.1, cmap=plt.cm.twilight_shifted)
+plt.savefig("Mandelbrot_set_1.png", dpi=250)
+ 
+plt.imshow(T ** 0.1, cmap=plt.cm.twilight_shifted)
+plt.savefig("Mandelbrot_set_2.png", dpi=250)
+ 
+N = abs(Z) > r  # normalized iteration count
+T[N] = T[N] - np.log2(np.log(abs(Z[N])) / np.log(r))
+ 
+plt.imshow(T ** 0.1, cmap=plt.cm.twilight_shifted)
+plt.savefig("Mandelbrot_set_3.png", dpi=250)
+ 
+N = abs(Z) > 2  # exterior distance estimation
+D[N] = 0.5 * np.log(abs(Z[N])) * abs(Z[N]) / abs(dZ[N])
+ 
+plt.imshow(D ** 0.1, cmap=plt.cm.twilight_shifted)
+plt.savefig("Mandelbrot_set_4.png", dpi=250)
+ 
+X, Y = C.real, C.imag
+R = 150 * 2 / d  # scaling depends on figsize
+ 
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.scatter(X, Y, s=R**2, c=D**0.1, cmap=plt.cm.twilight_shifted)
+plt.savefig("Mandelbrot_plot.png", dpi=250)
+
+====PYTHON=====
+import numpy as np
+import matplotlib.pyplot as plt
+ 
+d, h = 400, 2200  # pixel density (= image width) and image height
+n, r = 800, 1000  # number of iterations and escape radius (r > 2)
+ 
+x = np.linspace(0, 2, num=d+1)
+y = np.linspace(0, 2 * h / d, num=h+1)
+ 
+A, B = np.meshgrid(x * np.pi, y * np.pi)
+C = 1.5 * np.exp((A + B * 1j) * 1j) - 0.74366367740001 + 0.131863214401 * 1j
+ 
+Z, dZ = np.zeros_like(C), np.zeros_like(C)
+S, T, D = np.zeros(C.shape), np.zeros(C.shape), np.zeros(C.shape)
+ 
+for k in range(n):
+    M = abs(Z) < r
+    S[M], T[M] = S[M] + np.exp(-abs(Z[M])), T[M] + 1
+    Z[M], dZ[M] = Z[M] ** 2 + C[M], 2 * Z[M] * dZ[M] + 1
+ 
+plt.imshow(S.T ** 0.1, cmap=plt.cm.nipy_spectral_r)
+plt.savefig("Mercator_map_1.png", dpi=250)
+ 
+plt.imshow(T.T ** 0.1, cmap=plt.cm.nipy_spectral_r)
+plt.savefig("Mercator_map_2.png", dpi=250)
+ 
+N = abs(Z) > r  # normalized iteration count
+T[N] = T[N] - np.log2(np.log(abs(Z[N])) / np.log(r))
+ 
+plt.imshow(T.T ** 0.1, cmap=plt.cm.nipy_spectral_r)
+plt.savefig("Mercator_map_3.png", dpi=250)
+ 
+N = abs(Z) > 2  # exterior distance estimation
+D[N] = 0.5 * np.log(abs(Z[N])) * abs(Z[N]) / abs(dZ[N])
+ 
+plt.imshow(D.T ** 0.1, cmap=plt.cm.nipy_spectral)
+plt.savefig("Mercator_map_4.png", dpi=250)
+ 
+X, Y = C.real, C.imag
+R = 150 * 2 / d * np.pi * np.exp(-B)  # scaling depends on figsize
+ 
+fig, ax = plt.subplots(2, 2, figsize=(16, 16))
+ax[0, 0].scatter(X[0:300], Y[0:300], s=R[0:300]**2, c=D[0:300]**0.5, cmap=plt.cm.nipy_spectral)
+ax[0, 1].scatter(X[100:400], Y[100:400], s=R[0:300]**2, c=D[100:400]**0.4, cmap=plt.cm.nipy_spectral)
+ax[1, 0].scatter(X[200:500], Y[200:500], s=R[0:300]**2, c=D[200:500]**0.3, cmap=plt.cm.nipy_spectral)
+ax[1, 1].scatter(X[300:600], Y[300:600], s=R[0:300]**2, c=D[300:600]**0.2, cmap=plt.cm.nipy_spectral)
+plt.savefig("Mandelbrot_zoom.png", dpi=250)
+

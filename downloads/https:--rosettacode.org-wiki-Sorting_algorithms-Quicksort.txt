@@ -1,0 +1,150 @@
+====RUBY=====
+def quick_sort(a : Array(Int32)) : Array(Int32)
+  return a if a.size <= 1
+  p = a[0]
+  lt, rt = a[1 .. -1].partition { |x| x < p }
+  return quick_sort(lt) + [p] + quick_sort(rt)
+end
+ 
+a = [7, 6, 5, 9, 8, 4, 3, 1, 2, 0]
+puts quick_sort(a) # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+====RUBY=====
+class Array
+  def quick_sort
+    return self if length <= 1
+    pivot = self[0]
+    less, greatereq = self[1..-1].partition { |x| x < pivot }
+    less.quick_sort + [pivot] + greatereq.quick_sort
+  end
+end
+
+====RUBY=====
+class Array
+  def quick_sort
+    return self if length <= 1
+    pivot = sample
+    group = group_by{ |x| x <=> pivot }
+    group.default = []
+    group[-1].quick_sort + group[0] + group[1].quick_sort
+  end
+end
+
+====RUBY=====
+class Array
+  def quick_sort
+    h, *t = self
+    h ? t.partition { |e| e < h }.inject { |l, r| l.quick_sort + [h] + r.quick_sort } : []
+  end
+end
+
+====RUBY=====
+func quicksort (a) {
+    a.len < 2 && return(a);
+    var p = a.pop_rand;          # to avoid the worst cases
+    __FUNC__(a.grep{ .< p}) + [p] + __FUNC__(a.grep{ .>= p});
+}
+
+====PYTHON=====
+def quickSort(arr):
+    less = []
+    pivotList = []
+    more = []
+    if len(arr) <= 1:
+        return arr
+    else:
+        pivot = arr[0]
+        for i in arr:
+            if i < pivot:
+                less.append(i)
+            elif i > pivot:
+                more.append(i)
+            else:
+                pivotList.append(i)
+        less = quickSort(less)
+        more = quickSort(more)
+        return less + pivotList + more
+ 
+a = [4, 65, 2, -31, 0, 99, 83, 782, 1]
+a = quickSort(a)
+
+====PYTHON=====
+def qsort(L):
+    return (qsort([y for y in L[1:] if y <  L[0]]) + 
+            L[:1] + 
+            qsort([y for y in L[1:] if y >= L[0]])) if len(L) > 1 else L
+
+====PYTHON=====
+def qsort(list):
+    if not list:
+        return []
+    else:
+        pivot = list[0]
+        less = [x for x in list     if x <  pivot]
+        more = [x for x in list[1:] if x >= pivot]
+        return qsort(less) + [pivot] + qsort(more)
+
+====PYTHON=====
+from random import *
+ 
+def qSort(a):
+    if len(a) <= 1:
+        return a
+    else:
+        q = choice(a)
+        return qSort([elem for elem in a if elem < q]) + [q] * a.count(q) + qSort([elem for elem in a if elem > q])
+
+====PYTHON=====
+def quickSort(a):
+    if len(a) <= 1:
+        return a
+    else:
+        less = []
+        more = []
+        pivot = choice(a)
+        for i in a:
+            if i < pivot:
+                less.append(i)
+            if i > pivot:
+                more.append(i)
+        less = quickSort(less)
+        more = quickSort(more)
+        return less + [pivot] * a.count(pivot) + more
+
+====PYTHON=====
+def qsort(array):
+    if len(array) < 2:
+        return array
+    head, *tail = array
+    less = qsort([i for i in tail if i < head])
+    more = qsort([i for i in tail if i >= head])
+    return less + [head] + more
+
+====PYTHON=====
+def quicksort(array):
+    _quicksort(array, 0, len(array) - 1)
+ 
+def _quicksort(array, start, stop):
+    if stop - start > 0:
+        pivot, left, right = array[start], start, stop
+        while left <= right:
+            while array[left] < pivot:
+                left += 1
+            while array[right] > pivot:
+                right -= 1
+            if left <= right:
+                array[left], array[right] = array[right], array[left]
+                left += 1
+                right -= 1
+        _quicksort(array, start, right)
+        _quicksort(array, left, stop)
+
+====PYTHON=====
+def (qsort (pivot ... ns))
+  (+ (qsort+keep (fn(_) (_ < pivot)) ns)
+     list.pivot
+     (qsort+keep (fn(_) (_ > pivot)) ns))
+ 
+def (qsort x) :case x=nil
+  nil
+

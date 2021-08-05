@@ -1,0 +1,63 @@
+====RUBY=====
+ 
+40902.gcd(24140)  # => 34
+
+====RUBY=====
+def gcd(u, v)
+  u, v = u.abs, v.abs
+  while v > 0
+    u, v = v, u % v
+  end
+  u
+end
+
+====RUBY=====
+var arr = [100, 1_000, 10_000, 20];
+say Math.gcd(arr...);
+
+====RUBY=====
+func gcd(a, b) {
+    b.is_zero ? a.abs : gcd(b, a % b);
+}
+
+====PYTHON=====
+from fractions import gcd
+
+====PYTHON=====
+from math import gcd
+
+====PYTHON=====
+def gcd_iter(u, v):
+    while v:
+        u, v = v, u % v
+    return abs(u)
+
+====PYTHON=====
+def gcd(u, v):
+    return gcd(v, u % v) if v else abs(u)
+
+====PYTHON=====
+def gcd_bin(u, v):
+    u, v = abs(u), abs(v) # u >= 0, v >= 0
+    if u < v:
+        u, v = v, u # u >= v >= 0
+    if v == 0:
+        return u
+ 
+    # u >= v > 0
+    k = 1
+    while u & 1 == 0 and v & 1 == 0: # u, v - even
+        u >>= 1; v >>= 1
+        k <<= 1
+ 
+    t = -v if u & 1 else u
+    while t:
+        while t & 1 == 0:
+            t >>= 1
+        if t > 0:
+            u = t
+        else:
+            v = -t
+        t = u - v
+    return u * k
+

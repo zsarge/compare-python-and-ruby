@@ -1,0 +1,35 @@
+====RUBY=====
+ar = ["5**3**2", "(5**3)**2", "5**(3**2)", "[5,3,2].inject(:**)"]
+ar.each{|exp| puts "#{exp}:\t#{eval exp}"}
+ 
+
+====RUBY=====
+var a = [
+    '5**3**2',
+    '(5**3)**2',
+    '5**(3**2)',
+    '5 ** 3 ** 2',
+    '5 ** 3**2',
+    '5**3 ** 2',
+    '[5,3,2]«**»',
+]
+ 
+a.each {|e|
+    "%-12s == %s\n".printf(e, eval(e))
+}
+
+====PYTHON=====
+>>> 5**3**2
+1953125
+>>> (5**3)**2
+15625
+>>> 5**(3**2)
+1953125
+>>> # The following is not normally done
+>>> try: from functools import reduce # Py3K
+except: pass
+ 
+>>> reduce(pow, (5, 3, 2))
+15625
+>>> 
+

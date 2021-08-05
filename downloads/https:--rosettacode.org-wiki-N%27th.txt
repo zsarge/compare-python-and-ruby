@@ -1,0 +1,79 @@
+====RUBY=====
+struct Int
+  def ordinalize
+    num = self.abs
+    ordinal = if (11..13).includes?(num % 100)
+      "th"
+    else
+      case num % 10
+        when 1; "st"
+        when 2; "nd"
+        when 3; "rd"
+        else    "th"
+      end
+    end
+    "#{self}#{ordinal}"
+  end
+end
+ 
+[(0..25),(250..265),(1000..1025)].each{|r| puts r.map{ |n| n.ordinalize }.join(", "); puts}
+ 
+
+====RUBY=====
+class Integer
+  def ordinalize
+    num = self.abs
+    ordinal = if (11..13).include?(num % 100)
+      "th"
+    else
+      case num % 10
+        when 1; "st"
+        when 2; "nd"
+        when 3; "rd"
+        else    "th"
+      end
+    end
+    "#{self}#{ordinal}"
+  end
+end
+ 
+[(0..25),(250..265),(1000..1025)].each{|r| puts r.map(&:ordinalize).join(", "); puts}
+ 
+
+====RUBY=====
+func nth(n) {
+    static irregulars = Hash(<1 ˢᵗ 2 ⁿᵈ 3 ʳᵈ 11 ᵗʰ 12 ᵗʰ 13 ᵗʰ>...)
+    n.to_s + (irregulars{n % 100} \\ irregulars{n % 10} \\ 'ᵗʰ')
+}
+ 
+for r in [0..25, 250..265, 1000..1025] {
+    say r.map {|n| nth(n) }.join(" ")
+}
+
+====PYTHON=====
+_suffix = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th']
+ 
+def nth(n):
+    return "%i'%s" % (n, _suffix[n%10] if n % 100 <= 10 or n % 100 > 20 else 'th')
+ 
+if __name__ == '__main__':
+    for j in range(0,1001, 250):
+        print(' '.join(nth(i) for i in list(range(j, j+25))))
+
+====PYTHON=====
+#!/usr/bin/env python3
+ 
+def ord(n):
+    try:
+        s = ['st', 'nd', 'rd'][(n-1)%10]
+        if (n-10)%100//10:
+            return str(n)+s
+    except IndexError:
+        pass
+    return str(n)+'th'
+ 
+if __name__ == '__main__':
+    print(*(ord(n) for n in range(26)))
+    print(*(ord(n) for n in range(250,266)))
+    print(*(ord(n) for n in range(1000,1026)))
+

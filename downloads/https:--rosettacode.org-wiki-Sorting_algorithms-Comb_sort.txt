@@ -1,0 +1,59 @@
+====RUBY=====
+class Array
+  def combsort!
+    gap = size
+    swaps = true
+    while gap > 1 or swaps
+      gap = [1, (gap / 1.25).to_i].max
+      swaps = false
+      0.upto(size - gap - 1) do |i|
+        if self[i] > self[i+gap]
+          self[i], self[i+gap] = self[i+gap], self[i]
+          swaps = true
+        end
+      end
+    end
+    self
+  end
+end
+ 
+p [23, 76, 99, 58, 97, 57, 35, 89, 51, 38, 95, 92, 24, 46, 31, 24, 14, 12, 57, 78].combsort!
+
+====RUBY=====
+func comb_sort(arr) {
+    var gap = arr.len;
+    var swaps = true;
+    while (gap > 1 || swaps) {
+        gap.div!(1.25).int! if (gap > 1);
+        swaps = false;
+        for i in ^(arr.len - gap) {
+            if (arr[i] > arr[i+gap]) {
+                arr[i, i+gap] = arr[i+gap, i];
+                swaps = true;
+            }
+        }
+    }
+    return arr;
+}
+
+====PYTHON=====
+>>> def combsort(input):
+    gap = len(input)
+    swaps = True
+    while gap > 1 or swaps:
+        gap = max(1, int(gap / 1.25))  # minimum gap is 1
+        swaps = False
+        for i in range(len(input) - gap):
+            j = i+gap
+            if input[i] > input[j]:
+                input[i], input[j] = input[j], input[i]
+                swaps = True
+ 
+ 
+>>> y = [88, 18, 31, 44, 4, 0, 8, 81, 14, 78, 20, 76, 84, 33, 73, 75, 82, 5, 62, 70]
+>>> combsort(y)
+>>> assert y == sorted(y)
+>>> y
+[0, 4, 5, 8, 14, 18, 20, 31, 33, 44, 62, 70, 73, 75, 76, 78, 81, 82, 84, 88]
+>>> 
+

@@ -1,0 +1,33 @@
+====RUBY=====
+require 'net/ftp'
+ 
+Net::FTP.open('ftp.ed.ac.uk', "anonymous","[email protected]" ) do |ftp|
+  ftp.passive = true  # default since Ruby 2.3
+  ftp.chdir('pub/courses')
+  puts ftp.list
+  ftp.getbinaryfile("make.notes.tar")
+end
+
+====RUBY=====
+require('Net::FTP');
+ 
+var ftp = %s'Net::FTP'.new('ftp.ed.ac.uk', Passive => 1);
+ftp.login('anonymous','[email protected]');
+ftp.cwd('pub/courses');
+[ftp.dir].each {|line| say line };
+ftp.binary;   # set binary mode
+ftp.get("make.notes.tar");
+ftp.quit;
+
+====PYTHON=====
+ 
+from ftplib import FTP
+ftp = FTP('kernel.org')
+ftp.login()
+ftp.cwd('/pub/linux/kernel')
+ftp.set_pasv(True) # Default since Python 2.1
+print ftp.retrlines('LIST')
+print ftp.retrbinary('RETR README', open('README', 'wb').write)
+ftp.quit()
+ 
+

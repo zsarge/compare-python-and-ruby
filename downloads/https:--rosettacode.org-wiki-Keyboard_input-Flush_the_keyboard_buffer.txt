@@ -1,0 +1,114 @@
+====RUBY=====
+require 'io/console'
+$stdin.iflush
+
+====RUBY=====
+loop { $stdin.read_nonblock(256) } rescue nil
+
+====RUBY=====
+class IO
+  def discard_input
+    icanon = false
+    if tty?
+      begin
+        # With Ruby 1.9.3, simply call IO#iflush.
+        require 'io/console'
+        return iflush
+      rescue LoadError
+        # Try to run stty(1) to check if this terminal uses
+        # canonical input mode. Acts like `stty -a`, but redirects
+        # stdin from tty. Works with Ruby 1.8, no Process#spawn.
+        r, w, pid = nil
+        begin
+          r, w = IO.pipe
+          pid = fork do
+            IO.for_fd(0).reopen(self)  # stdin from tty
+            IO.for_fd(1).reopen(w)     # stdout to pipe
+            exec 'stty', '-a'
+          end
+          w.close; w = nil
+          icanon = (not r.read.include? "-icanon")
+        rescue
+          # stty(1) only works with Unix clones.
+        ensure
+          pid and Process.wait pid
+          w and w.close
+          r and r.close
+        end
+      end
+    end
+ 
+    if icanon
+      # Turn off canonical input mode.
+      pid = nil
+      begin
+        pid = fork do
+          IO.for_fd(0).reopen(self)  # stdin from tty
+          exec 'stty', '-icanon'
+        end
+      ensure
+        pid and Process.wait pid
+      end
+    end
+ 
+    # Discard input.
+    loop { $stdin.read_nonblock(256) } rescue nil
+ 
+    if icanon
+      # Turn on canonical input mode.
+      pid = nil
+      begin
+        pid = fork do
+          IO.for_fd(0).reopen(self)  # stdin from tty
+          exec 'stty', 'icanon'
+        end
+      ensure
+        pid and Process.wait pid
+      end
+    end
+ 
+    nil
+  end
+end
+
+====RUBY=====
+# Demonstration: discard input, then input a line from user.
+puts 'Type anything for 2 seconds.'
+sleep 2
+$stdin.discard_input
+print 'Enter a line? '
+if line = $stdin.gets
+then print 'Got line. ', line
+else puts 'No line!'
+end
+
+====RUBY=====
+var k = frequire('Term::ReadKey');
+ 
+k.ReadMode('restore');    # Flush the keyboard and returns input stream to initial state
+# ReadMode 0;             # Numerical equivalent of keyboard restore (move comment marker to use instead)
+ 
+# A more complete example for use in keyboard handler programming.
+# We should also check we are being used in an interactive context (not done here).
+ 
+k.ReadMode('cbreak');
+ 
+# Flush the keyboard in terminal character break mode
+while (k.ReadKey(-1) != nil) {
+   # Do nothing
+}
+ 
+# Don't forget to restore the readmode, when we are finished using the keyboard
+k.ReadMode('restore');
+
+====PYTHON=====
+def flush_input():
+    try:
+        import msvcrt
+        while msvcrt.kbhit():
+            msvcrt.getch()
+    except ImportError:
+        import sys, termios
+        termios.tcflush(sys.stdin, termios.TCIOFLUSH)
+ 
+

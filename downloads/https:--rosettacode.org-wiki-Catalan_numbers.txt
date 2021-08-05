@@ -1,0 +1,150 @@
+====RUBY=====
+require "big"
+require "benchmark"
+ 
+def factorial(n : BigInt) : BigInt
+  (1..n).product(1.to_big_i)
+end
+ 
+def factorial(n : Int32 | Int64)
+  factorial n.to_big_i
+end
+ 
+# direct
+ 
+def catalan_direct(n)
+  factorial(2*n) / (factorial(n + 1) * factorial(n))
+end
+ 
+# recursive
+ 
+def catalan_rec1(n)
+  return 1 if n == 0
+  (0...n).reduce(0) do |sum, i|
+    sum + catalan_rec1(i) * catalan_rec1(n - 1 - i)
+  end
+end
+ 
+def catalan_rec2(n)
+  return 1 if n == 0
+  2*(2*n - 1) * catalan_rec2(n - 1) / (n + 1)
+end
+ 
+# performance and results
+ 
+Benchmark.bm do |b|
+  b.report("catalan_direct") { 16.times { |n| catalan_direct(n) } }
+  b.report("catalan_rec1") { 16.times { |n| catalan_rec1(n) } }
+  b.report("catalan_rec2") { 16.times { |n| catalan_rec2(n) } }
+end
+ 
+puts "\n       direct     rec1     rec2"
+16.times { |n| puts "%2d :%9d%9d%9d" % [n, catalan_direct(n), catalan_rec1(n), catalan_rec2(n)] }
+ 
+
+====RUBY=====
+def factorial(n)
+  (1..n).reduce(1, :*)
+end
+ 
+# direct
+ 
+def catalan_direct(n)
+  factorial(2*n) / (factorial(n+1) * factorial(n))
+end
+ 
+# recursive
+ 
+def catalan_rec1(n)
+  return 1 if n == 0
+  (0...n).inject(0) {|sum, i| sum + catalan_rec1(i) * catalan_rec1(n-1-i)}
+end
+ 
+def catalan_rec2(n)
+  return 1 if n == 0
+  2*(2*n - 1) * catalan_rec2(n-1) / (n+1)
+end
+ 
+# performance and results
+ 
+require 'benchmark'
+require 'memoize'
+include Memoize
+ 
+Benchmark.bm(17) do |b|
+  b.report('catalan_direct')    {16.times {|n| catalan_direct(n)} }
+  b.report('catalan_rec1')      {16.times {|n| catalan_rec1(n)} }
+  b.report('catalan_rec2')      {16.times {|n| catalan_rec2(n)} }
+ 
+  memoize :catalan_rec1
+  b.report('catalan_rec1(memo)'){16.times {|n| catalan_rec1(n)} }
+end
+ 
+puts "\n       direct     rec1     rec2"
+16.times {|n| puts "%2d :%9d%9d%9d" % [n, catalan_direct(n), catalan_rec1(n), catalan_rec2(n)]}
+
+====RUBY=====
+func f(i) { i==0 ? 1 : (i * f(i-1)) }
+func c(n) { f(2*n) / f(n) / f(n+1) }
+
+====RUBY=====
+func c(n) is cached {
+    n == 0 ? 1 : (c(n-1) * (4 * n - 2) / (n + 1))
+}
+
+====RUBY=====
+15.times { |i|
+    say "#{i}\t#{c(i)}"
+}
+
+====PYTHON=====
+from math import factorial
+import functools
+ 
+ 
+def memoize(func):
+    cache = {}
+ 
+    def memoized(key):
+        # Returned, new, memoized version of decorated function
+        if key not in cache:
+            cache[key] = func(key)
+        return cache[key]
+    return functools.update_wrapper(memoized, func)
+ 
+ 
+@memoize
+def fact(n):
+    return factorial(n)
+ 
+ 
+def cat_direct(n):
+    return fact(2 * n) // fact(n + 1) // fact(n)
+ 
+ 
+@memoize
+def catR1(n):
+    return 1 if n == 0 else (
+        sum(catR1(i) * catR1(n - 1 - i) for i in range(n))
+    )
+ 
+ 
+@memoize
+def catR2(n):
+    return 1 if n == 0 else (
+        ((4 * n - 2) * catR2(n - 1)) // (n + 1)
+    )
+ 
+ 
+if __name__ == '__main__':
+    def pr(results):
+        fmt = '%-10s %-10s %-10s'
+        print((fmt % tuple(c.__name__ for c in defs)).upper())
+        print(fmt % (('=' * 10,) * 3))
+        for r in zip(*results):
+            print(fmt % r)
+ 
+    defs = (cat_direct, catR1, catR2)
+    results = [tuple(c(i) for i in range(15)) for c in defs]
+    pr(results)
+

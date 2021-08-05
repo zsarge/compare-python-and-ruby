@@ -1,0 +1,53 @@
+====RUBY=====
+ary = [["UK", "London"],
+       ["US", "New York"],
+       ["US", "Birmingham"],
+       ["UK", "Birmingham"]]
+p ary.sort {|a,b| a[1] <=> b[1]}
+# MRI reverses the Birminghams:
+# => [["UK", "Birmingham"], ["US", "Birmingham"], ["UK", "London"], ["US", "New York"]]
+
+====RUBY=====
+class Array
+  def stable_sort
+    n = -1
+    if block_given?
+      collect {|x| n += 1; [x, n]
+      }.sort! {|a, b|
+        c = yield a[0], b[0]
+        if c.nonzero? then c else a[1] <=> b[1] end
+      }.collect! {|x| x[0]}
+    else
+      sort_by {|x| n += 1; [x, n]}
+    end
+  end
+ 
+  def stable_sort_by
+    block_given? or return enum_for(:stable_sort_by)
+    n = -1
+    sort_by {|x| n += 1; [(yield x), n]}
+  end
+end
+
+====RUBY=====
+ary = [["UK", "London"],
+       ["US", "New York"],
+       ["US", "Birmingham"],
+       ["UK", "Birmingham"]]
+p ary.stable_sort {|a, b| a[1] <=> b[1]}
+# => [["US", "Birmingham"], ["UK", "Birmingham"], ["UK", "London"], ["US", "New York"]]
+p ary.stable_sort_by {|x| x[1]}
+# => [["US", "Birmingham"], ["UK", "Birmingham"], ["UK", "London"], ["US", "New York"]]
+
+====RUBY=====
+var table = [
+  <UK  London>,
+  <US  New\ York>,
+  <US  Birmingham>,
+  <UK  Birmingham>,
+];
+ 
+table.sort {|a,b| a[0] <=> b[0]}.each { |col|
+    say "#{col[0]} #{col[1]}"
+}
+

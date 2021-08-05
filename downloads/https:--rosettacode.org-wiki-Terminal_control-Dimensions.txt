@@ -1,0 +1,64 @@
+====RUBY=====
+def winsize
+  # Ruby 1.9.3 added 'io/console' to the standard library.
+  require 'io/console'
+  IO.console.winsize
+rescue LoadError
+  # This works with older Ruby, but only with systems
+  # that have a tput(1) command, such as Unix clones.
+  [Integer(`tput li`), Integer(`tput co`)]
+end
+ 
+rows, cols = winsize
+printf "%d rows by %d columns\n", rows, cols
+
+====RUBY=====
+require 'curses'
+ 
+begin
+  Curses.init_screen
+ 
+  r, c = Curses.lines, Curses.cols
+ 
+  Curses.setpos r / 2, 0
+  Curses.addstr "#{r} rows by #{c} columns".center(c)
+  Curses.getch
+ensure
+  Curses.close_screen
+end
+
+====RUBY=====
+var stty = `stty -a`;
+var lines = stty.match(/\brows\h+(\d+)/);
+var cols  = stty.match(/\bcolumns\h+(\d+)/);
+say "#{lines} #{cols}";
+
+====PYTHON=====
+import os
+ 
+def get_windows_terminal():
+    from ctypes import windll, create_string_buffer
+    h = windll.kernel32.GetStdHandle(-12)
+    csbi = create_string_buffer(22)
+    res = windll.kernel32.GetConsoleScreenBufferInfo(h, csbi)
+ 
+    #return default size if actual size can't be determined
+    if not res: return 80, 25 
+ 
+    import struct
+    (bufx, bufy, curx, cury, wattr, left, top, right, bottom, maxx, maxy)\
+    = struct.unpack("hhhhHhhhhhh", csbi.raw)
+    width = right - left + 1
+    height = bottom - top + 1
+ 
+    return width, height
+ 
+def get_linux_terminal():
+    width = os.popen('tput cols', 'r').readline()
+    height = os.popen('tput lines', 'r').readline()
+ 
+    return int(width), int(height)
+ 
+print get_linux_terminal() if os.name == 'posix' else get_windows_terminal()
+ 
+

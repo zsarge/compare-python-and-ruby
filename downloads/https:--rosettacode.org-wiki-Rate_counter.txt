@@ -1,0 +1,119 @@
+====RUBY=====
+require "benchmark"
+ 
+struct Document
+  property :id
+  def initialize(@id : Int32) end
+end
+ 
+documents_a = [] of Int32 | Document
+documents_h = {} of Int32 => Int32 | Document 
+ 
+1.upto(10_000) do |n|
+  d = Document.new(n)
+  documents_a << d
+  documents_h[d.id] = d
+end
+ 
+searchlist = Array.new(1000){ rand(10_000)+1 }
+ 
+Benchmark.bm do |x|
+  x.report("array"){searchlist.each{ |el| documents_a.any?{ |d| d == el }} }
+  x.report("hash") {searchlist.each{ |el| documents_h.has_key?(el) } }
+end
+puts
+Benchmark.ips do |x|
+  x.report("array"){searchlist.each{ |el| documents_a.any?{ |d| d == el }} }
+  x.report("hash") {searchlist.each{ |el| documents_h.has_key?(el) } }
+end
+
+====RUBY=====
+require 'benchmark'
+Document = Struct.new(:id,:a,:b,:c)
+documents_a = []
+documents_h = {}
+1.upto(10_000) do |n|
+  d = Document.new(n)
+  documents_a << d
+  documents_h[d.id] = d
+end
+searchlist = Array.new(1000){ rand(10_000)+1 }
+ 
+Benchmark.bm(10) do |x|
+  x.report('array'){searchlist.each{|el| documents_a.any?{|d| d.id == el}} }
+  x.report('hash'){searchlist.each{|el| documents_h.has_key?(el)} }
+end
+
+====RUBY=====
+var benchmark = frequire('Benchmark');
+ 
+func job1 {
+    #...job1 code...
+}
+func job2 {
+    #...job2 code...
+}
+ 
+const COUNT = -1;   # run for one CPU second
+benchmark.timethese(COUNT, Hash.new('Job1' => job1, 'Job2' => job2));
+
+====PYTHON=====
+import subprocess
+import time
+ 
+class Tlogger(object):
+    def __init__(self):
+        self.counts = 0
+        self.tottime = 0.0
+        self.laststart = 0.0
+        self.lastreport = time.time()
+ 
+    def logstart(self):
+        self.laststart = time.time()
+ 
+    def logend(self):
+        self.counts +=1
+        self.tottime += (time.time()-self.laststart)
+        if (time.time()-self.lastreport)>5.0:   # report once every 5 seconds
+           self.report()
+ 
+    def report(self):
+        if ( self.counts > 4*self.tottime):
+            print "Subtask execution rate: %f times/second"% (self.counts/self.tottime);
+        else:
+            print "Average execution time: %f seconds"%(self.tottime/self.counts);
+        self.lastreport = time.time()
+ 
+ 
+def taskTimer( n, subproc_args ):
+    logger = Tlogger()
+ 
+    for x in range(n):
+        logger.logstart()
+        p = subprocess.Popen(subproc_args)
+        p.wait()
+        logger.logend()
+    logger.report()
+ 
+ 
+import timeit
+import sys
+ 
+def main( ):
+ 
+    # for accurate timing of code segments 
+    s = """j = [4*n for n in range(50)]"""
+    timer = timeit.Timer(s)
+    rzlts = timer.repeat(5, 5000)
+    for t in rzlts:
+        print "Time for 5000 executions of statement = ",t
+ 
+    # subprocess execution timing
+    print "#times:",sys.argv[1]
+    print "Command:",sys.argv[2:]
+    print ""
+    for k in range(3):
+       taskTimer( int(sys.argv[1]), sys.argv[2:])
+ 
+main()
+

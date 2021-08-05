@@ -1,0 +1,1465 @@
+====RUBY=====
+def palindromesgapful(digit, pow)
+  r1 = (10_u64**pow + 1) * digit
+  r2 = 10_u64**pow * (digit + 1)
+  nn = digit * 11
+  (r1...r2).select { |i| n = i.to_s; n == n.reverse && i.divisible_by?(nn) }
+end
+ 
+def digitscount(digit, count)
+  pow  = 2
+  nums = [] of UInt64
+  while nums.size < count
+    nums += palindromesgapful(digit, pow)
+    pow += 1
+  end
+  nums[0...count]
+end
+ 
+count = 20
+puts "First 20 palindromic gapful numbers ending with:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count)}\n" }
+ 
+count = 100
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count).last(15)}\n" }
+ 
+count = 1000
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count).last(10)}\n" }
+
+====RUBY=====
+def palindromicgapfuls(digit, count)
+  gapfuls = [] of UInt64            # array of palindromic gapfuls
+  dd = 11_u64 * digit               # digit gapful divisor: 11, 22,...88, 99
+  (2..).select do |power|
+    base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      left_half = front_half.to_s; right_half = left_half.reverse 
+      if power.odd?
+        palindrome = (left_half + right_half).to_u64
+        10.times do
+          gapfuls << palindrome if palindrome.divisible_by?(dd)
+          return gapfuls if gapfuls.size == count
+          palindrome += base11
+        end
+      else
+        palindrome = (left_half.rchop + right_half).to_u64
+        10.times do 
+          gapfuls << palindrome if palindrome.divisible_by?(dd)
+          return gapfuls if gapfuls.size == count
+          palindrome += base
+        end  
+      end
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+def palindromicgapfuls(digit, count)
+  gapfuls = [] of UInt64            # array of palindromic gapfuls
+  dd = 11_u64 * digit               # digit gapful divisor: 11, 22,...88, 99
+  (2..).select do |power|
+    base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      palindrome, left_half = 0_u64, front_half.to_s
+      basep, right_half     = base11, left_half.reverse
+      (basep = base; left_half = left_half.rchop) if power.even?
+      palindrome = (left_half + right_half).to_u64
+      10.times do
+        gapfuls << palindrome if palindrome.divisible_by?(dd)
+        return gapfuls if gapfuls.size == count
+        palindrome += basep
+      end
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+struct PalindromicGapfuls
+  include Enumerable(UInt64)
+ 
+  @dd : Int32
+ 
+  def initialize(@digit : Int32)
+    @dd = 11 * @digit                 # digit gapful divisor: 11, 22,...88, 99
+  end
+ 
+  def each
+    (2..).select do |power|
+      base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+      base11  = base * 11             # value of middle two digits positions: 110..
+      this_lo = base * @digit         # starting half for this digit: 10.. to  90..
+      next_lo = base * (@digit + 1)   # starting half for next digit: 20.. to 100..
+      this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+        left_half = front_half.to_s; right_half = left_half.reverse
+        if power.odd?
+          palindrome = (left_half + right_half).to_u64
+          10.times do
+            yield palindrome if palindrome.divisible_by?(@dd)
+            palindrome += base11
+          end
+        else
+          palindrome = (left_half.rchop + right_half).to_u64
+          10.times do 
+            yield palindrome if palindrome.divisible_by?(@dd)
+            palindrome += base
+          end  
+        end
+      end
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+def palindromicgapfuls(digit, count, keep)
+  palcnt = 0                        # count of gapful palindromes
+  to_skip = count - keep            # count of unwanted values to skip
+  gapfuls = [] of UInt64            # array of palindromic gapfuls
+  dd = 11_u64 * digit               # digit gapful divisor: 11, 22,...88, 99
+  (2..).select do |power|
+    base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      left_half = front_half.to_s; right_half = left_half.reverse 
+      if power.odd?
+        palindrome = (left_half + right_half).to_u64
+        10.times do
+          gapfuls << palindrome if palindrome.divisible_by?(dd) && (palcnt += 1) > to_skip
+          palindrome += base11
+        end
+      else
+        palindrome = (left_half.rchop + right_half).to_u64
+        10.times do
+          gapfuls << palindrome if palindrome.divisible_by?(dd) && (palcnt += 1) > to_skip
+          palindrome += base
+        end  
+      end
+      return gapfuls[0...keep] unless gapfuls.size < keep
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+def palindromicgapfuls(digit, count, keep)
+  palcnt = 0                        # count of gapful palindromes
+  to_skip = count - keep            # count of unwanted values to skip
+  gapfuls = [] of UInt64            # array of palindromic gapfuls
+  dd, base = 11_u64 * digit, 1_u64  # digit gapful divisor: 11, 22,...88, 99
+  (2..).select do |power|
+    base   *= 10 if power.even?     # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      palindrome, left_half = 0_u64, front_half.to_s
+      basep, right_half     = base11, left_half.reverse
+      (basep = base; left_half = left_half.rchop) if power.even?
+      palindrome = (left_half + right_half).to_u64
+      10.times do
+        gapfuls << palindrome if palindrome.divisible_by?(dd) && (palcnt += 1) > to_skip
+        palindrome += basep
+      end
+      return gapfuls[0...keep] unless palcnt < count
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+struct PalindromicGapfuls
+  include Enumerable(UInt64)
+ 
+  @dd : Int32
+ 
+  def initialize(@digit : Int32)
+    @dd = 11 * @digit                 # digit gapful divisor: 11, 22,...88, 99
+  end
+ 
+  def each
+    (2..).select do |power|
+      base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+      base11  = base * 11             # value of middle two digits positions: 110..
+      this_lo = base * @digit         # starting half for this digit: 10.. to  90..
+      next_lo = base * (@digit + 1)   # starting half for next digit: 20.. to 100..
+      this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+        left_half = front_half.to_s; right_half = left_half.reverse 
+        if power.odd?
+          palindrome = (left_half + right_half).to_u64
+          10.times do
+            yield palindrome if palindrome.divisible_by?(@dd)
+            palindrome += base11
+          end
+        else
+          palindrome = (left_half.rchop + right_half).to_u64
+          10.times do 
+            yield palindrome if palindrome.divisible_by?(@dd)
+            palindrome += base
+          end  
+        end
+      end
+    end
+  end
+ 
+  # Optimized output method: only keep desired values.
+  def keep_from(count, keep)
+    to_skip = (count - keep)
+    kept = [] of UInt64
+    each_with_index do |value, i|
+      i < to_skip ? next : kept << value
+      return kept if kept.size == keep
+    end
+  end
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+def palindromicgapfuls(digit, count, keep)
+  palcnt = 0                        # count of gapful palindromes
+  to_skip = count - keep            # count of unwanted values to skip
+  gapfuls = [] of UInt64            # array of palindromic gapfuls
+  dd, base = 11_u64 * digit, 1_u64  # digit gapful divisor: 11, 22,...88, 99
+  (2..).select do |power|
+    base   *= 10 if power.even?     # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      basep = power.odd? ? base11 : base 
+      palindrome = make_palindrome(front_half, power)
+      10.times do
+        gapfuls << palindrome if palindrome.divisible_by?(dd) && (palcnt += 1) > to_skip
+        palindrome += basep
+      end
+      return gapfuls[0...keep] unless palcnt < count
+    end
+  end
+end
+ 
+def make_palindrome(front_half, power) 
+  result = front_half
+  result //= 10 if power.even?
+  while front_half > 0
+    result = result * 10 + front_half.remainder(10)
+    front_half //= 10
+  end
+  result
+end
+ 
+start = Time.monotonic
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+struct PalindromicGapfuls
+    include Enumerable(UInt64)
+ 
+    @dd : Int32
+ 
+    def initialize(@digit : Int32)
+      @dd = 11 * @digit                 # digit gapful divisor: 11, 22,...88, 99
+    end
+ 
+    def each
+      (2..).select do |power|
+        base    = 10_u64**(power >> 1)  # value of middle digit position: 10..
+        base11  = base * 11             # value of middle two digits positions: 110..
+        this_lo = base * @digit         # starting half for this digit: 10.. to  90..
+        next_lo = base * (@digit + 1)   # starting half for next digit: 20.. to 100..
+        this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+          basep = power.odd? ? base11 : base 
+          palindrome = make_palindrome(front_half, power)
+          10.times do
+            yield palindrome if palindrome.divisible_by?(@dd)
+            palindrome += basep
+          end
+        end
+      end
+    end
+ 
+    # Optimized output method: only keep desired values.
+    def keep_from(count, keep)
+      to_skip = (count - keep)
+      kept = [] of UInt64
+      each_with_index do |value, i|
+        i < to_skip ? next : kept << value
+        return kept if kept.size == keep
+      end
+    end
+ 
+    def make_palindrome(front_half, power)
+      result = front_half
+      result //= 10 if power.even?
+      while front_half > 0
+        result = result * 10 + front_half.remainder(10)
+        front_half //= 10
+      end
+      result
+    end
+  end
+ 
+  start = Time.monotonic
+ 
+  count, keep = 20, 20
+  puts "First 20 palindromic gapful numbers ending with:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  count, keep = 100, 15
+  puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  count, keep = 1_000, 10
+  puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  count, keep = 100_000, 1
+  puts "\n100,000th palindromic gapful number ending with:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  count, keep = 1_000_000, 1
+  puts "\n1,000,000th palindromic gapful number ending with:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  count, keep = 10_000_000, 1
+  puts "\n10,000,000th palindromic gapful number ending with:"
+  1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+  puts (Time.monotonic - start).total_seconds
+
+====RUBY=====
+class PalNo
+  @digit : UInt64
+  @dd : UInt64
+ 
+  def initialize(digit : Int32)
+    @digit, @l, @dd = digit.to_u64, 3, 11u64 * digit
+  end
+ 
+  def fN(n : Int32)
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] of UInt64 if n == 1
+    return [0, 11, 22, 33, 44, 55, 66, 77, 88, 99] of UInt64 if n == 2
+    a = [] of UInt64
+    ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9] of UInt64).product(fN(n - 2)) do |g0, g1|
+      a << g0.to_u64 &* 10u64 &** (n - 1) &+ g0.to_u64 &+ 10u64 &* g1.to_u64
+    end
+    return a
+  end
+ 
+  def show(count, keep)
+    to_skip, palcnt, pals = count - keep, 0, [] of UInt64
+    while palcnt < count
+      fN(@l - 2).each do |g|
+        pal = @digit * 10u64 &** (@l - 1) + @digit + 10u64 &* g
+        pals << pal if pal % @dd == 0 && (palcnt += 1) > to_skip
+        break if palcnt - to_skip == keep
+      end
+      @l += 1
+    end
+    print pals; puts
+  end
+end
+ 
+start = Time.monotonic 
+ 
+(1..9).each { |digit| PalNo.new(digit).show(20, 20) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(100, 15) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(1000, 10) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(100_000, 1) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(1_000_000, 1) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(10_000_000, 1) }; puts "####"
+ 
+puts (Time.monotonic - start).total_seconds
+ 
+
+====RUBY=====
+import strutils  # for number input
+import times                 # for timing code execution
+import unicode               # for reversed
+ 
+proc palindromicgapfuls(digit, count, keep: int): seq[uint64] =
+  var palcnt = 0                        # count of gapful palindromes
+  let to_skip = count - keep            # count of unwanted values to skip
+  var gapfuls = newSeq[uint64]()        # array of palindromic gapfuls
+  let nn = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  var (power, base, basep) = (1, 1, 0)
+  while true:
+    if (power.inc; power and 1) == 0: base = base * 10
+    var base11  = base * 11             # value of middle two digits positions: 110..
+    var this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    var next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    while this_lo < next_lo - 1:
+      var (palindrome, palindrome_base, left_half) = (0'u64, 0'u64, this_lo.intToStr)
+      let right_half = left_half.reversed
+      if (power and 1) == 1: basep = base11; palindrome_base = (left_half & right_half).parseUInt
+      else: basep = base; left_half.removeSuffix("0"); palindrome_base = (left_half & right_half).parseUInt
+      for i in 0..9:
+        palindrome = palindrome_base + (basep * i).uint
+        if (palindrome mod nn.uint) == 0:
+          if palcnt < to_skip: (palcnt += 1; continue)
+          gapfuls.add(palindrome)
+          if gapfuls.len == keep: return gapfuls
+      this_lo += 10
+ 
+let start = epochTime() 
+ 
+var (count, keep) = (20, 20)
+echo("First 20 palindromic gapful numbers ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100, 15)
+echo("\nLast 15 of first 100 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000, 10)
+echo("\nLast 10 of first 1000 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100_000, 1)
+echo("\n100,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000_000, 1)
+echo("\n1,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (10_000_000, 1)
+echo("\n10,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+echo (epochTime() - start)
+
+====RUBY=====
+import strutils  # for number input
+import times                 # for timing code execution
+import unicode               # for reversed
+ 
+proc palindromicgapfuls(digit, count, keep: int): seq[uint64] =
+  var palcnt = 0                      # count of gapful palindromes
+  let to_skip = count - keep          # count of unwanted values to skip
+  let nn = digit * 11                 # digit gapful divisor: 11, 22,...88, 99
+  var (power, base, digit) = (1, 1u64, digit.uint64)
+  while true:
+    if (power.inc; power and 1) == 0: base *= 10
+    let base11  = base * 11           # value of middle two digits positions: 110..
+    let this_lo = base * digit        # starting half for this digit: 10.. to  90..
+    let next_lo = base * (digit + 1)  # starting half for next digit: 20.. to 100..
+    for front_half in countup(this_lo, next_lo - 2, 10):
+      var
+        basep = base11 
+        left_half = $front_half
+      let right_half = left_half.reversed
+      if (power and 1) == 0: basep = base; left_half.setLen left_half.len - 1
+      var palindrome = (left_half.add right_half; left_half).parseUInt.uint64
+      for _ in 0..9:
+        if palindrome mod nn.uint == 0: (palcnt.inc; if palcnt > to_skip: result.add palindrome)
+        palindrome += basep
+      if result.len >= keep: result.setLen(keep); return
+ 
+let start = epochTime() 
+ 
+var (count, keep) = (20, 20)
+echo("First 20 palindromic gapful numbers ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100, 15)
+echo("\nLast 15 of first 100 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000, 10)
+echo("\nLast 10 of first 1000 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100_000, 1)
+echo("\n100,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000_000, 1)
+echo("\n1,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (10_000_000, 1)
+echo("\n10,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+echo (epochTime() - start)
+
+====RUBY=====
+import times
+ 
+proc make_palindrome(front_half: uint64, power: int): uint64 =
+  var res, front_half = front_half
+  if (power and 1) == 0: res = res div 10
+  while front_half > 0:
+    res = res * 10 + front_half mod 10
+    front_half = front_half div 10
+  res
+ 
+proc palindromicgapfuls(digit, count, keep: int): seq[uint64] =
+  var (palcnt, digit) = (0, digit.uint64) # count of gapful palindromes
+  let to_skip = count - keep            # count of unwanted values to skip
+  var gapfuls = newSeq[uint64]()        # array of palindromic gapfuls
+  let dd = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  var (power, base) = (1, 1u64)
+  while true:
+    if (power.inc; power and 1) == 0: base = base * 10
+    var base11  = base * 11             # value of middle two digits positions: 110..
+    var this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    var next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    for front_half in countup(this_lo, next_lo - 2, 10):
+      let basep = if (power and 1) == 1: base11 else: base
+      var palindrome = make_palindrome(front_half, power)
+      for _ in 0..9:
+        if palindrome mod dd == 0: (palcnt.inc; if palcnt > to_skip: gapfuls.add(palindrome))
+        palindrome += basep
+      if gapfuls.len >= keep: return gapfuls[0..keep-1]
+ 
+let start = epochTime() 
+ 
+var (count, keep) = (20, 20)
+echo("First 20 palindromic gapful numbers ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100, 15)
+echo("\nLast 15 of first 100 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000, 10)
+echo("\nLast 10 of first 1000 palindromic gapful numbers ending in:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (100_000, 1)
+echo("\n100,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (1_000_000, 1)
+echo("\n1,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+(count, keep) = (10_000_000, 1)
+echo("\n10,000,000th palindromic gapful number ending with:")
+for digit in 1..9: echo(digit, " : ", palindromicgapfuls(digit, count, keep) )
+ 
+echo (epochTime() - start)
+
+====RUBY=====
+def palindromesgapful(digit, pow)
+  r1 = digit * (10**pow + 1)
+  r2 = 10**pow * (digit + 1)
+  nn = digit * 11
+  (r1...r2).select { |i| n = i.to_s; n == n.reverse && i % nn == 0 }
+end
+ 
+def digitscount(digit, count)
+  pow  = 2
+  nums = []
+  while nums.size < count
+    nums += palindromesgapful(digit, pow)
+    pow += 1
+  end
+  nums[0...count]
+end
+ 
+count = 20
+puts "First 20 palindromic gapful numbers ending with:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count)}\n" }
+ 
+count = 100
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count).last(15)}\n" }
+ 
+count = 1000
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+(1..9).each { |digit| print "#{digit} : #{digitscount(digit, count).last(10)}\n" }
+
+====RUBY=====
+def palindromicgapfuls(digit, count)
+  gapfuls = []                      # array of palindromic gapfuls
+  nn = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  power = 1                         # these two lines will work
+  while power += 1                  # for all Ruby VMs|versions
+  #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+    base    = 10**(power >> 1)      # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      left_half = front_half.to_s; right_half = left_half.reverse
+      if power.odd?
+        palindrome = (left_half + right_half).to_i
+        10.times do
+            gapfuls << palindrome if palindrome % nn == 0
+            palindrome += base11
+        end
+      else
+        palindrome = (left_half.chop + right_half).to_i
+        10.times do
+          gapfuls << palindrome if palindrome % nn == 0
+          palindrome += base
+        end  
+      end
+     return gapfuls[0...count] unless gapfuls.size < count
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+def palindromicgapfuls(digit, count)
+  gapfuls = []                      # array of palindromic gapfuls
+  nn = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  power = 1                         # these two lines will work
+  while power += 1                  # for all Ruby VMs|versions
+  #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+    base    = 10**(power >> 1)      # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      left_half, basep = front_half.to_s, base11; right_half = left_half.reverse
+      (basep = base; left_half = left_half.chop) if power.even?
+      palindrome = (left_half + right_half).to_i
+      10.times do
+        gapfuls << palindrome if palindrome % nn == 0
+        palindrome += basep
+      end
+      return gapfuls[0...count] unless gapfuls.size < count
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count).last(keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+class PalindromicGapfuls
+  include Enumerable
+ 
+  def initialize(digit)
+    @digit = digit
+    @nn = @digit * 11                 # digit gapful divisor: 11, 22,...88, 99
+  end
+ 
+  def each
+    power = 1                         # these two lines will work
+    while power += 1                  # for all Ruby VMs|versions
+    #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+      base    = 10**(power >> 1)      # value of middle digit position: 10..
+      base11  = base * 11             # value of middle two digits positions: 110..
+      this_lo = base * @digit         # starting half for this digit: 10.. to  90..
+      next_lo = base * (@digit + 1)   # starting half for next digit: 20.. to 100..
+      this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+        left_half = front_half.to_s; right_half = left_half.reverse
+        if power.odd?
+          palindrome = (left_half + right_half).to_i
+          10.times do
+            yield palindrome if palindrome % @nn == 0
+            palindrome += base11
+          end
+        else
+          palindrome = (left_half.chop + right_half).to_i
+          10.times do
+            yield palindrome if palindrome % @nn == 0
+            palindrome += base
+          end  
+        end
+      end
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).first(count).last(keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+def palindromicgapfuls(digit, count, keep)
+  palcnt = 0                        # count of gapful palindromes
+  to_skip = count - keep            # count of unwanted values to skip
+  gapfuls = []                      # array of palindromic gapfuls
+  nn = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  power = 1                         # these two lines will work
+  while power += 1                  # for all Ruby VMs|versions
+  #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+    base    = 10**(power >> 1)      # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+      left_half = front_half.to_s; right_half = left_half.reverse
+      if power.odd?
+        palindrome = (left_half + right_half).to_i
+        10.times do
+          (gapfuls << palindrome if (palcnt += 1) > to_skip) if palindrome % nn == 0
+          palindrome += base11
+        end
+      else
+        palindrome = (left_half.chop + right_half).to_i
+        10.times do
+          (gapfuls << palindrome if (palcnt += 1) > to_skip) if palindrome % nn == 0
+          palindrome += base
+        end  
+      end
+      return gapfuls[0...keep] unless gapfuls.size < keep
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+def palindromicgapfuls(digit, count, keep)
+  palcnt = 0                        # count of gapful palindromes
+  to_skip = count - keep            # count of unwanted values to skip
+  gapfuls = []                      # array of palindromic gapfuls
+  nn = digit * 11                   # digit gapful divisor: 11, 22,...88, 99
+  power = 1                         # these two lines will work
+  while power += 1                  # for all Ruby VMs|versions
+  #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+    base    = 10 ** (power >> 1)    # value of middle digit position: 10..
+    base11  = base * 11             # value of middle two digits positions: 110..
+    this_lo = base * digit          # starting half for this digit: 10.. to  90..
+    next_lo = base * (digit + 1)    # starting half for next digit: 20.. to 100..
+    this_lo.step(to: next_lo - 1, by: 10) do |front_half|   # d_00; d_10; d_20; ...
+      left_half, basep = front_half.to_s, base11; right_half = left_half.reverse
+      (basep = base; left_half = left_half.chop) if power.even?
+      palindrome = (left_half + right_half).to_i
+      10.times do
+        (gapfuls << palindrome if (palcnt += 1) > to_skip) if palindrome % nn == 0
+        palindrome += basep
+      end
+      return gapfuls[0...keep] unless gapfuls.size < keep
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{palindromicgapfuls(digit, count, keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+class PalindromicGapfuls
+  include Enumerable
+ 
+  def initialize(digit)
+    @digit = digit
+    @nn = @digit * 11                 # digit gapful divisor: 11, 22,...88, 99
+  end
+ 
+  def each
+    power = 1                         # these two lines will work
+    while power += 1                  # for all Ruby VMs|versions
+    #(2..).each do |power|            # Ruby => 2.6; can replace above 2 lines
+      base    = 10**(power >> 1)      # value of middle digit position: 10..
+      base11  = base * 11             # value of middle two digits positions: 110..
+      this_lo = base * @digit         # starting half for this digit: 10.. to  90..
+      next_lo = base * (@digit + 1)   # starting half for next digit: 20.. to 100..
+      this_lo.step(to: next_lo - 1, by: 10) do |front_half| # d_00; d_10; d_20; ...
+        left_half = front_half.to_s; right_half = left_half.reverse
+        if power.odd?
+          palindrome = (left_half + right_half).to_i
+          10.times do
+            yield palindrome if palindrome % @nn == 0
+            palindrome += base11
+          end
+        else
+          palindrome = (left_half.chop + right_half).to_i
+          10.times do
+            yield palindrome if palindrome % @nn == 0
+            palindrome += base
+          end  
+        end
+      end
+    end
+  end
+ 
+  # Optimized output method: only keep desired values.
+  def keep_from(count, keep)
+    to_skip = (count - keep)
+    kept = []
+    each_with_index do |value, i|
+      i < to_skip ? next : kept << value
+      return kept if kept.size == keep
+    end
+  end
+end
+ 
+start = Time.now
+ 
+count, keep = 20, 20
+puts "First 20 palindromic gapful numbers ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 100, 15
+puts "\nLast 15 of first 100 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 1_000, 10
+puts "\nLast 10 of first 1000 palindromic gapful numbers ending in:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 100_000, 1
+puts "\n100,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 1_000_000, 1
+puts "\n1,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+count, keep = 10_000_000, 1
+puts "\n10,000,000th palindromic gapful number ending with:"
+1.upto(9) { |digit| puts "#{digit} : #{PalindromicGapfuls.new(digit).keep_from(count, keep)}" }
+ 
+puts (Time.now - start)
+
+====RUBY=====
+ 
+class PalNo
+  def initialize(set)
+    @set, @l=set, 3
+  end
+  def fN(n)
+    return [0,1,2,3,4,5,6,7,8,9] if n==1
+    return [0,11,22,33,44,55,66,77,88,99] if n==2
+    a=[]; [0,1,2,3,4,5,6,7,8,9].product(fN(n-2)).each{|g| a.push(g[0]*10**(n-1)+g[0]+10*g[1])}; return a
+  end
+  def each
+    while true do fN(@l-2).each{|g| [email protected]*10**(@l-1)+@set+10*g; yield a if a%(11*@set)==0}; @l+=1 end
+  end
+end
+ 
+for n in 1..9 do palNo=PalNo.new(n); g=1; palNo.each{|n| print "#{n} "; g+=1; break unless g<21}; puts "" end; puts "####"
+for n in 1..9 do palNo=PalNo.new(n); g=1; palNo.each{|n| print "#{n} " if g>85; g+=1; break unless g<101}; puts "" end; puts "####"
+for n in 1..9 do palNo=PalNo.new(n); g=1; palNo.each{|n| print "#{n} " if g>990; g+=1; break unless g<1001}; puts "" end; puts "####"
+ 
+
+====RUBY=====
+class PalNo
+  def initialize(digit)
+    @digit, @l, @dd = digit, 3, 11*digit
+  end
+  def fN(n)
+    return [0,1,2,3,4,5,6,7,8,9] if n==1
+    return [0,11,22,33,44,55,66,77,88,99] if n==2
+    a=[]; [0,1,2,3,4,5,6,7,8,9].product(fN(n-2)).each{ |g0,g1| a << g0*10**(n-1)+g0+10*g1 }; return a
+  end
+  def show(count, keep)
+    to_skip, palcnt, pals = count - keep, 0, []
+    while palcnt < count
+      fN(@l-2).each{ |g| [email protected]*10**(@l-1)+@digit+10*g;
+      pals << pal if pal%(@dd)==0 && (palcnt += 1) > to_skip; break if palcnt - to_skip == keep }; @l+=1
+    end
+    print pals; puts
+  end
+end
+ 
+start = Time.now
+ 
+(1..9).each { |digit| PalNo.new(digit).show(20, 20) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(100, 15) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(1000, 10) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(100_000, 1) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(1_000_000, 1) }; puts "####"
+(1..9).each { |digit| PalNo.new(digit).show(10_000_000, 1) }; puts "####"
+ 
+puts (Time.now - start)
+
+====RUBY=====
+class PalindromeGenerator (digit, base=10) {
+ 
+    has power = base
+    has after = (digit*power - 1)
+    has even  = false
+ 
+    method next {
+ 
+        if (++after == power*(digit+1)) {
+            power *= base if even
+            after = digit*power
+            even.not!
+        }
+ 
+        even ? (after*power*base + reverse(after, base))
+             : (after*power + reverse(after/base, base))
+    }
+}
+ 
+var task = [
+    "(Required) First 20 gapful palindromes:",       { .first(20) }, 7,
+    ,"\n(Required) 86th through 100th:",             { .first(1e2).last(15) }, 8,
+    ,"\n(Optional) 991st through 1,000th:",          { .first(1e3).last(10) }, 10,
+    ,"\n(Extra stretchy) 9,995th through 10,000th:", { .first(1e4).last(6) }, 12,
+]
+ 
+task.each_slice(3, {|title, f, w|
+    say title
+    for d in (1..9) {
+        var k    = 11*d
+        var iter = PalindromeGenerator(d)
+        var arr  = f(^Inf->lazy.map { iter.next }.grep {|n| k `divides` n })
+        say ("#{d}: ", arr.map{ "%*s" % (w, _) }.join(' '))
+    }
+})
+
+====PYTHON=====
+from itertools import count
+from pprint import pformat
+import re
+import heapq
+ 
+ 
+def pal_part_gen(odd=True):
+    for i in count(1):
+        fwd = str(i)
+        rev = fwd[::-1][1:] if odd else fwd[::-1]
+        yield int(fwd + rev)
+ 
+def pal_ordered_gen():
+    yield from heapq.merge(pal_part_gen(odd=True), pal_part_gen(odd=False))
+ 
+def is_gapful(x):
+    return (x % (int(str(x)[0]) * 10 + (x % 10)) == 0)
+ 
+if __name__ == '__main__':
+    start = 100
+    for mx, last in [(20, 20), (100, 15), (1_000, 10)]:
+        print(f"\nLast {last} of the first {mx} binned-by-last digit " 
+              f"gapful numbers >= {start}")
+        bin = {i: [] for i in range(1, 10)}
+        gen = (i for i in pal_ordered_gen() if i >= start and is_gapful(i))
+        while any(len(val) < mx for val in bin.values()):
+            g = next(gen)
+            val = bin[g % 10]
+            if len(val) < mx:
+                val.append(g)
+        b = {k:v[-last:] for k, v in bin.items()}
+        txt = pformat(b, width=220)
+        print('', re.sub(r"[{},\[\]]", '', txt))
+
+====PYTHON=====
+'''Palindromic gapful numbers'''
+ 
+from itertools import chain, count, islice, tee
+from functools import reduce
+ 
+ 
+# palindromicGapfuls :: () -> [Int]
+def palindromicGapfuls():
+    '''A non-finite series of gapful palindromic numbers.
+    '''
+    def derived(digitsEven):
+        '''A palindrome of an even or odd number of digits,
+           obtained by appending either all or just the tail
+           of the reversed digits of n.
+        '''
+        def go(x):
+            s = str(x)
+            r = s[::-1]
+            return int((s + r) if digitsEven else (s + r[1:]))
+        return go
+ 
+    return filter(
+        lambda n: 0 == n % (int(str(n)[0]) * 10 + (n % 10)),
+        mergeInOrder(
+            map(derived(False), count(10))
+        )(map(derived(True), count(10)))
+    )
+ 
+ 
+# --------------------------TESTS--------------------------
+# main :: IO ()
+def main():
+    '''Various samples of gapful palindromes grouped by final digit.'''
+ 
+    tpl = tee(palindromicGapfuls(), 9)
+ 
+    # sample :: (String, Int, Int) -> String
+    def sample(label, dropped, taken):
+        return fTable(label)(compose(cons(' '), str))(
+            compose(unwords, map_(str))
+        )(
+            compose(
+                take(taken),
+                drop(dropped),
+                lambda i: filter(
+                    lambda x: i == x % 10,
+                    tpl[i - 1]
+                )
+            )
+        )(enumFromTo(1)(9))
+ 
+    print(
+        '\n\n'.join(map(lambda x: sample(*x), [
+            ('First 20 samples of gapful palindromes ' +
+             '(> 100) by last digit:', 0, 20),
+ 
+            ('Last 15 of first 100 gapful palindromes ' +
+             '(> 100) by last digit:', 65, 15),
+ 
+            ('Last 10 of first 1000 gapful palindromes ' +
+             '(> 100) by last digit:', 890, 10)
+        ]))
+    )
+ 
+# ------------------------DISPLAY -------------------------
+ 
+ 
+# fTable :: String -> (a -> String) ->
+# (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+       f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ': ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# ------------------------GENERIC--------------------------
+ 
+# Just :: a -> Maybe a
+def Just(x):
+    '''Constructor for an inhabited Maybe (option type) value.
+       Wrapper containing the result of a computation.
+    '''
+    return {'type': 'Maybe', 'Nothing': False, 'Just': x}
+ 
+ 
+# Nothing :: Maybe a
+def Nothing():
+    '''Constructor for an empty Maybe (option type) value.
+       Empty wrapper returned where a computation is not possible.
+    '''
+    return {'type': 'Maybe', 'Nothing': True}
+ 
+ 
+# compose :: ((a -> a), ...) -> (a -> a)
+def compose(*fs):
+    '''Composition, from right to left,
+       of a series of functions.
+    '''
+    def go(f, g):
+        return lambda x: f(g(x))
+    return reduce(go, fs, lambda x: x)
+ 
+ 
+# cons :: a -> [a] -> [a]
+def cons(x):
+    '''A list string or iterator constructed
+       from x as head, and xs as tail.
+    '''
+    return lambda xs: [x] + xs if (
+        isinstance(xs, list)
+    ) else x + xs if (
+        isinstance(xs, str)
+    ) else chain([x], xs)
+ 
+ 
+# drop :: Int -> [a] -> [a]
+def drop(n):
+    '''The sublist of xs beginning at
+       (zero-based) index n.
+    '''
+    def go(xs):
+        take(n)(xs)
+        return xs
+    return go
+ 
+ 
+# enumFromTo :: Int -> Int -> [Int]
+def enumFromTo(m):
+    '''Enumeration of integer values [m..n]'''
+    def go(n):
+        return list(range(m, 1 + n))
+    return go
+ 
+ 
+# map :: (a -> b) -> [a] -> [b]
+def map_(f):
+    '''The list obtained by applying f
+       to each element of xs.
+    '''
+    return lambda xs: [f(x) for x in xs]
+ 
+ 
+# mergeInOrder :: Gen [Int] -> Gen [Int] -> Gen [Int]
+def mergeInOrder(ga):
+    '''An ordered, non-finite, stream of integers
+       obtained by merging two other such streams.
+    '''
+    def go(ma, mb):
+        a = ma
+        b = mb
+        while not a['Nothing'] and not b['Nothing']:
+            (a1, a2) = a['Just']
+            (b1, b2) = b['Just']
+            if a1 < b1:
+                yield a1
+                a = uncons(a2)
+            else:
+                yield b1
+                b = uncons(b2)
+ 
+    return lambda gb: go(uncons(ga), uncons(gb))
+ 
+ 
+# take :: Int -> [a] -> [a]
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    return lambda xs: list(islice(xs, n))
+ 
+ 
+# uncons :: [a] -> Maybe (a, [a])
+def uncons(xs):
+    '''The deconstruction of a non-empty list
+       (or generator stream) into two parts:
+       a head value, and the remaining values.
+    '''
+    nxt = take(1)(xs)
+    return Just((nxt[0], xs)) if nxt else Nothing()
+ 
+ 
+# unwords :: [String] -> String
+def unwords(xs):
+    '''A space-separated string derived
+       from a list of words.
+    '''
+    return ' '.join(xs)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

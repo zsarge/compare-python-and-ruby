@@ -1,0 +1,247 @@
+====RUBY=====
+ 
+[[1], 2, [[3, 4], 5], [[[] of Int32]], [[[6]]], 7, 8, [] of Int32].flatten()
+ 
+
+====RUBY=====
+flat = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []].flatten
+p flat  # => [1, 2, 3, 4, 5, 6, 7, 8]
+
+====RUBY=====
+p flatten_once = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []].flatten(1)
+# => [1, 2, [3, 4], 5, [[]], [[6]], 7, 8]
+ 
+
+====RUBY=====
+func flatten(a) {
+    var flat = []
+    a.each { |item|
+        flat += (item.kind_of(Array) ? flatten(item) : [item])
+    }
+    return flat
+}
+ 
+var arr = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []]
+say flatten(arr)      # used-defined function
+say arr.flatten       # built-in Array method
+
+====PYTHON=====
+>>> def flatten(lst):
+	return sum( ([x] if not isinstance(x, list) else flatten(x)
+		     for x in lst), [] )
+ 
+>>> lst = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []]
+>>> flatten(lst)
+[1, 2, 3, 4, 5, 6, 7, 8]
+
+====PYTHON=====
+>>> def flatten(itr):
+>>>     try:
+>>>         t = sum((flatten(e) for e in itr), list())
+>>>     except:
+>>>         t = [itr]
+>>>     return t
+ 
+>>> lst = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []]
+>>> flatten(lst)
+[1, 2, 3, 4, 5, 6, 7, 8]
+
+====PYTHON=====
+>>> def flat(lst):
+    i=0
+    while i<len(lst):
+        while True:
+            try:
+                lst[i:i+1] = lst[i]
+            except (TypeError, IndexError):
+                break
+        i += 1
+ 
+>>> lst = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []]
+>>> flat(lst)
+>>> lst
+[1, 2, 3, 4, 5, 6, 7, 8]
+
+====PYTHON=====
+>>> def flatten(lst):
+     for x in lst:
+         if isinstance(x, list):
+             for x in flatten(x):
+                 yield x
+         else:
+             yield x
+ 
+ 
+>>> lst = [[1], 2, [[3,4], 5], [[[]]], [[[6]]], 7, 8, []]
+>>> print list(flatten(lst)) 
+[1, 2, 3, 4, 5, 6, 7, 8]
+
+====PYTHON=====
+'''Flatten a nested list'''
+ 
+from itertools import (chain)
+ 
+ 
+# ----------------------- FLATTEN ------------------------
+ 
+# flatten :: NestedList a -> [a]
+def flatten(x):
+    '''A list of atomic values resulting from fully
+       flattening an arbitrarily nested list.
+    '''
+    return concatMap(flatten)(x) if (
+        isinstance(x, list)
+    ) else [x]
+ 
+ 
+# ------------------------- TEST -------------------------
+def main():
+    '''Test: flatten an arbitrarily nested list.
+    '''
+    print(
+        fTable(__doc__ + ':')(showList)(showList)(
+            flatten
+        )([
+            [[[]]],
+            [[1, 2, 3]],
+            [[1], [[2]], [[[3, 4]]]],
+            [[1], 2, [[3, 4], 5], [[[]]], [[[6]]], 7, 8, []]
+        ])
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f):
+    '''A concatenated list over which a function has been mapped.
+       The list monad can be derived by using a function f which
+       wraps its output in a list,
+       (using an empty list to represent computational failure).
+    '''
+    def go(xs):
+        return chain.from_iterable(map(f, xs))
+    return go
+ 
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) ->
+#        (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function ->
+                 fx display function ->
+          f -> value list -> tabular string.'''
+    def go(xShow, fxShow, f, xs):
+        w = max(map(compose(len)(xShow), xs))
+        return s + '\n' + '\n'.join([
+            xShow(x).rjust(w, ' ') + (' -> ') + fxShow(f(x))
+            for x in xs
+        ])
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# showList :: [a] -> String
+def showList(xs):
+    '''Stringification of a list.'''
+    return '[' + ','.join(str(x) for x in xs) + ']'
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+'''Flatten a list'''
+ 
+from functools import (reduce)
+from itertools import (chain)
+ 
+ 
+def flatten(xs):
+    '''A flat list of atomic values derived
+       from a nested list.
+    '''
+    return reduce(
+        lambda a, x: a + list(until(every(notList))(
+            concatMap(pureList)
+        )([x])),
+        xs, []
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+def main():
+    '''From nested list to flattened list'''
+ 
+    print(main.__doc__ + ':\n\n')
+    xs = [[1], 2, [[3, 4], 5], [[[]]], [[[6]]], 7, 8, []]
+    print(
+        repr(xs) + ' -> ' + repr(flatten(xs))
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f):
+    '''A concatenated list over which a function has been mapped.
+       The list monad can be derived by using a function f which
+       wraps its output in a list,
+       (using an empty list to represent computational failure).
+    '''
+    return lambda xs: list(
+        chain.from_iterable(map(f, xs))
+    )
+ 
+ 
+# every :: (a -> Bool) -> [a] -> Bool
+def every(p):
+    '''True if p(x) holds for every x in xs'''
+    def go(p, xs):
+        return all(map(p, xs))
+    return lambda xs: go(p, xs)
+ 
+ 
+# notList :: a -> Bool
+def notList(x):
+    '''True if the value x is not a list.'''
+    return not isinstance(x, list)
+ 
+ 
+# pureList :: a -> [b]
+def pureList(x):
+    '''x if x is a list, othewise [x]'''
+    return x if isinstance(x, list) else [x]
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.'''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+def (flatten seq acc)
+  if no.seq
+       acc
+     ~list?.seq
+       (cons seq acc)
+     :else
+       (flatten car.seq (flatten cdr.seq acc))
+

@@ -1,0 +1,175 @@
+====RUBY=====
+module EC {
+ 
+    var A = 0
+    var B = 7
+ 
+    class Horizon {
+        method to_s {
+            "EC Point at horizon"
+        }
+ 
+        method *(_) {
+            self
+        }
+ 
+        method -(_) {
+            self
+        }
+    }
+ 
+    class Point(Number x, Number y) {
+        method to_s {
+            "EC Point at x=#{x}, y=#{y}"
+        }
+ 
+        method neg {
+            Point(x, -y)
+        }
+ 
+        method -(Point p) {
+            self + -p
+        }
+ 
+        method +(Point p) {
+ 
+            if (x == p.x) {
+                return (y == p.y ? self*2 : Horizon())
+            }
+            else {
+                var slope = (p.y - y)/(p.x - x)
+                var x2 = (slope**2 - x - p.x)
+                var y2 = (slope * (x - x2) - y)
+                Point(x2, y2)
+            }
+        }
+ 
+        method +(Horizon _) {
+            self
+        }
+ 
+        method *((0)) {
+            Horizon()
+        }
+ 
+        method *((1)) {
+            self
+        }
+ 
+        method *((2)) {
+            var l = (3 * x**2 + A)/(2 * y)
+            var x2 = (l**2 - 2*x)
+            var y2 = (l * (x - x2) - y)
+            Point(x2, y2)
+        }
+ 
+        method *(Number n) {
+            2*(self * (n>>1)) + self*(n % 2)
+        }
+    }
+ 
+    class Horizon {
+        method +(Point p) {
+            p
+        }
+    }
+ 
+    class Number {
+        method +(Point p) {
+            p + self
+        }
+        method *(Point p) {
+            p * self
+        }
+        method *(Horizon h) {
+            h
+        }
+        method -(Point p) {
+            -p + self
+        }
+    }
+}
+ 
+say var p = with(1) {|v| EC::Point(v, sqrt(abs(1 - v**3 - EC::A*v - EC::B))) }
+say var q = with(2) {|v| EC::Point(v, sqrt(abs(1 - v**3 - EC::A*v - EC::B))) }
+say var s = (p + q)
+ 
+say ("checking alignment:  ", abs((p.x - q.x)*(-s.y - q.y) - (p.y - q.y)*(s.x - q.x)) < 1e-20)
+
+====PYTHON=====
+#!/usr/bin/env python3
+ 
+class Point:
+    b = 7
+    def __init__(self, x=float('inf'), y=float('inf')):
+        self.x = x
+        self.y = y
+ 
+    def copy(self):
+        return Point(self.x, self.y)
+ 
+    def is_zero(self):
+        return self.x > 1e20 or self.x < -1e20
+ 
+    def neg(self):
+        return Point(self.x, -self.y)
+ 
+    def dbl(self):
+        if self.is_zero():
+            return self.copy()
+        try:
+            L = (3 * self.x * self.x) / (2 * self.y)
+        except ZeroDivisionError:
+            return Point()
+        x = L * L - 2 * self.x
+        return Point(x, L * (self.x - x) - self.y)
+ 
+    def add(self, q):
+        if self.x == q.x and self.y == q.y:
+            return self.dbl()
+        if self.is_zero():
+            return q.copy()
+        if q.is_zero():
+            return self.copy()
+        try:
+            L = (q.y - self.y) / (q.x - self.x)
+        except ZeroDivisionError:
+            return Point()
+        x = L * L - self.x - q.x
+        return Point(x, L * (self.x - x) - self.y)
+ 
+    def mul(self, n):
+        p = self.copy()
+        r = Point()
+        i = 1
+        while i <= n:
+            if i&n:
+                r = r.add(p)
+            p = p.dbl()
+            i <<= 1
+        return r
+ 
+    def __str__(self):
+        return "({:.3f}, {:.3f})".format(self.x, self.y)
+ 
+def show(s, p):
+    print(s, "Zero" if p.is_zero() else p)
+ 
+def from_y(y):
+    n = y * y - Point.b
+    x = n**(1./3) if n>=0 else -((-n)**(1./3))
+    return Point(x, y)
+ 
+# demonstrate
+a = from_y(1)
+b = from_y(2)
+show("a =", a)
+show("b =", b)
+c = a.add(b)
+show("c = a + b =", c)
+d = c.neg()
+show("d = -c =", d)
+show("c + d =", c.add(d))
+show("a + b + d =", a.add(b.add(d)))
+show("a * 12345 =", a.mul(12345))
+

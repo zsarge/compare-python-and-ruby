@@ -1,0 +1,65 @@
+====RUBY=====
+ 
+require 'open-uri'
+ 
+print open("http://rosettacode.org") {|f| f.read}
+ 
+
+====RUBY=====
+ 
+require 'fileutils'
+require 'open-uri'
+ 
+open("http://rosettacode.org/") {|f| FileUtils.copy_stream(f, $stdout)}
+ 
+
+====RUBY=====
+func get(url) {
+    var lwp = (
+        try   { require('LWP::UserAgent') }
+        catch { warn "'LWP::UserAgent' is not installed!"; return nil }
+    )
+    var ua = lwp.new(agent => 'Mozilla/5.0')
+    if (var resp = ua.get(url); resp.is_success) {
+        return resp.decoded_content
+    }
+    return nil
+}
+ 
+print get("http://rosettacode.org")
+
+====PYTHON=====
+ 
+import urllib.request
+print(urllib.request.urlopen("http://rosettacode.org").read())
+ 
+
+====PYTHON=====
+ 
+from http.client import HTTPConnection
+conn = HTTPConnection("example.com")
+# If you need to use set_tunnel, do so here.
+conn.request("GET", "/")  
+# Alternatively, you can use connect(), followed by the putrequest, putheader and endheaders functions.
+result = conn.getresponse()
+r1 = result.read() # This retrieves the entire contents.  
+ 
+
+====PYTHON=====
+ 
+import urllib
+print urllib.urlopen("http://rosettacode.org").read()
+ 
+
+====PYTHON=====
+ 
+import urllib2
+print urllib2.urlopen("http://rosettacode.org").read()
+ 
+
+====PYTHON=====
+ 
+import requests
+print(requests.get("http://rosettacode.org").text)
+ 
+

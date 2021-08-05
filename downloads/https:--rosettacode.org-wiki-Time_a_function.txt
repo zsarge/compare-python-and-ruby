@@ -1,0 +1,59 @@
+====RUBY=====
+require 'benchmark'
+ 
+Benchmark.bm(8) do |x|
+  x.report("nothing:")  {  }
+  x.report("sum:")  { (1..1_000_000).inject(4) {|sum, x| sum + x} }
+end
+
+====RUBY=====
+Benchmark.measure { whatever }.total
+
+====RUBY=====
+var benchmark = frequire('Benchmark')
+ 
+func fac_rec(n) {
+    n == 0 ? 1 : (n * __FUNC__(n - 1))
+}
+ 
+func fac_iter(n) {
+    var prod = 1
+    n.times { |i|
+        prod *= i
+    }
+    prod
+}
+ 
+var result = benchmark.timethese(-3, Hash(
+    'fac_rec'  => { fac_rec(20)  },
+    'fac_iter' => { fac_iter(20) },
+))
+ 
+benchmark.cmpthese(result)
+
+====PYTHON=====
+import sys, timeit
+def usec(function, arguments):
+    modname, funcname = __name__, function.__name__
+    timer = timeit.Timer(stmt='%(funcname)s(*args)' % vars(),
+                         setup='from %(modname)s import %(funcname)s; args=%(arguments)r' % vars())
+    try:
+        t, N = 0, 1
+        while t < 0.2:            
+            t = min(timer.repeat(repeat=3, number=N))            
+            N *= 10
+        microseconds = round(10000000 * t / N, 1) # per loop
+        return microseconds 
+    except:
+        timer.print_exc(file=sys.stderr)
+        raise
+ 
+from math import pow
+def nothing(): pass
+def identity(x): return x
+
+====PYTHON=====
+time 1+1
+30000/1000000  # in microseconds
+=> 2
+

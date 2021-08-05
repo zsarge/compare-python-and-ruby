@@ -1,0 +1,144 @@
+====RUBY=====
+add_things = ->(x1 : Int32, x2 : Int32, x3 : Int32) { x1 + x2 + x3 }
+add_curried = add_things.partial(2, 3)
+add_curried.call(4)  #=> 9
+ 
+def add_two_things(x1)
+  return ->(x2 : Int32) {
+    ->(x3 : Int32) { x1 + x2 + x3 }
+  }
+end
+add13 = add_two_things(3).call(10)
+add13.call(5)  #=> 18
+
+====RUBY=====
+ 
+b = proc {|x, y, z| (x||0) + (y||0) + (z||0) }
+p b.curry[1][2][3]           #=> 6
+p b.curry[1, 2][3, 4]        #=> 6
+p b.curry(5)[1][2][3][4][5]  #=> 6
+p b.curry(5)[1, 2][3, 4][5]  #=> 6
+p b.curry(1)[1]              #=> 1
+ 
+b = proc {|x, y, z, *w| (x||0) + (y||0) + (z||0) + w.inject(0, &:+) }
+p b.curry[1][2][3]           #=> 6
+p b.curry[1, 2][3, 4]        #=> 10
+p b.curry(5)[1][2][3][4][5]  #=> 15
+p b.curry(5)[1, 2][3, 4][5]  #=> 15
+p b.curry(1)[1]              #=> 1
+ 
+
+====RUBY=====
+var adder = 1.method(:add);
+say adder(3);                #=> 4
+
+====RUBY=====
+func curry(f, *args1) {
+    func (*args2) {
+        f(args1..., args2...);
+    }
+}
+ 
+func add(a, b) {
+    a + b
+}
+ 
+var adder = curry(add, 1);
+say adder(3);                 #=>4
+
+====PYTHON=====
+ def addN(n):
+     def adder(x):
+         return x + n
+     return adder
+
+====PYTHON=====
+ >>> add2 = addN(2)
+ >>> add2
+ <function adder at 0x009F1E30>
+ >>> add2(7)
+ 9
+
+====PYTHON=====
+>>> from functools import partial
+>>> from operator import add
+>>> add2 = partial(add, 2)
+>>> add2
+functools.partial(<built-in function add>, 2)
+>>> add2(7)
+9
+>>> double = partial(map, lambda x: x*2)
+>>> print(*double(range(5)))
+0 2 4 6 8
+
+====PYTHON=====
+>>> from toolz import curry
+>>> import operator
+>>> add = curry(operator.add)
+>>> add2 = add(2)
+>>> add2
+<built-in function add>
+>>> add2(7)
+9
+>>> # Toolz also has pre-curried versions of most HOFs from builtins, stdlib, and toolz
+>>>from toolz.curried import map
+>>> double = map(lambda x: x*2)
+>>> print(*double(range(5)))
+0 2 4 6 8
+
+====PYTHON=====
+# AUTOMATIC CURRYING AND UNCURRYING OF EXISTING FUNCTIONS
+ 
+ 
+# curry :: ((a, b) -> c) -> a -> b -> c
+def curry(f):
+    return lambda a: lambda b: f(a, b)
+ 
+ 
+# uncurry :: (a -> b -> c) -> ((a, b) -> c)
+def uncurry(f):
+    return lambda x, y: f(x)(y)
+ 
+ 
+# EXAMPLES --------------------------------------
+ 
+# A plain uncurried function with 2 arguments,
+ 
+# justifyLeft :: Int -> String -> String
+def justifyLeft(n, s):
+    return (s + (n * ' '))[:n]
+ 
+ 
+# and a similar, but manually curried, function.
+ 
+# justifyRight :: Int -> String -> String
+def justifyRight(n):
+    return lambda s: (
+        ((n * ' ') + s)[-n:]
+    )
+ 
+ 
+# CURRYING and UNCURRYING at run-time:
+ 
+def main():
+    for s in [
+        'Manually curried using a lambda:',
+        '\n'.join(map(
+            justifyRight(5),
+            ['1', '9', '10', '99', '100', '1000']
+        )),
+ 
+        '\nAutomatically uncurried:',
+        uncurry(justifyRight)(5, '10000'),
+ 
+        '\nAutomatically curried',
+        '\n'.join(map(
+            curry(justifyLeft)(10),
+            ['1', '9', '10', '99', '100', '1000']
+        ))
+    ]:
+        print (s)
+ 
+ 
+main()
+

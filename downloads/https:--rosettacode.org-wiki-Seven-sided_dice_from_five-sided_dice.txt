@@ -1,0 +1,45 @@
+====RUBY=====
+require './distcheck.rb'
+ 
+def d5
+  1 + rand(5)
+end
+ 
+def d7
+  loop do
+    d55 = 5*d5 + d5 - 6
+    return (d55 % 7 + 1) if d55 < 21
+  end
+end
+ 
+distcheck(1_000_000) {d5}
+distcheck(1_000_000) {d7}
+
+====RUBY=====
+func dice5 { 1 + 5.rand.int }
+ 
+func dice7 {
+  loop {
+    var d7 = ((5*dice5() + dice5() - 6) % 8);
+    d7 && return d7;
+  }
+}
+ 
+var count7 = Hash.new;
+ 
+var n = 1e6;
+n.times { count7{dice7()} := 0 ++ }
+count7.keys.sort.each { |k|
+    printf("%s: %5.2f%%\n", k, 100*(count7{k}/n * 7 - 1));
+}
+
+====PYTHON=====
+from random import randint
+ 
+def dice5():
+    return randint(1, 5)
+ 
+def dice7():
+    r = dice5() + dice5() * 5 - 6
+    return (r % 7) + 1 if r < 21 else dice7()
+

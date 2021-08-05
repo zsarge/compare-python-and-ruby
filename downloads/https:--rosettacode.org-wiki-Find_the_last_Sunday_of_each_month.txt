@@ -1,0 +1,46 @@
+====RUBY=====
+require 'date'
+ 
+def last_sundays_of_year(year = Date.today.year)
+  (1..12).map do |month|
+    d = Date.new(year, month, -1) # -1 means "last".
+    d - d.wday
+  end
+end
+ 
+puts last_sundays_of_year(2013)
+
+====RUBY=====
+var dt = require('DateTime');
+var (year=2016) = ARGV.map{.to_i}...
+ 
+for i in (1 .. 12) {
+    var date = dt.last_day_of_month(
+        year  => year,
+        month => i
+    );
+ 
+    while (date.dow != 7) {
+        date = date.subtract(days => 1);
+    }
+ 
+    say date.ymd;
+}
+
+====PYTHON=====
+ 
+import sys
+import calendar
+ 
+year = 2013
+if len(sys.argv) > 1:
+    try:
+        year = int(sys.argv[-1])
+    except ValueError:
+        pass
+ 
+for month in range(1, 13):
+    last_sunday = max(week[-1] for week in calendar.monthcalendar(year, month))
+    print('{}-{}-{:2}'.format(year, calendar.month_abbr[month], last_sunday))
+ 
+

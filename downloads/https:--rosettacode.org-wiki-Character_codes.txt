@@ -1,0 +1,24 @@
+====RUBY=====
+> "a".ord
+=> 97
+> 97.chr
+=> "a"
+
+====RUBY=====
+say 'a'.ord;    # => 97
+say 97.chr;     # => 'a'
+
+====PYTHON=====
+print ord('a') # prints "97"
+print chr(97)  # prints "a"
+
+====PYTHON=====
+print ord(u'π')   # prints "960"
+print unichr(960) # prints "π"
+
+====PYTHON=====
+print(ord('a')) # prints "97" (will also work in 2.x)
+print(ord('π')) # prints "960"
+print(chr(97))  # prints "a" (will also work in 2.x)
+print(chr(960)) # prints "π"
+

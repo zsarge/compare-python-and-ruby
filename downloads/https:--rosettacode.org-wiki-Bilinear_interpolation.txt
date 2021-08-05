@@ -1,0 +1,92 @@
+====RUBY=====
+require('Imager')
+ 
+func scale(img, scaleX, scaleY) {
+    var (width, height) = (img.getwidth, img.getheight)
+    var (newWidth, newHeight) = (int(width*scaleX), int(height*scaleY))
+ 
+    var out = %O<Imager>.new(xsize => newWidth, ysize => newHeight)
+ 
+    var lerp = { |s, e, t|
+        s + t*(e-s)
+    }
+ 
+    var blerp = { |c00, c10, c01, c11, tx, ty|
+        lerp(lerp(c00, c10, tx), lerp(c01, c11, tx), ty)
+    }
+ 
+    for x,y in (^newWidth ~X ^newHeight) {
+        var gxf = (x/newWidth  * (width  - 1))
+        var gyf = (y/newHeight * (height - 1))
+ 
+        var gx = gxf.int
+        var gy = gyf.int
+ 
+        var *c00 = img.getpixel(x => gx,   y => gy  ).rgba
+        var *c10 = img.getpixel(x => gx+1, y => gy  ).rgba
+        var *c01 = img.getpixel(x => gx,   y => gy+1).rgba
+        var *c11 = img.getpixel(x => gx+1, y => gy+1).rgba
+ 
+        var rgb = 3.of { |i|
+            blerp(c00[i], c10[i], c01[i], c11[i], gxf - gx, gyf - gy).int
+        }
+ 
+        out.setpixel(x => x, y => y, color => rgb)
+    }
+ 
+    return out
+}
+ 
+var img = %O<Imager>.new(file => "input.png")
+var out = scale(img, 1.6, 1.6)
+out.write(file => "output.png")
+
+====PYTHON=====
+#!/bin/python
+import numpy as np
+from scipy.misc import imread, imshow
+from scipy import ndimage
+ 
+def GetBilinearPixel(imArr, posX, posY):
+	out = []
+ 
+	#Get integer and fractional parts of numbers
+	modXi = int(posX)
+	modYi = int(posY)
+	modXf = posX - modXi
+	modYf = posY - modYi
+	modXiPlusOneLim = min(modXi+1,imArr.shape[1]-1)
+	modYiPlusOneLim = min(modYi+1,imArr.shape[0]-1)
+ 
+	#Get pixels in four corners
+	for chan in range(imArr.shape[2]):
+		bl = imArr[modYi, modXi, chan]
+		br = imArr[modYi, modXiPlusOneLim, chan]
+		tl = imArr[modYiPlusOneLim, modXi, chan]
+		tr = imArr[modYiPlusOneLim, modXiPlusOneLim, chan]
+ 
+		#Calculate interpolation
+		b = modXf * br + (1. - modXf) * bl
+		t = modXf * tr + (1. - modXf) * tl
+		pxf = modYf * t + (1. - modYf) * b
+		out.append(int(pxf+0.5))
+ 
+	return out
+ 
+if __name__=="__main__":
+ 
+	im = imread("test.jpg", mode="RGB")
+	enlargedShape = list(map(int, [im.shape[0]*1.6, im.shape[1]*1.6, im.shape[2]]))
+	enlargedImg = np.empty(enlargedShape, dtype=np.uint8)
+	rowScale = float(im.shape[0]) / float(enlargedImg.shape[0])
+	colScale = float(im.shape[1]) / float(enlargedImg.shape[1])
+ 
+	for r in range(enlargedImg.shape[0]):
+		for c in range(enlargedImg.shape[1]):
+			orir = r * rowScale #Find position in original image
+			oric = c * colScale
+			enlargedImg[r, c] = GetBilinearPixel(im, oric, orir)
+ 
+	imshow(enlargedImg)
+ 
+

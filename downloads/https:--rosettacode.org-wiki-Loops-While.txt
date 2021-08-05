@@ -1,0 +1,31 @@
+====RUBY=====
+i = 1024
+while i > 0 do
+   puts i
+   i /= 2
+end
+
+====RUBY=====
+puts i = 1024
+puts i /= 2 while i > 0
+
+====RUBY=====
+i = 1024
+until i <= 0 do
+   puts i
+   i /= 2
+end
+
+====RUBY=====
+var i = 1024
+while (i > 0) {
+    say i
+    i //= 2
+}
+
+====PYTHON=====
+n = 1024
+while n > 0:
+    print n
+    n //= 2
+

@@ -1,0 +1,64 @@
+====RUBY=====
+require 'tempfile'
+ 
+def remove_lines(filename, start, num)
+  tmp = Tempfile.open(filename) do |fp|
+    File.foreach(filename) do |line|
+      if $. >= start and num > 0
+        num -= 1
+      else
+        fp.puts line
+      end
+    end
+    fp
+  end
+  puts "Warning: End of file encountered before all lines removed" if num > 0
+  FileUtils.copy(tmp.path, filename)
+  tmp.unlink
+end
+ 
+# Test code
+def setup(filename, start, remove)
+  puts "remove #{remove} lines starting at line #{start}"
+  File.open(filename, "w") {|fh| (1..5).each {|i| fh.puts " "*i + i.to_s}}
+  puts "before:", File.read(filename)
+end
+ 
+def teardown(filename)
+  puts "after:", File.read(filename)
+  puts
+  File.unlink(filename)
+end
+ 
+filename = "foobar.txt"
+start = 2
+[2, 6].each do |remove|
+  setup(filename, start, remove)
+  remove_lines(filename, start, remove)
+  teardown(filename)
+end
+
+====RUBY=====
+func remove_lines(file, beg, len) {
+    var lines = file.open_r.lines;
+    lines.splice(beg, len).len == len || warn "Too few lines";
+    file.open_w.print(lines.join)
+}
+ 
+remove_lines(File(__FILE__), 2, 3);
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+import fileinput, sys
+ 
+fname, start, count = sys.argv[1:4]
+start, count = int(start), int(count)
+ 
+for line in fileinput.input(fname, inplace=1, backup='.orig'):
+    if start <= fileinput.lineno() < start + count:
+        pass
+    else:
+        print line.rstrip("\n")
+fileinput.close()
+

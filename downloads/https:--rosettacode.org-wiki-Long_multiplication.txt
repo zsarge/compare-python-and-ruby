@@ -1,0 +1,159 @@
+====RUBY=====
+require "big"
+ 
+a = 2.to_big_i ** 64
+ 
+puts "#{a} * #{a} = #{a*a}"
+ 
+
+====RUBY=====
+def longmult(x,y)
+  result = [0]
+  j = 0
+  y.digits.each do |m|
+    c = 0
+    i = j
+    x.digits.each do |d|
+      v = result[i]
+      result << 0 if v.zero?
+      c, v = (v + c + d*m).divmod(10)
+      result[i] = v
+      i += 1
+    end
+    result[i] += c
+    j += 1
+  end
+  # calculate the answer from the result array of digits
+  result.reverse.inject(0) {|sum, n| 10*sum + n}
+end
+ 
+n=2**64
+printf "         %d * %d = %d\n", n, n, n*n
+printf "longmult(%d, %d) = %d\n", n, n, longmult(n,n)
+
+====RUBY=====
+say (2**64 * 2**64);
+
+====RUBY=====
+func add_with_carry(result, addend, addendpos) {
+    loop {
+        while (result.len < addendpos+1) {
+            result.append(0)
+        }
+        var addend_digits = (addend.to_i + result[addendpos] -> to_s.chars)
+        result[addendpos] = addend_digits.pop
+        addend_digits.len > 0 || break
+        addend = addend_digits.pop
+        addendpos++
+    }
+}
+ 
+func longhand_multiplication(multiplicand, multiplier) {
+ 
+    var result = []
+    var multiplicand_offset = 0
+ 
+    multiplicand.reverse.each { |multiplicand_digit|
+        var multiplier_offset = multiplicand_offset
+        multiplier.reverse.each { |multiplier_digit|
+            var multiplication_result = (multiplicand_digit.to_i * multiplier_digit.to_i -> to_s)
+ 
+            var addend_offset = multiplier_offset
+            multiplication_result.reverse.each { |result_digit_addend|
+                add_with_carry(result, result_digit_addend, addend_offset)
+                addend_offset++
+            }
+            multiplier_offset++
+        }
+        multiplicand_offset++
+    }
+ 
+    return result.join.reverse
+}
+ 
+say longhand_multiplication('18446744073709551616', '18446744073709551616')
+
+====PYTHON=====
+#!/usr/bin/env python
+print 2**64*2**64
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+def add_with_carry(result, addend, addendpos):
+    while True:
+        while len(result) < addendpos + 1:
+            result.append(0)
+        addend_result = str(int(addend) + int(result[addendpos]))
+        addend_digits = list(addend_result)
+        result[addendpos] = addend_digits.pop()
+ 
+        if not addend_digits:
+            break
+        addend = addend_digits.pop()
+        addendpos += 1
+ 
+def longhand_multiplication(multiplicand, multiplier):
+    result = []
+    for multiplicand_offset, multiplicand_digit in enumerate(reversed(multiplicand)):
+        for multiplier_offset, multiplier_digit in enumerate(reversed(multiplier), start=multiplicand_offset):
+            multiplication_result = str(int(multiplicand_digit) * int(multiplier_digit))
+ 
+            for addend_offset, result_digit_addend in enumerate(reversed(multiplication_result), start=multiplier_offset):
+                add_with_carry(result, result_digit_addend, addend_offset)
+ 
+    result.reverse()
+ 
+    return ''.join(result)
+ 
+if __name__ == "__main__":
+    sixtyfour = "18446744073709551616"
+ 
+    onetwentyeight = longhand_multiplication(sixtyfour, sixtyfour)
+    print(onetwentyeight)
+
+====PYTHON=====
+'''Long multiplication'''
+ 
+from functools import reduce
+ 
+ 
+def longmult(x, y):
+    '''Long multiplication.'''
+    return reduce(
+        digitSum,
+        polymul(digits(x), digits(y)), 0
+    )
+ 
+ 
+def digitSum(a, x):
+    '''Left to right decimal digit summing.'''
+    return a * 10 + x
+ 
+ 
+def polymul(xs, ys):
+    '''List of specific products.'''
+    return map(
+        lambda *vs: sum(filter(None, vs)),
+        *[
+            [0] * i + zs for i, zs in
+            enumerate(mult_table(xs, ys))
+        ]
+    )
+ 
+ 
+def mult_table(xs, ys):
+    '''Rows of all products.'''
+    return [[x * y for x in xs] for y in ys]
+ 
+ 
+def digits(x):
+    '''Digits of x as a list of integers.'''
+    return [int(c) for c in str(x)]
+ 
+ 
+if __name__ == '__main__':
+    print(
+        longmult(2 ** 64, 2 ** 64)
+    )
+

@@ -1,0 +1,169 @@
+====RUBY=====
+require 'matrix'
+ 
+# Start with some matrix.
+i = Complex::I
+matrix = Matrix[[i, 0, 0],
+                [0, i, 0],
+                [0, 0, i]]
+ 
+# Find the conjugate transpose.
+#   Matrix#conjugate appeared in Ruby 1.9.2.
+conjt = matrix.conj.t           # aliases for matrix.conjugate.tranpose
+print 'conjugate tranpose: '; puts conjt
+ 
+if matrix.square?
+  # These predicates appeared in Ruby 1.9.3.
+  print 'Hermitian? '; puts matrix.hermitian?
+  print '   normal? '; puts matrix.normal?
+  print '  unitary? '; puts matrix.unitary?
+else
+  # Matrix is not square. These predicates would
+  # raise ExceptionForMatrix::ErrDimensionMismatch.
+  print 'Hermitian? false'
+  print '   normal? false'
+  print '  unitary? false'
+end
+
+====RUBY=====
+func is_Hermitian (Array m, Array t) -> Bool { m == t }
+ 
+func mat_mult (Array a, Array b, Number ε = -3) {
+    var p = []
+    for r, c in (^a ~X ^b[0]) {
+        for k in (^b) {
+            p[r][c] := 0 += (a[r][k] * b[k][c]) -> round!(ε)
+        }
+    }
+    return p
+}
+ 
+func mat_trans (Array m) {
+    var r = []
+    for i,j in (^m ~X ^m[0]) {
+        r[j][i] = m[i][j]
+    }
+    return r
+}
+ 
+func mat_ident (Number n) {
+    ^n -> map {|i|
+        [i.of(0)..., 1, (n - i - 1).of(0)...]
+    }
+}
+ 
+func is_Normal (Array m, Array t) -> Bool {
+    mat_mult(m, t) == mat_mult(t, m)
+}
+ 
+func is_Unitary (Array m, Array t) -> Bool {
+    mat_mult(m, t) == mat_ident(m.len)
+}
+ 
+func say_it (Array a) {
+    a.each {|b|
+        b.map { "%9s" % _ }.join(' ').say
+    }
+}
+ 
+[
+    [
+       [   1, 1+1i, 2i],
+       [1-1i,    5, -3],
+       [0-2i,   -3,  0]
+    ],
+    [
+       [1, 1, 0],
+       [0, 1, 1],
+       [1, 0, 1]
+    ],
+    [
+       [0.707 ,   0.707,  0],
+       [0.707i, -0.707i,  0],
+       [0     ,       0,  1i]
+    ]
+].each { |m|
+    say "\nMatrix:"
+    say_it(m)
+    var t = mat_trans(m.map{.map{.conj}})
+    say "\nTranspose:"
+    say_it(t)
+    say "Is Hermitian?\t#{is_Hermitian(m, t)}"
+    say "Is Normal?\t#{is_Normal(m, t)}"
+    say "Is Unitary?\t#{is_Unitary(m, t)}"
+}
+
+====PYTHON=====
+def conjugate_transpose(m):
+    return tuple(tuple(n.conjugate() for n in row) for row in zip(*m))
+ 
+def mmul( ma, mb):
+    return tuple(tuple(sum( ea*eb for ea,eb in zip(a,b)) for b in zip(*mb)) for a in ma)
+ 
+def mi(size):
+    'Complex Identity matrix'
+    sz = range(size)
+    m = [[0 + 0j for i in sz] for j in sz]
+    for i in range(size):
+        m[i][i] = 1 + 0j
+    return tuple(tuple(row) for row in m)
+ 
+def __allsame(vector):
+    first, rest = vector[0], vector[1:]
+    return all(i == first for i in rest)
+ 
+def __allnearsame(vector, eps=1e-14):
+    first, rest = vector[0], vector[1:]
+    return all(abs(first.real - i.real) < eps and abs(first.imag - i.imag) < eps
+               for i in rest)
+ 
+def isequal(matrices, eps=1e-14):
+    'Check any number of matrices for equality within eps'
+    x = [len(m) for m in matrices]
+    if not __allsame(x): return False
+    y = [len(m[0]) for m in matrices]
+    if not __allsame(y): return False
+    for s in range(x[0]):
+        for t in range(y[0]):
+            if not __allnearsame([m[s][t] for m in matrices], eps): return False
+    return True
+ 
+ 
+def ishermitian(m, ct):
+    return isequal([m, ct])
+ 
+def isnormal(m, ct):
+    return isequal([mmul(m, ct), mmul(ct, m)])
+ 
+def isunitary(m, ct):
+    mct, ctm = mmul(m, ct), mmul(ct, m)
+    mctx, mcty, cmx, ctmy = len(mct), len(mct[0]), len(ctm), len(ctm[0])
+    ident = mi(mctx)
+    return isequal([mct, ctm, ident])
+ 
+def printm(comment, m):
+    print(comment)
+    fields = [['%g%+gj' % (f.real, f.imag) for f in row] for row in m]
+    width = max(max(len(f) for f in row) for row in fields)
+    lines = (', '.join('%*s' % (width, f) for f in row) for row in fields)
+    print('\n'.join(lines))
+ 
+if __name__ == '__main__':
+    for matrix in [
+            ((( 3.000+0.000j), (+2.000+1.000j)), 
+            (( 2.000-1.000j), (+1.000+0.000j))),
+ 
+            ((( 1.000+0.000j), (+1.000+0.000j), (+0.000+0.000j)), 
+            (( 0.000+0.000j), (+1.000+0.000j), (+1.000+0.000j)), 
+            (( 1.000+0.000j), (+0.000+0.000j), (+1.000+0.000j))),
+ 
+            ((( 2**0.5/2+0.000j), (+2**0.5/2+0.000j), (+0.000+0.000j)), 
+            (( 0.000+2**0.5/2j), (+0.000-2**0.5/2j), (+0.000+0.000j)), 
+            (( 0.000+0.000j), (+0.000+0.000j), (+0.000+1.000j)))]:
+        printm('\nMatrix:', matrix)
+        ct = conjugate_transpose(matrix)
+        printm('Its conjugate transpose:', ct)
+        print('Hermitian? %s.' % ishermitian(matrix, ct))
+        print('Normal?    %s.' % isnormal(matrix, ct))
+        print('Unitary?   %s.' % isunitary(matrix, ct))
+

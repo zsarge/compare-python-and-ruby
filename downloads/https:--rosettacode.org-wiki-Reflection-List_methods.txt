@@ -1,0 +1,241 @@
+====RUBY=====
+# Sample classes for reflection
+class Super
+  CLASSNAME = 'super'
+ 
+  def initialize(name)
+    @name = name
+    def self.superOwn
+      'super owned'
+    end
+  end
+ 
+  def to_s
+    "Super(#{@name})"
+  end
+ 
+  def doSup
+    'did super stuff'
+  end
+ 
+  def self.superClassStuff
+    'did super class stuff'
+  end
+ 
+  protected
+  def protSup
+    "Super's protected"
+  end
+ 
+  private
+  def privSup
+    "Super's private"
+  end
+end
+ 
+module Other
+  def otherStuff
+    'did other stuff'
+  end
+end
+ 
+class Sub < Super
+  CLASSNAME = 'sub'
+  attr_reader :dynamic
+ 
+  include Other
+ 
+  def initialize(name, *args)
+    super(name)
+    @rest = args;
+    @dynamic = {}
+    def self.subOwn
+      'sub owned'
+    end
+  end
+ 
+  def methods(regular=true)
+    super + @dynamic.keys
+  end
+ 
+  def method_missing(name, *args, &block)
+    return super unless @dynamic.member?(name)
+    method = @dynamic[name]
+    if method.arity > 0
+      if method.parameters[0][1] == :self
+        args.unshift(self)
+      end
+      if method.lambda?
+        # procs (hence methods) set missing arguments to `nil`, lambdas don't, so extend args explicitly
+        args += args + [nil] * [method.arity - args.length, 0].max
+        # procs (hence methods) discard extra arguments, lambdas don't, so discard arguments explicitly (unless lambda is variadic)
+        if method.parameters[-1][0] != :rest
+          args = args[0,method.arity]
+        end
+      end
+      method.call(*args)
+    else
+      method.call
+    end
+  end
+ 
+  def public_methods(all=true)
+    super + @dynamic.keys
+  end
+ 
+  def respond_to?(symbol, include_all=false)
+    @dynamic.member?(symbol) || super
+  end
+ 
+  def to_s
+    "Sub(#{@name})"
+  end
+ 
+  def doSub
+    'did sub stuff'
+  end
+ 
+  def self.subClassStuff
+    'did sub class stuff'
+  end
+ 
+  protected
+  def protSub
+    "Sub's protected"
+  end
+ 
+  private
+  def privSub
+    "Sub's private"
+  end
+end
+ 
+sup = Super.new('sup')
+sub = Sub.new('sub', 0, 'I', 'two')
+sub.dynamic[:incr] = proc {|i| i+1}
+ 
+p sub.public_methods(false)
+#=> [:superOwn, :subOwn, :respond_to?, :method_missing, :to_s, :methods, :public_methods, :dynamic, :doSub, :incr]
+ 
+p sub.methods - Object.methods
+#=> [:superOwn, :subOwn, :method_missing, :dynamic, :doSub, :protSub, :otherStuff, :doSup, :protSup, :incr]
+ 
+p sub.public_methods - Object.public_methods
+#=> [:superOwn, :subOwn, :method_missing, :dynamic, :doSub, :otherStuff, :doSup, :incr]
+ 
+p sub.methods - sup.methods
+#=> [:subOwn, :method_missing, :dynamic, :doSub, :protSub, :otherStuff, :incr]
+ 
+# singleton/eigenclass methods
+p sub.methods(false)
+#=> [:superOwn, :subOwn, :incr]
+p sub.singleton_methods
+#=> [:superOwn, :subOwn]
+
+====RUBY=====
+class Example {
+    method foo { }
+    method bar(arg) { say "bar(#{arg})" }
+}
+ 
+var obj = Example()
+say obj.methods.keys.sort          #=> ["bar", "call", "foo", "new"]
+ 
+var meth = obj.methods.item(:bar)  # `LazyMethod` representation for `obj.bar()`
+meth(123)                          # calls obj.bar()
+
+====PYTHON=====
+import inspect
+ 
+# Sample classes for inspection
+class Super(object):
+  def __init__(self, name):
+    self.name = name
+ 
+  def __str__(self):
+    return "Super(%s)" % (self.name,)
+ 
+  def doSup(self):
+    return 'did super stuff'
+ 
+  @classmethod
+  def cls(cls):
+    return 'cls method (in sup)'
+ 
+  @classmethod
+  def supCls(cls):
+    return 'Super method'
+ 
+  @staticmethod
+  def supStatic():
+    return 'static method'
+ 
+class Other(object):
+  def otherMethod(self):
+    return 'other method'
+ 
+class Sub(Other, Super):
+  def __init__(self, name, *args):
+    super(Sub, self).__init__(name);
+    self.rest = args;
+    self.methods = {}
+ 
+  def __dir__(self):
+    return list(set( \
+        sum([dir(base) for base in type(self).__bases__], []) \
+        + type(self).__dict__.keys() \
+        + self.__dict__.keys() \
+        + self.methods.keys() \
+      ))
+ 
+  def __getattr__(self, name):
+    if name in self.methods:
+      if callable(self.methods[name]) and self.methods[name].__code__.co_argcount > 0:
+        if self.methods[name].__code__.co_varnames[0] == 'self':
+          return self.methods[name].__get__(self, type(self))
+        if self.methods[name].__code__.co_varnames[0] == 'cls':
+          return self.methods[name].__get__(type(self), type)
+      return self.methods[name]
+    raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, name))
+ 
+  def __str__(self):
+    return "Sub(%s)" % self.name
+ 
+  def doSub():
+    return 'did sub stuff'
+ 
+  @classmethod
+  def cls(cls):
+    return 'cls method (in Sub)'
+ 
+  @classmethod
+  def subCls(cls):
+    return 'Sub method'
+ 
+  @staticmethod
+  def subStatic():
+    return 'Sub method'
+ 
+sup = Super('sup')
+sub = Sub('sub', 0, 'I', 'two')
+sub.methods['incr'] = lambda x: x+1
+sub.methods['strs'] = lambda self, x: str(self) * x
+ 
+# names
+[method for method in dir(sub) if callable(getattr(sub, method))]
+# instance methods
+[method for method in dir(sub) if callable(getattr(sub, method)) and hasattr(getattr(sub, method), '__self__') and getattr(sub, method).__self__ == sub]
+#['__dir__', '__getattr__', '__init__', '__str__', 'doSub', 'doSup', 'otherMethod', 'strs']
+# class methods 
+[method for method in dir(sub) if callable(getattr(sub, method)) and hasattr(getattr(sub, method), '__self__') and getattr(sub, method).__self__ == type(sub)]
+#['__subclasshook__', 'cls', 'subCls', 'supCls']
+# static & free dynamic methods
+[method for method in dir(sub) if callable(getattr(sub, method)) and type(getattr(sub, method)) == type(lambda:nil)]
+#['incr', 'subStatic', 'supStatic']
+ 
+# names & values; doesn't include wrapped, C-native methods
+inspect.getmembers(sub, predicate=inspect.ismethod)
+# names using inspect
+map(lambda t: t[0], inspect.getmembers(sub, predicate=inspect.ismethod))
+#['__dir__', '__getattr__', '__init__', '__str__', 'cls', 'doSub', 'doSup', 'otherMethod', 'strs', 'subCls', 'supCls']
+

@@ -1,0 +1,71 @@
+====RUBY=====
+hash1 = {"foo" => "bar"}
+ 
+# hash literals that don't perfectly match the intended hash type must be given an explicit type specification
+# the following would fail without `of String => String|Int32`
+hash2 : Hash(String, String|Int32) = {"foo" => "bar"} of String => String|Int32
+
+====RUBY=====
+hash={}
+hash[666]='devil'
+hash[777]  # => nil
+hash[666]  # => 'devil'
+
+====RUBY=====
+hash=Hash.new('unknown key')
+hash[666]='devil'
+hash[777]  # => 'unknown key'
+hash[666]  # => 'devil'
+
+====RUBY=====
+hash=Hash.new{|h,k| "unknown key #{k}"}
+hash[666]='devil'
+hash[777]  # => 'unknown key 777'
+hash[666]  # => 'devil'
+
+====RUBY=====
+hash=Hash.new{|h,k|h[k]="key #{k} was added at #{Time.now}"}
+hash[777]  # => 'key 777 was added at Sun Apr 03 13:49:57 -0700 2011'
+hash[555]  # => 'key 555 was added at Sun Apr 03 13:50:01 -0700 2011'
+hash[777]  # => 'key 777 was added at Sun Apr 03 13:49:57 -0700 2011'
+
+====RUBY=====
+var hash = Hash.new(
+    key1 => 'value1',
+    key2 => 'value2',
+);
+ 
+# Add a new key-value pair
+hash{:key3} = 'value3';
+
+====PYTHON=====
+hash = dict()  # 'dict' is the dictionary type.
+hash = dict(red="FF0000", green="00FF00", blue="0000FF")
+hash = { 'key1':1, 'key2':2, }
+value = hash[key]
+
+====PYTHON=====
+# empty dictionary
+d = {}
+d['spam'] = 1
+d['eggs'] = 2  
+ 
+# dictionaries with two keys
+d1 = {'spam': 1, 'eggs': 2}
+d2 = dict(spam=1, eggs=2)
+ 
+# dictionaries from tuple list
+d1 = dict([('spam', 1), ('eggs', 2)])
+d2 = dict(zip(['spam', 'eggs'], [1, 2]))
+ 
+# iterating over keys
+for key in d:
+  print key, d[key]
+ 
+# iterating over (key, value) pairs
+for key, value in d.iteritems():
+  print key, value
+
+====PYTHON=====
+myDict = { '1': 'a string', 1: 'an integer', 1.0: 'a floating point number', (1,): 'a tuple' }
+

@@ -1,0 +1,93 @@
+====RUBY=====
+func pisano_period_pp(p,k) is cached {
+ 
+    assert(k.is_pos,   "k = #{k} must be positive")
+    assert(p.is_prime, "p = #{p} must be prime")
+ 
+    var (a, b, n) = (0, 1, p**k)
+ 
+    1..Inf -> first_by {
+        (a, b) = (b, (a+b) % n)
+        (a == 0) && (b == 1)
+    }
+}
+ 
+func pisano_period(n) {
+    n.factor_map {|p,k| pisano_period_pp(p, k) }.lcm
+}
+ 
+say "Pisano periods for squares of primes p <= 15:"
+say  15.primes.map {|p| pisano_period_pp(p, 2) }
+ 
+say "\nPisano periods for primes p <= 180:"
+say 180.primes.map {|p| pisano_period_pp(p, 1) }
+ 
+say "\nPisano periods for integers n from 1 to 180:"
+say pisano_period.map(1..180)
+
+====RUBY=====
+func pisano_period_pp(p, k=1) {
+    (p - kronecker(5, p)).divisors.first_by {|d| fibmod(d, p) == 0 } * p**(k-1)
+}
+ 
+func pisano_period(n) {
+ 
+    return 0 if (n <= 0)
+    return 1 if (n == 1)
+ 
+    var d = n.factor_map {|p,k| pisano_period_pp(p, k) }.lcm
+ 
+    3.times {|k|
+        var t = d<<k
+        if ((fibmod(t, n) == 0) && (fibmod(t+1, n) == 1)) {
+            return t
+        }
+    }
+}
+ 
+for k in (1..8) {
+    say ("Pisano(F_#{k}) = ", pisano_period(2**(2**k) + 1))
+}
+
+====PYTHON=====
+from sympy import isprime, lcm, factorint, primerange
+from functools import reduce
+ 
+ 
+def pisano1(m):
+    "Simple definition"
+    if m < 2:
+        return 1
+    lastn, n = 0, 1
+    for i in range(m ** 2):
+        lastn, n = n, (lastn + n) % m
+        if lastn == 0 and n == 1:
+            return i + 1
+    return 1
+ 
+def pisanoprime(p, k):
+    "Use conjecture π(p ** k) == p ** (k − 1) * π(p) for prime p and int k > 1"
+    assert isprime(p) and k > 0
+    return p ** (k - 1) * pisano1(p)
+ 
+def pisano_mult(m, n):
+    "pisano(m*n) where m and n assumed coprime integers"
+    return lcm(pisano1(m), pisano1(n))
+ 
+def pisano2(m):
+    "Uses prime factorization of m"
+    return reduce(lcm, (pisanoprime(prime, mult)
+                        for prime, mult in factorint(m).items()), 1)
+ 
+ 
+if __name__ == '__main__':
+    for n in range(1, 181):
+        assert pisano1(n) == pisano2(n), "Wall-Sun-Sun prime exists??!!"
+    print("\nPisano period (p, 2) for primes less than 50\n ",
+          [pisanoprime(prime, 2) for prime in primerange(1, 50)])
+    print("\nPisano period (p, 1) for primes less than 180\n ",
+          [pisanoprime(prime, 1) for prime in primerange(1, 180)])
+    print("\nPisano period (p) for integers 1 to 180")
+    for i in range(1, 181):
+        print(" %3d" % pisano2(i), end="" if i % 10 else "\n")
+

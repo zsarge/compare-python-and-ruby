@@ -1,0 +1,68 @@
+====RUBY=====
+class Integer
+  def commatize
+    self.to_s.gsub( /(\d)(?=\d{3}+(?:\.|$))(\d{3}\..*)?/, "\\1,\\2")
+  end
+end
+ 
+def isqrt(x)
+    q, r = 1, 0
+    while (q <= x) do q <<= 2 end
+    while (q > 1) do
+        q >>= 2; t = x-r-q; r >>= 1
+        if (t >= 0) then x, r = t, r+q end
+    end
+    r
+end
+ 
+puts (0..65).map{|n| isqrt(n) }.join(" ")
+ 
+1.step(73, 2) do |n|
+  print "#{n}:\t"
+  puts isqrt(7**n).commatize
+end
+ 
+
+====RUBY=====
+var n = 1234
+say n.isqrt
+say n.iroot(2)
+
+====RUBY=====
+func rootint(n, k=2) {
+    return 0 if (n == 0)
+    var (s, v) = (n, k - 1)
+    loop {
+        var u = ((v*s + (n // s**v)) // k)
+        break if (u >= s)
+        s = u
+    }
+    s
+}
+
+====RUBY=====
+func isqrt(x) { var (q, r) = (1, 0); while (q <= x) { q <<= 2 }
+    while (q > 1) { q >>= 2; var t = x-r+q; r >>= 1
+        if (t >= 0) { (x, r) = (t, r+q) } } r }
+ 
+say isqrt.map(0..65).join(' '); printf("\n")
+ 
+for n in (1..73 `by` 2) {
+    printf("isqrt(7^%-2d): %42s\n", n, isqrt(7**n).commify) }
+
+====PYTHON=====
+def isqrt ( x ):
+    q = 1
+    while q <= x : 
+        q *= 4
+    z,r = x,0
+    while q > 1 :
+        q  /= 4
+        t,r = z-r-q,r/2
+        if t >= 0 :
+            z,r = t,r+q
+    return r 
+ 
+print ' '.join( '%d'%isqrt( n ) for n in xrange( 66 ))
+print '\n'.join( '{0:114,} = isqrt( 7^{1:3} )'.format( isqrt( 7**n ),n ) for n in range( 1,204,2 ))
+

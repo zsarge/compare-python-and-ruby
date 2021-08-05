@@ -1,0 +1,53 @@
+====RUBY=====
+def split(str)
+  puts " input string: #{str}"
+  s = str.chars.chunk(&:itself).map{|_,a| a.join}.join(", ")
+  puts "output string: #{s}"
+  s
+end
+ 
+split("gHHH5YY++///\\")
+
+====RUBY=====
+func group(str) {
+    gather {
+        while (var match = (str =~ /((.)\g{-1}*)/g)) {
+            take(match[0])
+        }
+    }
+}
+ 
+say group(ARGV[0] \\ 'gHHH5YY++///\\').join(', ')
+
+====PYTHON=====
+from itertools import groupby
+ 
+def splitter(text):
+    return ', '.join(''.join(group) for key, group in groupby(text))
+ 
+if __name__ == '__main__':
+    txt = 'gHHH5YY++///\\'      # Note backslash is the Python escape char.
+    print(f'Input: {txt}\nSplit: {splitter(txt)}')
+
+====PYTHON=====
+def splitterz(text):
+    return (''.join(x + ('' if x == nxt else ', ') 
+            for x, nxt in zip(txt, txt[1:] + txt[-1])))
+ 
+if __name__ == '__main__':
+    txt = 'gHHH5YY++///\\'
+    print(splitterz(txt))
+
+====PYTHON=====
+import itertools
+ 
+try: input = raw_input
+except: pass
+ 
+s = input()
+groups = []
+for _, g in itertools.groupby(s):
+    groups.append(''.join(g))
+print('      input string:  %s' % s)
+print('     output string:  %s' % ', '.join(groups))
+

@@ -1,0 +1,66 @@
+====RUBY=====
+def map_range(a, b, s)
+  af, al, bf, bl = a.first, a.last, b.first, b.last
+  bf + (s - af)*(bl - bf).quo(al - af)
+end
+ 
+(0..10).each{|s| puts "%s maps to %g" % [s, map_range(0..10, -1..0, s)]}
+
+====RUBY=====
+(0..10).each do |s|
+  puts "%s maps to %s" % [s, map_range(0..10, -1..0, s)]
+end
+
+====RUBY=====
+func map_range(a, b, x) {
+    var (a1, a2, b1, b2) = (a.bounds, b.bounds);
+    x-a1 * b2-b1 / a2-a1 + b1;
+}
+ 
+var a = 0..10;
+var b = -1..0;
+ 
+for x in a {
+    say "#{x} maps to #{map_range(a, b, x)}";
+}
+
+====PYTHON=====
+>>> def maprange( a, b, s):
+	(a1, a2), (b1, b2) = a, b
+	return  b1 + ((s - a1) * (b2 - b1) / (a2 - a1))
+ 
+>>> for s in range(11):
+	print("%2g maps to %g" % (s, maprange( (0, 10), (-1, 0), s)))
+ 
+ 
+ 0 maps to -1
+ 1 maps to -0.9
+ 2 maps to -0.8
+ 3 maps to -0.7
+ 4 maps to -0.6
+ 5 maps to -0.5
+ 6 maps to -0.4
+ 7 maps to -0.3
+ 8 maps to -0.2
+ 9 maps to -0.1
+10 maps to 0
+
+====PYTHON=====
+>>> from fractions import Fraction
+>>> for s in range(11):
+	print("%2g maps to %s" % (s, maprange( (0, 10), (-1, 0), Fraction(s))))
+ 
+ 
+ 0 maps to -1
+ 1 maps to -9/10
+ 2 maps to -4/5
+ 3 maps to -7/10
+ 4 maps to -3/5
+ 5 maps to -1/2
+ 6 maps to -2/5
+ 7 maps to -3/10
+ 8 maps to -1/5
+ 9 maps to -1/10
+10 maps to 0
+>>> 
+

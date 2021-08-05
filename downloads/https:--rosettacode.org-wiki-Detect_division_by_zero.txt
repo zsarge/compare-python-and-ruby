@@ -1,0 +1,60 @@
+====RUBY=====
+def div_check(x, y)
+  begin
+    x / y
+  rescue ZeroDivisionError
+    true
+  else
+    false
+  end
+end
+
+====RUBY=====
+irb(main):010:0> div_check(5, 0)
+=> true
+irb(main):011:0> div_check(5.0, 0)
+=> false
+
+====RUBY=====
+def div_check(x, y)
+  begin
+    x.div y
+  rescue ZeroDivisionError
+    true
+  else
+    false
+  end
+end
+
+====RUBY=====
+irb(main):010:0> div_check(5, 0)
+=> true
+irb(main):011:0> div_check(5.0, 0)
+=> true
+
+====RUBY=====
+func div_check(a, b){
+    var result = a/b
+    result.abs == Inf ? nil : result
+}
+ 
+say div_check(10, 2)  # 5
+say div_check(1, 0)   # nil (detected)
+
+====RUBY=====
+func div_check(a, b){
+    Perl.eval("#{a} / #{b}")
+}
+ 
+say div_check(10, 2)  # 5
+say div_check(1, 0)   # nil (detected)
+
+====PYTHON=====
+def div_check(x, y):
+  try:
+    x / y
+  except ZeroDivisionError:
+    return True
+  else:
+    return False
+

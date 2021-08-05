@@ -1,0 +1,110 @@
+====RUBY=====
+Shoes.app(:title => "Fractal Tree", :width => 600, :height => 600) do
+  background "#fff"
+  stroke "#000"
+  @deg_to_rad = Math::PI / 180.0
+ 
+  def drawTree(x1, y1, angle, depth)
+    if depth != 0
+      x2 = x1 + (Math.cos(angle * @deg_to_rad) * depth * 10.0).to_i
+      y2 = y1 + (Math.sin(angle * @deg_to_rad) * depth * 10.0).to_i
+ 
+      line x1, y1, x2, y2
+ 
+      drawTree(x2, y2, angle - 20, depth - 1)
+      drawTree(x2, y2, angle + 20, depth - 1)      
+    end
+  end
+ 
+  drawTree(300,550,-90,9)
+end
+
+====RUBY=====
+func tree(img, x, y, scale=6/10, len=400, angle=270) {
+ 
+    len < 1 && return()
+ 
+    img.moveTo(x, y)
+    img.angle(angle)
+    img.line(len)
+ 
+    var (x1, y1) = img.curPos
+    tree(img, x1, y1, scale, len*scale, angle+35)
+    tree(img, x1, y1, scale, len*scale, angle-35)
+}
+ 
+require('GD::Simple')
+ 
+var (width=1000, height=1000)
+var img = %s|GD::Simple|.new(width, height)
+img.fgcolor('black')
+img.penSize(1, 1)
+ 
+tree(img, width/2, height)
+ 
+File('tree.png').write(img.png, :raw)
+
+====PYTHON=====
+def setup():
+    size(600, 600)
+    background(0)
+    stroke(255)
+    drawTree(300, 550, 9)
+ 
+def drawTree(x, y, depth):
+    fork_ang = radians(20)
+    base_len = 10
+    if depth > 0:
+        pushMatrix()
+        translate(x, y - baseLen * depth)
+        line(0, baseLen * depth, 0, 0)  
+        rotate(fork_ang)
+        drawTree(0, 0, depth - 1)  
+        rotate(2 * -fork_ang)
+        drawTree(0, 0, depth - 1) 
+        popMatrix()
+
+====PYTHON=====
+def setup():
+    size(600, 600)
+    background(0)
+    stroke(255)
+    drawTree(300, 550, -90, 9)
+ 
+def drawTree(x1, y1, angle, depth):
+    fork_angle = 20
+    base_len = 10.0
+    if depth > 0:
+        x2 = x1 + cos(radians(angle)) * depth * base_len
+        y2 = y1 + sin(radians(angle)) * depth * base_len
+        line(x1, y1, x2, y2)
+        drawTree(x2, y2, angle - fork_angle, depth - 1)
+        drawTree(x2, y2, angle + fork_angle, depth - 1)
+
+====PYTHON=====
+import pygame, math
+ 
+pygame.init()
+window = pygame.display.set_mode((600, 600))
+pygame.display.set_caption("Fractal Tree")
+screen = pygame.display.get_surface()
+ 
+def drawTree(x1, y1, angle, depth):
+    fork_angle = 20
+    base_len = 10.0
+    if depth > 0:
+        x2 = x1 + int(math.cos(math.radians(angle)) * depth * base_len)
+        y2 = y1 + int(math.sin(math.radians(angle)) * depth * base_len)
+        pygame.draw.line(screen, (255,255,255), (x1, y1), (x2, y2), 2)
+        drawTree(x2, y2, angle - fork_angle, depth - 1)
+        drawTree(x2, y2, angle + fork_angle, depth - 1)
+ 
+def input(event):
+    if event.type == pygame.QUIT:
+        exit(0)
+ 
+drawTree(300, 550, -90, 9)
+pygame.display.flip()
+while True:
+    input(pygame.event.wait())
+

@@ -1,0 +1,265 @@
+====RUBY=====
+def fromRoman(roman)
+  r = roman.upcase
+  n = 0
+  until r.empty? do
+    case
+    when r.start_with?('M')  then v = 1000; len = 1
+    when r.start_with?('CM') then v = 900;  len = 2
+    when r.start_with?('D')  then v = 500;  len = 1
+    when r.start_with?('CD') then v = 400;  len = 2
+    when r.start_with?('C')  then v = 100;  len = 1
+    when r.start_with?('XC') then v = 90;   len = 2
+    when r.start_with?('L')  then v = 50;   len = 1
+    when r.start_with?('XL') then v = 40;   len = 2
+    when r.start_with?('X')  then v = 10;   len = 1
+    when r.start_with?('IX') then v = 9;    len = 2
+    when r.start_with?('V')  then v = 5;    len = 1
+    when r.start_with?('IV') then v = 4;    len = 2
+    when r.start_with?('I')  then v = 1;    len = 1
+    else
+      raise ArgumentError.new("invalid roman numerals: " + roman)
+    end
+    n += v
+    r.slice!(0,len)
+  end
+  n
+end
+ 
+[ "MCMXC", "MMVIII", "MDCLXVI" ].each {|r| p r => fromRoman(r)}
+
+====RUBY=====
+SYMBOLS = [ ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400], ['C', 100], ['XC', 90],
+            ['L', 50], ['XL', 40], ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1] ]
+ 
+def parseRoman(roman)
+  r = roman.upcase
+  n = 0
+  SYMBOLS.each { |sym, val| n += val while r.sub!(/^#{sym}/, "") }
+  n
+end
+ 
+[ "MCMXC", "MMVIII", "MDCLXVI" ].each {|r| puts "%8s :%5d" % [r, parseRoman(r)]}
+
+====RUBY=====
+func roman2arabic(roman) {
+ 
+    var arabic = 0
+    var last_digit = 1000
+ 
+    static m = Hash(
+        I =>    1,
+        V =>    5,
+        X =>   10,
+        L =>   50,
+        C =>  100,
+        D =>  500,
+        M => 1000,
+    )
+ 
+    roman.uc.chars.map{m{_} \\ 0}.each { |digit|
+        if (last_digit < digit) {
+            arabic -= (2 * last_digit)
+        }
+        arabic += (last_digit = digit)
+    }
+ 
+    return arabic
+}
+ 
+%w(MCMXC MMVIII MDCLXVI).each { |roman_digit|
+    "%-10s == %d\n".printf(roman_digit, roman2arabic(roman_digit))
+}
+
+====RUBY=====
+func roman2arabic(digit) {
+    digit.uc.trans([
+        :M:  '1000+',
+        :CM:  '900+',
+        :D:   '500+',
+        :CD:  '400+',
+        :C:   '100+',
+        :XC:   '90+',
+        :L:    '50+',
+        :XL:   '40+',
+        :X:    '10+',
+        :IX:    '9+',
+        :V:     '5+',
+        :IV:    '4+',
+        :I:     '1+',
+    ]).split('+').map{.to_i}.sum;
+}
+ 
+%w(MCMXC MMVIII MDCLXVI).each { |roman_num|
+    say "#{roman_num}\t-> #{roman2arabic(roman_num)}";
+}
+
+====PYTHON=====
+_rdecode = dict(zip('MDCLXVI', (1000, 500, 100, 50, 10, 5, 1)))
+ 
+def decode( roman ):
+    result = 0
+    for r, r1 in zip(roman, roman[1:]):
+        rd, rd1 = _rdecode[r], _rdecode[r1]
+        result += -rd if rd < rd1 else rd
+    return result + _rdecode[roman[-1]]
+ 
+if __name__ == '__main__':
+    for r in 'MCMXC MMVIII MDCLXVI'.split():
+        print( r, decode(r) )
+
+====PYTHON=====
+roman_values = (('I',1), ('IV',4), ('V',5), ('IX',9),('X',10),('XL',40),('L',50),('XC',90),('C',100),
+                    ('CD', 400), ('D', 500), ('CM', 900), ('M',1000))
+ 
+def roman_value(roman):
+    total=0
+    for symbol,value in reversed(roman_values):
+        while roman.startswith(symbol):
+            total += value
+            roman = roman[len(symbol):]
+    return total
+ 
+if __name__=='__main__':
+    for value in "MCMXC", "MMVIII", "MDCLXVI":
+        print('%s = %i' % (value, roman_value(value)))
+ 
+
+====PYTHON=====
+numerals = { 'M' : 1000, 'D' : 500, 'C' : 100, 'L' : 50, 'X' : 10, 'V' : 5, 'I' : 1 }
+def romannumeral2number(s):
+        return reduce(lambda x, y: -x + y if x < y else x + y, map(lambda x: numerals.get(x, 0), s.upper()))
+
+====PYTHON=====
+'''Roman numerals decoded'''
+ 
+from operator import mul
+from functools import reduce
+from collections import defaultdict
+from itertools import accumulate, chain, cycle
+ 
+ 
+# intFromRoman :: String -> Maybe Int
+def intFromRoman(s):
+    '''Just the integer represented by a Roman
+       numeral string, or Nothing if any
+       characters are unrecognised.
+    '''
+    def go(mb, x):
+        '''Just a letter value added to or
+           subtracted from a total, or Nothing
+           if no letter value is defined.
+        '''
+        if mb.get('Nothing') or None is x:
+            return Nothing()
+        else:
+            r, total = mb.get('Just')
+            return Just((
+                x,
+                total + (-x if x < r else x)
+            ))
+ 
+    dct = defaultdict(
+        lambda: None,
+        zip(
+            'IVXLCDM',
+            accumulate(chain([1], cycle([5, 2])), mul)
+        )
+    )
+    return bindMay(
+        reduce(
+            go,
+            [dct[k.upper()] for k in reversed(list(s))],
+            Just((0, 0))
+        )
+    )(compose(Just)(snd))
+ 
+ 
+# TEST ----------------------------------------------------
+def main():
+    '''Testing a sample of dates.'''
+ 
+    print(
+        fTable(__doc__ + ':\n')(str)(
+            maybe('(Contains unknown character)')(str)
+        )(
+            intFromRoman
+        )([
+            "MDCLXVI", "MCMXC", "MMVIII",
+            "MMXVI", "MMXVIII", "MMZZIII"
+        ])
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# Just :: a -> Maybe a
+def Just(x):
+    '''Constructor for an inhabited Maybe (option type) value.'''
+    return {'type': 'Maybe', 'Nothing': False, 'Just': x}
+ 
+ 
+# Nothing :: Maybe a
+def Nothing():
+    '''Constructor for an empty Maybe (option type) value.'''
+    return {'type': 'Maybe', 'Nothing': True}
+ 
+ 
+# bindMay (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
+def bindMay(m):
+    '''Injection operator for the Maybe monad.
+       If m is Nothing, it is passed straight through.
+       If m is Just(x), the result is an application
+       of the (a -> Maybe b) function (mf) to x.'''
+    return lambda mf: (
+        m if m.get('Nothing') else mf(m.get('Just'))
+    )
+ 
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# maybe :: b -> (a -> b) -> Maybe a -> b
+def maybe(v):
+    '''Either the default value v, if m is Nothing,
+       or the application of f to x,
+       where m is Just(x).
+    '''
+    return lambda f: lambda m: v if m.get('Nothing') else (
+        f(m.get('Just'))
+    )
+ 
+ 
+# snd :: (a, b) -> b
+def snd(tpl):
+    '''Second member of a pair.'''
+    return tpl[1]
+ 
+ 
+# FORMATTING ----------------------------------------------
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+                     f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

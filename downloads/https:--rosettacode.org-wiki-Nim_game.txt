@@ -1,0 +1,63 @@
+====RUBY=====
+tokens = 12
+ 
+until tokens <= 0
+    puts "There are #{tokens} tokens remaining.\nHow many tokens do you take?"
+    until (input = (gets || "").to_i?) && (1..3).includes? input
+        puts "Enter an integer between 1 and 3."
+    end
+    puts "Player takes #{input} tokens.\nComputer takes #{4-input} tokens."
+    tokens -= 4
+end
+ 
+puts "Computer wins."
+
+====RUBY=====
+[12, 8, 4].each do |remaining|
+  puts "There are #{remaining} dots.\nHow many dots would you like to take? "
+  unless (num=gets.to_i).between?(1, 3)
+    puts "Please enter one of 1, 2 or 3"
+    redo
+  end
+  puts "You took #{num} dots, leaving #{remaining-num}.\nComputer takes #{4-num}.\n\n"
+end
+ 
+puts "Computer took the last and wins."
+ 
+
+====PYTHON=====
+ 
+print("Py Nim\n")
+ 
+def getTokens(curTokens):
+	global tokens
+ 
+	print("How many tokens would you like to take? ", end='')
+	take = int(input())
+ 
+	if (take < 1 or take > 3):
+		print("Number must be between 1 and 3.\n")
+		getTokens(curTokens)
+		return
+ 
+	tokens = curTokens - take
+	print(f'You take {take} tokens.')
+	print(f'{tokens} tokens remaining.\n')
+ 
+def compTurn(curTokens):
+	global tokens
+ 
+	take = curTokens % 4
+	tokens = curTokens - take
+	print (f'Computer takes {take} tokens.')
+	print (f'{tokens} tokens remaining.\n')
+ 
+ 
+tokens = 12
+while (tokens > 0):
+	getTokens(tokens)
+	compTurn(tokens)
+ 
+print("Computer wins!")
+ 
+

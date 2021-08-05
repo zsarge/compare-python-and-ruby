@@ -1,0 +1,103 @@
+====RUBY=====
+class Array
+  def heapsort
+    self.dup.heapsort!
+  end
+ 
+  def heapsort!
+    # in pseudo-code, heapify only called once, so inline it here
+    ((length - 2) / 2).downto(0) {|start| siftdown(start, length - 1)}
+ 
+    # "end" is a ruby keyword
+    (length - 1).downto(1) do |end_|
+      self[end_], self[0] = self[0], self[end_]
+      siftdown(0, end_ - 1)
+    end
+    self
+  end
+ 
+  def siftdown(start, end_)
+    root = start
+    loop do
+      child = root * 2 + 1
+      break if child > end_
+      if child + 1 <= end_ and self[child] < self[child + 1]
+        child += 1
+      end
+      if self[root] < self[child]
+        self[root], self[child] = self[child], self[root]
+        root = child
+      else
+        break
+      end
+    end
+  end
+end
+
+====RUBY=====
+func sift_down(a, start, end) {
+    var root = start;
+    while ((2*root + 1) <= end) {
+        var child = (2*root + 1);
+        if ((child+1 <= end) && (a[child] < a[child + 1])) {
+            child += 1;
+        }
+        if (a[root] < a[child]) {
+            a[child, root] = a[root, child];
+            root = child;
+        } else {
+            return;
+        }
+    }
+}
+ 
+func heapify(a, count) {
+    var start = ((count - 2) / 2);
+    while (start >= 0) {
+        sift_down(a, start, count-1);
+        start -= 1;
+    }
+}
+ 
+func heap_sort(a, count) {
+    heapify(a, count);
+    var end = (count - 1);
+    while (end > 0) {
+        a[0, end] = a[end, 0];
+        end -= 1;
+        sift_down(a, 0, end)
+    }
+    return a
+}
+ 
+var arr = (1..10 -> shuffle);  # creates a shuffled array
+say arr;                       # prints the unsorted array
+heap_sort(arr, arr.len);       # sorts the array in-place
+say arr;                       # prints the sorted array
+
+====PYTHON=====
+def heapsort(lst):
+  ''' Heapsort. Note: this function sorts in-place (it mutates the list). '''
+ 
+  # in pseudo-code, heapify only called once, so inline it here
+  for start in range((len(lst)-2)/2, -1, -1):
+    siftdown(lst, start, len(lst)-1)
+ 
+  for end in range(len(lst)-1, 0, -1):
+    lst[end], lst[0] = lst[0], lst[end]
+    siftdown(lst, 0, end - 1)
+  return lst
+ 
+def siftdown(lst, start, end):
+  root = start
+  while True:
+    child = root * 2 + 1
+    if child > end: break
+    if child + 1 <= end and lst[child] < lst[child + 1]:
+      child += 1
+    if lst[root] < lst[child]:
+      lst[root], lst[child] = lst[child], lst[root]
+      root = child
+    else:
+      break
+

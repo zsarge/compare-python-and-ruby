@@ -1,0 +1,110 @@
+====RUBY=====
+COLORS   = %i(red green purple) #use [:red, :green, :purple] in Ruby < 2.0
+SYMBOLS  = %i(oval squiggle diamond)
+NUMBERS  = %i(one two three)
+SHADINGS = %i(solid open striped)
+DECK = COLORS.product(SYMBOLS, NUMBERS, SHADINGS)
+ 
+def get_all_sets(hand) 
+  hand.combination(3).select do |candidate|
+    grouped_features = candidate.flatten.group_by{|f| f}
+    grouped_features.values.none?{|v| v.size == 2}
+  end
+end
+ 
+def get_puzzle_and_answer(hand_size, num_sets_goal)
+  begin
+    hand = DECK.sample(hand_size)
+    sets = get_all_sets(hand)
+  end until sets.size == num_sets_goal
+  [hand, sets]
+end
+ 
+def print_cards(cards)
+  puts cards.map{|card| "  %-8s" * 4 % card}
+  puts
+end
+ 
+def set_puzzle(deal, goal=deal/2)
+  puzzle, sets = get_puzzle_and_answer(deal, goal)
+  puts "Dealt #{puzzle.size} cards:"
+  print_cards(puzzle)
+  puts "Containing #{sets.size} sets:"
+  sets.each{|set| print_cards(set)}
+end
+ 
+set_puzzle(9)
+set_puzzle(12)
+
+====PYTHON=====
+#!/usr/bin/python
+ 
+from itertools import product, combinations
+from random import sample
+ 
+## Major constants
+features = [ 'green purple red'.split(),
+             'one two three'.split(),
+             'oval diamond squiggle'.split(),
+             'open striped solid'.split() ]
+ 
+deck = list(product(list(range(3)), repeat=4))
+ 
+dealt = 9
+ 
+## Functions
+def printcard(card):
+    print(' '.join('%8s' % f[i] for f,i in zip(features, card)))
+ 
+def getdeal(dealt=dealt):
+    deal = sample(deck, dealt)
+    return deal
+ 
+def getsets(deal):
+    good_feature_count = set([1, 3])
+    sets = [ comb for comb in combinations(deal, 3)
+             if all( [(len(set(feature)) in good_feature_count)
+                     for feature in zip(*comb)]
+                   ) ]
+    return sets
+ 
+def printit(deal, sets):
+    print('Dealt %i cards:' % len(deal))
+    for card in deal: printcard(card)
+    print('\nFound %i sets:' % len(sets))
+    for s in sets:
+        for card in s: printcard(card)
+        print('')
+ 
+if __name__ == '__main__':
+    while True:
+        deal = getdeal()
+        sets = getsets(deal)
+        if len(sets) == dealt / 2:
+           break
+    printit(deal, sets) 
+ 
+
+====PYTHON=====
+import random, pprint
+from itertools import product, combinations
+ 
+N_DRAW = 9
+N_GOAL = N_DRAW // 2
+ 
+deck = list(product("red green purple".split(),
+                    "one two three".split(),
+                    "oval squiggle diamond".split(),
+                    "solid open striped".split()))
+ 
+sets = []
+while len(sets) != N_GOAL:
+    draw = random.sample(deck, N_DRAW)
+    sets = [cs for cs in combinations(draw, 3)
+            if all(len(set(t)) in [1, 3] for t in zip(*cs))]
+ 
+print "Dealt %d cards:" % len(draw)
+pprint.pprint(draw)
+print "\nContaining %d sets:" % len(sets)
+pprint.pprint(sets)
+

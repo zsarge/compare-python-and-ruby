@@ -1,0 +1,127 @@
+====RUBY=====
+y, t = 1, 0
+while t <= 10
+   k1	=  t         * Math.sqrt(y)
+   k2	= (t + 0.05) * Math.sqrt(y + 0.05 * k1)
+   k3	= (t + 0.05) * Math.sqrt(y + 0.05 * k2)
+   k4	= (t + 0.1)  * Math.sqrt(y + 0.1  * k3)
+ 
+   printf("y(%4.1f)\t= %12.6f \t error: %12.6e\n", t, y, (((t**2 + 4)**2 / 16) - y )) if (t.round - t).abs < 1.0e-5
+   y += 0.1 * (k1 + 2 * (k2 + k3) + k4) / 6
+   t += 0.1
+end
+
+====RUBY=====
+def calc_rk4(f)
+  return ->(t,y,dt){
+         ->(dy1   ){
+         ->(dy2   ){
+         ->(dy3   ){
+         ->(dy4   ){ ( dy1 + 2*dy2 + 2*dy3 + dy4 ) / 6 }.call(
+           dt * f.call( t + dt  , y + dy3   ))}.call(
+           dt * f.call( t + dt/2, y + dy2/2 ))}.call(
+           dt * f.call( t + dt/2, y + dy1/2 ))}.call(
+           dt * f.call( t       , y         ))}
+end
+ 
+TIME_MAXIMUM, WHOLE_TOLERANCE = 10.0, 1.0e-5
+T_START, Y_START, DT          =  0.0, 1.0, 0.10
+ 
+def my_diff_eqn(t,y) ; t * Math.sqrt(y)                    ; end
+def my_solution(t  ) ; (t**2 + 4)**2 / 16                  ; end
+def  find_error(t,y) ; (y - my_solution(t)).abs            ; end
+def   is_whole?(t  ) ; (t.round - t).abs < WHOLE_TOLERANCE ; end
+ 
+dy = calc_rk4( ->(t,y){my_diff_eqn(t,y)} )
+ 
+t, y = T_START, Y_START
+while t <= TIME_MAXIMUM
+  printf("y(%4.1f)\t= %12.6f \t error: %12.6e\n",t,y,find_error(t,y)) if is_whole?(t)
+  t, y = t + DT, y + dy.call(t,y,DT)
+end
+
+====RUBY=====
+func runge_kutta(yp) {
+    func (t, y, δt) {
+        var a = (δt * yp(t, y));
+        var b = (δt * yp(t + δt/2, y + a/2));
+        var c = (δt * yp(t + δt/2, y + b/2));
+        var d = (δt * yp(t + δt, y + c));
+        (a + 2*(b + c) + d) / 6;
+    }
+}
+ 
+define δt = 0.1;
+var δy = runge_kutta(func(t, y) { t * y.sqrt });
+ 
+var(t, y) = (0, 1);
+loop {
+    t.is_int &&
+        printf("y(%2d) = %12f ± %e\n", t, y, abs(y - ((t**2 + 4)**2 / 16)));
+    t <= 10 || break;
+    y += δy(t, y, δt);
+    t += δt;
+}
+
+====PYTHON=====
+def RK4(f):
+    return lambda t, y, dt: (
+            lambda dy1: (
+            lambda dy2: (
+            lambda dy3: (
+            lambda dy4: (dy1 + 2*dy2 + 2*dy3 + dy4)/6
+            )( dt * f( t + dt  , y + dy3   ) )
+	    )( dt * f( t + dt/2, y + dy2/2 ) )
+	    )( dt * f( t + dt/2, y + dy1/2 ) )
+	    )( dt * f( t       , y         ) )
+ 
+def theory(t): return (t**2 + 4)**2 /16
+ 
+from math import sqrt
+dy = RK4(lambda t, y: t*sqrt(y))
+ 
+t, y, dt = 0., 1., .1
+while t <= 10:
+    if abs(round(t) - t) < 1e-5:
+	print("y(%2.1f)\t= %4.6f \t error: %4.6g" % ( t, y, abs(y - theory(t))))
+    t, y = t + dt, y + dy( t, y, dt )
+ 
+ 
+
+====PYTHON=====
+from math import sqrt
+ 
+def rk4(f, x0, y0, x1, n):
+    vx = [0] * (n + 1)
+    vy = [0] * (n + 1)
+    h = (x1 - x0) / float(n)
+    vx[0] = x = x0
+    vy[0] = y = y0
+    for i in range(1, n + 1):
+        k1 = h * f(x, y)
+        k2 = h * f(x + 0.5 * h, y + 0.5 * k1)
+        k3 = h * f(x + 0.5 * h, y + 0.5 * k2)
+        k4 = h * f(x + h, y + k3)
+        vx[i] = x = x0 + i * h
+        vy[i] = y = y + (k1 + k2 + k2 + k3 + k3 + k4) / 6
+    return vx, vy
+ 
+def f(x, y):
+    return x * sqrt(y)
+ 
+vx, vy = rk4(f, 0, 1, 10, 100)
+for x, y in list(zip(vx, vy))[::10]:
+    print("%4.1f %10.5f %+12.4e" % (x, y, y - (4 + x * x)**2 / 16))
+ 
+ 0.0    1.00000  +0.0000e+00
+ 1.0    1.56250  -1.4572e-07
+ 2.0    4.00000  -9.1948e-07
+ 3.0   10.56250  -2.9096e-06
+ 4.0   24.99999  -6.2349e-06
+ 5.0   52.56249  -1.0820e-05
+ 6.0   99.99998  -1.6595e-05
+ 7.0  175.56248  -2.3518e-05
+ 8.0  288.99997  -3.1565e-05
+ 9.0  451.56246  -4.0723e-05
+10.0  675.99995  -5.0983e-05
+

@@ -1,0 +1,112 @@
+====RUBY=====
+include Math
+ 
+def haversine(lat1, lon1, lat2, lon2)
+    r = 6372.8        # Earth radius in kilometers
+    deg2rad = PI/180  # convert degress to radians
+ 
+    dLat = (lat2 - lat1) * deg2rad
+    dLon = (lon2 - lon1) * deg2rad
+    lat1 = lat1 * deg2rad
+    lat2 = lat2 * deg2rad
+ 
+    a = sin(dLat / 2)**2 + cos(lat1) * cos(lat2) * sin(dLon / 2)**2
+    c = 2 * asin(sqrt(a))
+    r * c
+end
+ 
+puts "distance is #{haversine(36.12, -86.67, 33.94, -118.40)} km "
+ 
+
+====RUBY=====
+include Math
+ 
+Radius = 6371  # rough radius of the Earth, in kilometers
+ 
+def spherical_distance(start_coords, end_coords)
+  lat1, long1 = deg2rad *start_coords
+  lat2, long2 = deg2rad *end_coords
+  2 * Radius * asin(sqrt(sin((lat2-lat1)/2)**2 + cos(lat1) * cos(lat2) * sin((long2 - long1)/2)**2))
+end
+ 
+def deg2rad(lat, long)
+  [lat * PI / 180, long * PI / 180]
+end
+ 
+bna = [36.12, -86.67]
+lax = [33.94, -118.4]
+ 
+puts "%.1f" % spherical_distance(bna, lax)
+
+====RUBY=====
+include Math
+ 
+def haversine(lat1, lon1, lat2, lon2)
+    r = 6372.8        # Earth radius in kilometers
+    deg2rad = PI/180  # convert degress to radians
+ 
+    dLat = (lat2 - lat1) * deg2rad
+    dLon = (lon2 - lon1) * deg2rad
+    lat1 = lat1 * deg2rad
+    lat2 = lat2 * deg2rad
+ 
+    a = sin(dLat / 2)**2 + cos(lat1) * cos(lat2) * sin(dLon / 2)**2
+    c = 2 * asin(sqrt(a))
+    r * c
+end
+ 
+puts "distance is #{haversine(36.12, -86.67, 33.94, -118.40)} km "
+ 
+
+====RUBY=====
+class EarthPoint(lat, lon) {
+ 
+    const earth_radius = 6371       # mean earth radius
+    const radian_ratio = Num.pi/180
+ 
+    # accessors for radians
+    method latR { self.lat * radian_ratio }
+    method lonR { self.lon * radian_ratio }
+ 
+    method haversine_dist(EarthPoint p) {
+        var arc = EarthPoint(
+              self.lat - p.lat,
+              self.lon - p.lon,
+        )
+ 
+        var a = Math.sum(
+                  (arc.latR / 2).sin**2,
+                  (arc.lonR / 2).sin**2 *
+                    self.latR.cos * p.latR.cos
+                )
+ 
+        earth_radius * a.sqrt.asin * 2
+    }
+}
+ 
+var BNA = EarthPoint.new(lat: 36.12, lon: -86.67)
+var LAX = EarthPoint.new(lat: 33.94, lon: -118.4)
+ 
+say BNA.haversine_dist(LAX)   #=> 2886.444442837983299747157823945746716...
+
+====PYTHON=====
+from math import radians, sin, cos, sqrt, asin
+ 
+ 
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6372.8  # Earth radius in kilometers
+ 
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+ 
+    a = sin(dLat / 2)**2 + cos(lat1) * cos(lat2) * sin(dLon / 2)**2
+    c = 2 * asin(sqrt(a))
+ 
+    return R * c
+ 
+>>> haversine(36.12, -86.67, 33.94, -118.40)
+2887.2599506071106
+>>> 
+

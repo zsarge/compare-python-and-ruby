@@ -1,0 +1,249 @@
+====RUBY=====
+# frozen_string_literal: true
+ 
+require_relative 'raster_graphics'
+ 
+class RGBColour
+  def ==(other)
+    values == other.values
+  end
+end
+ 
+class Pixmap
+  def flood_fill(pixel, new_colour)
+    current_colour = self[pixel.x, pixel.y]
+    queue = Queue.new
+    queue.enq(pixel)
+    until queue.empty?
+      p = queue.pop
+      next unless self[p.x, p.y] == current_colour
+ 
+      west = find_border(p, current_colour, :west)
+      east = find_border(p, current_colour, :east)
+      draw_line(west, east, new_colour)
+      q = west
+      while q.x <= east.x
+        %i[north south].each do |direction|
+          n = neighbour(q, direction)
+          queue.enq(n) if self[n.x, n.y] == current_colour
+        end
+        q = neighbour(q, :east)
+      end
+    end
+  end
+ 
+  def neighbour(pixel, direction)
+    case direction
+    when :north then Pixel[pixel.x, pixel.y - 1]
+    when :south then Pixel[pixel.x, pixel.y + 1]
+    when :east  then Pixel[pixel.x + 1, pixel.y]
+    when :west  then Pixel[pixel.x - 1, pixel.y]
+    end
+  end
+ 
+  def find_border(pixel, colour, direction)
+    nextp = neighbour(pixel, direction)
+    while self[nextp.x, nextp.y] == colour
+      pixel = nextp
+      nextp = neighbour(pixel, direction)
+    end
+    pixel
+  end
+end
+ 
+bitmap = Pixmap.new(300, 300)
+bitmap.draw_circle(Pixel[149, 149], 120, RGBColour::BLACK)
+bitmap.draw_circle(Pixel[200, 100], 40, RGBColour::BLACK)
+bitmap.flood_fill(Pixel[140, 160], RGBColour::BLUE)
+bitmap.save_as_png('flood_fill.png')
+
+====RUBY=====
+# holder for pixel coords
+Pixel = Struct.new(:x, :y)
+ 
+attr_reader :img, :fill_color, :queue, :value
+ 
+def setup
+  sketch_title 'Flood Fill'
+  @img = load_image(data_path('image.png'))
+  @fill_color = color(250, 0, 0)
+end
+ 
+def draw
+  image(img, 0, 0, width, height)
+  no_loop
+end
+ 
+def mouse_clicked
+  img.load_pixels
+  flood(mouse_x, mouse_y)
+  img.update_pixels
+  redraw
+end
+ 
+def flood(x, y)
+  @queue = Queue.new
+  queue.enq(Pixel.new(x, y))
+  until queue.empty?
+    pix = queue.pop
+    next unless check(pix, color(255))
+ 
+    queue.enq(Pixel.new(pix.x, pix.y - 1))
+    queue.enq(Pixel.new(pix.x, pix.y + 1))
+    queue.enq(Pixel.new(pix.x - 1, pix.y))
+    queue.enq(Pixel.new(pix.x + 1, pix.y))
+  end
+end
+ 
+def check(pix, target_color)
+  unless (1...width).include?(pix.x) && (1...height).include?(pix.y)
+    return false
+  end
+ 
+  value = img.pixels[pix.x + (pix.y * img.width)]
+  return false if target_color != value
+ 
+  img.pixels[pix.x + (pix.y * img.width)] = fill_color
+  true
+end
+ 
+def settings
+  size(256, 256)
+end
+ 
+
+====PYTHON=====
+from collections import deque
+ 
+image_file = "image.png"
+fill_color = color(250, 0, 0)
+tolerance = 15
+allowed = False
+ 
+def setup():
+    global img
+    size(600, 400)
+    img = loadImage(image_file)
+    fill(0, 0, 100)
+    textSize(18)
+    show()
+ 
+def show():
+    image(img, 0, 0, width, height)
+    text("Tolerance = {}    (Use mouse wheel to change)".format(tolerance),
+         100, height - 30)
+    text("Right click to reset", 100, height - 10)
+ 
+def draw():
+    global allowed
+    if allowed:
+        show()
+        allowed = False
+ 
+def mousePressed():
+    global allowed, img
+    if mouseButton == RIGHT:
+        img = loadImage(image_file)
+    else:
+        img.loadPixels()
+        flood(mouseX, mouseY)
+        img.updatePixels()
+    allowed = True    
+ 
+def mouseWheel(event):
+    global allowed, tolerance
+    e = event.getCount()
+    tolerance += 2 * e
+    if tolerance > 128:
+        tolerance = 128
+    if tolerance < 0:
+        tolerance = 0
+    allowed = True
+ 
+def flood(x, y):
+    target_color = img.pixels[pixel_position(mouseX, mouseY)]
+    if target_color != fill_color:
+        queue = deque()
+        queue.append((x, y))
+        while len(queue) > 0:
+            p_x, p_y = queue.popleft()
+            if (check(p_x, p_y, target_color)):
+                queue.append((p_x, p_y - 1))
+                queue.append((p_x, p_y + 1))
+                queue.append((p_x - 1, p_y))
+                queue.append((p_x + 1, p_y))
+ 
+def pixel_position(x, y):
+    return x + (y * img.width)
+ 
+def check(x, y, target_color):
+    if x < 0 or y < 0 or y >= img.height or x >= img.width:
+        return False
+    pp = img.pixels[pixel_position(x, y)]
+    test_tolerance = (abs(green(target_color) - green(pp)) < tolerance
+                      and abs(red(target_color) - red(pp)) < tolerance
+                      and abs(blue(target_color) - blue(pp)) < tolerance)
+    if not test_tolerance:
+        return False
+    img.pixels[pixel_position(x, y)] = fill_color
+    return True
+
+====PYTHON=====
+ 
+import Image
+def FloodFill( fileName, initNode, targetColor, replaceColor ):
+   img = Image.open( fileName )
+   pix = img.load()
+   xsize, ysize = img.size
+   Q = []
+   if pix[ initNode[0], initNode[1] ] != targetColor:
+      return img
+   Q.append( initNode )
+   while Q != []:
+      node = Q.pop(0)
+      if pix[ node[0], node[1] ] == targetColor:
+         W = list( node )
+         if node[0] + 1 < xsize:
+            E = list( [ node[0] + 1, node[1] ] )
+         else:
+            E = list( node )
+      # Move west until color of node does not match targetColor
+      while pix[ W[0], W[1] ] == targetColor:
+         pix[ W[0], W[1] ] = replaceColor
+         if W[1] + 1 < ysize:
+            if pix[ W[0], W[1] + 1 ] == targetColor:
+               Q.append( [ W[0], W[1] + 1 ] )
+         if W[1] - 1 >= 0:
+            if pix[ W[0], W[1] - 1 ] == targetColor:
+               Q.append( [ W[0], W[1] - 1 ] )
+         if W[0] - 1 >= 0:
+            W[0] = W[0] - 1
+         else:
+            break
+      # Move east until color of node does not match targetColor
+      while pix[ E[0], E[1] ] == targetColor:
+         pix[ E[0], E[1] ] = replaceColor
+         if E[1] + 1 < ysize:
+            if pix[ E[0], E[1] + 1 ] == targetColor:
+               Q.append( [ E[0], E[1] + 1 ] )
+         if E[1] - 1 >= 0:
+            if pix[ E[0], E[1] - 1 ] == targetColor:
+               Q.append( [ E[0], E[1] -1 ] )
+         if E[0] + 1 < xsize:
+            E[0] = E[0] + 1
+         else:
+            break
+      return img
+ 
+
+====PYTHON=====
+ 
+# "FloodFillClean.png" is name of input file
+# [55,55] the x,y coordinate where fill starts
+# (0,0,0,255) the target colour being filled( black in this example )
+# (255,255,255,255) the final colour ( white in this case )
+img = FloodFill( "FloodFillClean.png", [55,55], (0,0,0,255), (255,255,255,255) )
+#The resulting image is saved as Filled.png
+img.save( "Filled.png" )
+ 
+

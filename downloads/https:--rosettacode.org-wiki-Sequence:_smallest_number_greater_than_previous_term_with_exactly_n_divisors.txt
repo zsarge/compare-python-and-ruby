@@ -1,0 +1,82 @@
+====RUBY=====
+require 'prime'
+ 
+def num_divisors(n)
+  n.prime_division.inject(1){|prod, (_p,n)| prod *= (n + 1) } 
+end
+ 
+seq = Enumerator.new do |y|
+  cur = 0
+  (1..).each do |i|
+    if num_divisors(i) == cur + 1 then
+      y << i
+      cur += 1
+    end
+  end
+end
+ 
+p seq.take(15)
+ 
+
+====RUBY=====
+func n_divisors(n, from=1) {
+    from..Inf -> first_by { .sigma0 == n }
+}
+ 
+with (1) { |from|
+    say 15.of { from = n_divisors(_+1, from) }
+}
+
+====PYTHON=====
+ 
+def divisors(n):
+    divs = [1]
+    for ii in range(2, int(n ** 0.5) + 3):
+        if n % ii == 0:
+            divs.append(ii)
+            divs.append(int(n / ii))
+    divs.append(n)
+    return list(set(divs))
+ 
+ 
+def sequence(max_n=None):
+    previous = 0
+    n = 0
+    while True:
+        n += 1
+        ii = previous
+        if max_n is not None:
+            if n > max_n:
+                break
+        while True:
+            ii += 1
+            if len(divisors(ii)) == n:
+                yield ii
+                previous = ii
+                break
+ 
+ 
+if __name__ == '__main__':
+    for item in sequence(15):
+        print(item)
+ 
+
+====PYTHON=====
+ 
+1
+2
+4
+6
+16
+18
+64
+66
+100
+112
+1024
+1035
+4096
+4288
+4624
+ 
+

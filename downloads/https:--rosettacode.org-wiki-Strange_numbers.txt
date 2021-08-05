@@ -1,0 +1,131 @@
+====RUBY=====
+def digits(n)
+    result = []
+    while n > 0
+        rem = n % 10
+        result.unshift(rem)
+        n = n / 10
+    end
+    return result
+end
+ 
+def isStrange(n)
+    def test(a, b)
+        abs = (a - b).abs
+        return abs == 2 || abs == 3 || abs == 5 || abs == 7
+    end
+ 
+    xs = digits(n)
+    for i in 1 .. xs.length - 1
+        if !test(xs[i - 1], xs[i]) then
+            return false
+        end
+    end
+    return true
+end
+ 
+xs = []
+for i in 100 .. 500
+    if isStrange(i) then
+        xs << i
+    end
+end
+ 
+print "Strange numbers in range [100 .. 500]\n"
+print "(Total: %d)\n\n" % [xs.length]
+ 
+xs.each_slice(10) do |s|
+    print s, "\n"
+end
+
+====RUBY=====
+func generate_from_prefix(limit, p, base) {
+ 
+    var seq = [p]
+ 
+    for d in (base-1 -> primes) {
+        for k in ([1, -1]) {
+            var r = p[0]+(k*d)
+            next if (r < 0)
+            next if (r >= base)
+            var t = [r, p...]
+            if (t.digits2num(base) <= limit) {
+                seq << __FUNC__(limit, t, base)...
+            }
+        }
+    }
+ 
+    return seq
+}
+ 
+func strange_numbers(limit, base = 10, digits = @(^base)) {
+    digits.map {|p| generate_from_prefix(limit, [p], base)... }\
+          .map {|t| t.digits2num(base) }\
+          .sort.uniq
+}
+ 
+strange_numbers(500).grep { _ > 100 }.slices(10).each{
+    .join(' ').say
+}
+
+====PYTHON=====
+'''Strange Numbers'''
+ 
+ 
+# isStrange :: Int -> Bool
+def isStrange(n):
+    '''True if all consecutive decimal digit
+       pairs in n have a prime difference.
+    '''
+    def test(a, b):
+        return abs(a - b) in [2, 3, 5, 7]
+ 
+    xs = digits(n)
+    return all(map(test, xs, xs[1:]))
+ 
+ 
+# ------------------- TEST AND DISPLAY -------------------
+# main :: IO ()
+def main():
+    '''List and count of Strange numbers'''
+ 
+    xs = [
+        n for n in range(100, 1 + 500)
+        if isStrange(n)
+    ]
+    print('\nStrange numbers in range [100..500]\n')
+    print('(Total: ' + str(len(xs)) + ')\n')
+    print(
+        '\n'.join(
+            ' '.join(
+                str(x) for x in row
+            ) for row in chunksOf(10)(xs)
+        )
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divible, the final list will be shorter than n.
+    '''
+    def go(xs):
+        return (
+            xs[i:n + i] for i in range(0, len(xs), n)
+        ) if 0 < n else None
+    return go
+ 
+ 
+# digits :: Int -> [Int]
+def digits(n):
+    '''Component digits of a decimal number.'''
+    return [int(c) for c in str(n)]
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

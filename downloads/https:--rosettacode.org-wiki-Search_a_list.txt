@@ -1,0 +1,87 @@
+====RUBY=====
+haystack = %w(Zig Zag Wally Ronald Bush Krusty Charlie Bush Bozo)
+ 
+%w(Bush Washington).each do |needle|
+  if (i = haystack.index(needle))
+    puts "#{i} #{needle}"
+  else
+    raise "#{needle} is not in haystack\n"
+  end
+end
+
+====RUBY=====
+haystack.each do |item| 
+  last = haystack.rindex(item)
+  if last > haystack.index(item)
+    puts "#{item} last appears at index #{last}"
+    break
+  end
+end
+#=> Bush last appears at index 7
+
+====RUBY=====
+multi_item = haystack.each_index.group_by{|idx| haystack[idx]}.select{|key, val| val.length > 1}
+# multi_item is => {"Bush"=>[4, 7]}
+multi_item.each do |key, val|
+  puts "#{key} appears at index #{val}"
+end
+#=> Bush appears at index [4, 7]
+
+====RUBY=====
+var haystack = %w(Zig Zag Wally Ronald Bush Krusty Charlie Bush Bozo);
+ 
+%w(Bush Washington).each { |needle|
+    var i = haystack.first_index{|item| item == needle};
+    if (i >= 0) {
+        say "#{i} #{needle}";
+    } else {
+        die "#{needle} is not in haystack";
+    }
+}
+
+====RUBY=====
+var haystack = %w(Zig Zag Wally Ronald Bush Krusty Charlie Bush Bozo);
+say haystack.last_index{|item| item == "Bush"};
+
+====PYTHON=====
+haystack=["Zig","Zag","Wally","Ronald","Bush","Krusty","Charlie","Bush","Bozo"]
+ 
+for needle in ("Washington","Bush"):
+  try:
+    print haystack.index(needle), needle
+  except ValueError, value_error:
+    print needle,"is not in haystack"
+
+====PYTHON=====
+>>> haystack=["Zig","Zag","Wally","Ronald","Bush","Krusty","Charlie","Bush","Bozo"]
+>>> haystack.index('Bush')
+4
+>>> haystack.index('Washington')
+Traceback (most recent call last):
+  File "<pyshell#95>", line 1, in <module>
+    haystack.index('Washington')
+ValueError: list.index(x): x not in list
+>>>
+
+====PYTHON=====
+>>> def hi_index(needle, haystack):
+	return len(haystack)-1 - haystack[::-1].index(needle)
+ 
+>>> # Lets do some checks
+>>> for n in haystack:
+	hi = hi_index(n, haystack)
+	assert haystack[hi] == n, "Hi index is of needle"
+	assert n not in haystack[hi+1:], "No higher index exists"
+	if haystack.count(n) == 1:
+		assert hi == haystack.index(n), "index == hi_index if needle occurs only once"
+ 
+>>>
+
+====PYTHON=====
+def (pos x (seq | (head ... tail)) n)
+  default n :to 0
+  if seq
+    if (head = x)
+      n
+      (pos x tail n+1)
+

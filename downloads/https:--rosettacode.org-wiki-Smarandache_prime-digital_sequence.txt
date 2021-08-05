@@ -1,0 +1,97 @@
+====RUBY=====
+require "prime"
+ 
+smarandache = Enumerator.new do|y|
+  prime_digits = [2,3,5,7]
+  prime_digits.each{|pr| y << pr} # yield the below-tens
+  (1..).each do |n|
+    prime_digits.repeated_permutation(n).each do |perm|
+      c = perm.join.to_i * 10 
+      y << c + 3 if (c+3).prime?
+      y << c + 7 if (c+7).prime?
+    end
+  end
+end
+ 
+seq = smarandache.take(100)
+p seq.first(25)
+p seq.last
+ 
+
+====RUBY=====
+func is_prime_digital(n) {
+    n.is_prime && n.digits.all { .is_prime }
+}
+ 
+say is_prime_digital.first(25).join(',')
+say is_prime_digital.nth(100)
+
+====PYTHON=====
+ 
+def divisors(n):
+    divs = [1]
+    for ii in range(2, int(n ** 0.5) + 3):
+        if n % ii == 0:
+            divs.append(ii)
+            divs.append(int(n / ii))
+    divs.append(n)
+    return list(set(divs))
+ 
+ 
+def is_prime(n):
+    return len(divisors(n)) == 2
+ 
+ 
+def digit_check(n):
+    if len(str(n))<2:
+        return True
+    else:
+        for digit in str(n):
+            if not is_prime(int(digit)):
+                return False
+        return True
+ 
+ 
+def sequence(max_n=None):
+    ii = 0
+    n = 0
+    while True:
+        ii += 1
+        if is_prime(ii):
+            if max_n is not None:
+                if n>max_n:
+                    break
+            if digit_check(ii):
+                n += 1
+                yield ii
+ 
+ 
+if __name__ == '__main__':
+    generator = sequence(100)
+    for index, item in zip(range(1, 16), generator):
+        print(index, item)
+    for index, item in zip(range(16, 100), generator):
+        pass
+    print(100, generator.__next__())
+ 
+
+====PYTHON=====
+ 
+1 2
+2 3
+3 5
+4 7
+5 23
+6 37
+7 53
+8 73
+9 223
+10 227
+11 233
+12 257
+13 277
+14 337
+15 353
+100 33223
+ 
+

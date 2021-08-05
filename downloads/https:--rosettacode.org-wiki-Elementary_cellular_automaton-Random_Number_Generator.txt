@@ -1,0 +1,36 @@
+====RUBY=====
+size = 100
+eca = ElemCellAutomat.new("1"+"0"*(size-1), 30)
+eca.take(80).map{|line| line[0]}.each_slice(8){|bin| p bin.join.to_i(2)}
+
+====RUBY=====
+var auto = Automaton(30, [1] + 100.of(0));
+ 
+10.times {
+    var sum = 0;
+    8.times {
+        sum = (2*sum + auto.cells[0]);
+        auto.next;
+    };
+    say sum;
+};
+
+====PYTHON=====
+from elementary_cellular_automaton import eca, eca_wrap
+ 
+def rule30bytes(lencells=100):
+    cells = '1' + '0' * (lencells - 1)
+    gen = eca(cells, 30)
+    while True:
+        yield int(''.join(next(gen)[0] for i in range(8)), 2)
+ 
+if __name__ == '__main__':
+    print([b for i,b in zip(range(10), rule30bytes())])
+
+====PYTHON=====
+def rule30bytes(lencells=100):
+    cells = '1' + '0' * (lencells - 1)
+    gen = eca_wrap(cells, 30)
+    while True:
+        yield int(''.join(next(gen)[0] for i in range(8)), 2))
+

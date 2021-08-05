@@ -1,0 +1,124 @@
+====RUBY=====
+func kronecker_product(a, b) {
+    a ~X b -> map { _[0] ~X* _[1] }
+}
+ 
+kronecker_product([[1, 2], [3, 4]],
+                  [[0, 5], [6, 7]]).each { .say }
+ 
+say ''
+kronecker_product([[0,1,0],  [1,1,1],   [0,1,0]],
+                  [[1,1,1,1],[1,0,0,1], [1,1,1,1]]).each { .say }
+
+====PYTHON=====
+#!/usr/bin/env python3
+ 
+# Sample 1
+a1 = [[1, 2], [3, 4]]
+b1 = [[0, 5], [6, 7]]
+ 
+# Sample 2
+a2 = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+b2 = [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 1, 1]]
+ 
+def kronecker(matrix1, matrix2):
+    final_list = []
+    sub_list = []
+ 
+    count = len(matrix2)
+ 
+    for elem1 in matrix1:
+        counter = 0
+        check = 0
+        while check < count:
+            for num1 in elem1:
+                for num2 in matrix2[counter]:
+                    sub_list.append(num1 * num2)
+            counter += 1
+            final_list.append(sub_list)
+            sub_list = []
+            check +=1
+ 
+    return final_list
+ 
+# Result 1
+result1 = kronecker(a1, b1)
+for elem in result1:
+    print(elem)
+ 
+print("")
+ 
+# Result 2
+result2 = kronecker(a2, b2)
+for elem in result2:
+    print(elem)
+
+====PYTHON=====
+# Sample 1
+r = [[1, 2], [3, 4]]
+s = [[0, 5], [6, 7]]
+ 
+# Sample 2
+t = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+u = [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 1, 1]]
+ 
+def kronecker(matrix1, matrix2):
+    return [[num1 * num2 for num1 in elem1 for num2 in matrix2[row]] for elem1 in matrix1 for row in range(len(matrix2))]
+ 
+# Result 1:
+for row in kronecker(r, s):
+    print(row)
+print()
+ 
+# Result 2
+for row in kronecker(t, u):
+    print(row)
+
+====PYTHON=====
+from itertools import (chain)
+ 
+ 
+# kronecker :: [[a]] -> [[a]] -> [[a]]
+def kronecker(m1, m2):
+    return concatMap(
+        lambda row2: concatMap(
+            lambda elem2: [concatMap(
+                lambda num2: concatMap(
+                    lambda num1: [num1 * num2],
+                    elem2
+                ),
+                m1[row2]
+            )],
+            m2
+        ),
+        range(len(m2))
+    )
+ 
+ 
+# concatMap :: (a -> [b]) -> [a] -> [b]
+def concatMap(f, xs):
+    return list(
+        chain.from_iterable(
+            map(f, xs)
+        )
+    )
+ 
+ 
+if __name__ == '__main__':
+    # Sample 1
+    r = [[1, 2], [3, 4]]
+    s = [[0, 5], [6, 7]]
+ 
+    # Sample 2
+    t = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+    u = [[1, 1, 1, 1], [1, 0, 0, 1], [1, 1, 1, 1]]
+ 
+    # Result 1:
+    for row in kronecker(r, s):
+        print(row)
+    print()
+ 
+    # Result 2
+    for row in kronecker(t, u):
+        print(row)
+

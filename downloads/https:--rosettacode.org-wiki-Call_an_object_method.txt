@@ -1,0 +1,69 @@
+====RUBY=====
+# Class method
+MyClass.some_method(some_parameter)
+ 
+# Class may be computed at runtime
+foo = MyClass
+foo.some_method(some_parameter)
+ 
+ 
+# Instance method
+my_instance.a_method(some_parameter)
+ 
+# The parentheses are optional
+my_instance.a_method some_parameter
+ 
+# Calling a method with no parameters
+my_instance.another_method
+
+====RUBY=====
+class MyClass {
+    method foo(arg) { say arg }
+}
+ 
+var arg = 42;
+ 
+# Call a class method
+MyClass.foo(arg);
+ 
+# Alternatively, using an expression for the method name
+MyClass.(:foo)(arg);
+ 
+# Create an instance
+var instance = MyClass();
+ 
+# Instance method
+instance.foo(arg);
+ 
+# Alternatively, by using an expression for the method name
+instance.(:foo)(arg);
+ 
+# Alternatively, by asking for a method
+instance.method(:foo)(arg);
+
+====PYTHON=====
+class MyClass(object):
+	@classmethod
+	def myClassMethod(self, x):
+		pass
+	@staticmethod
+	def myStaticMethod(x):
+		pass
+	def myMethod(self, x):
+		return 42 + x
+ 
+myInstance = MyClass()
+ 
+# Instance method
+myInstance.myMethod(someParameter)
+# A method can also be retrieved as an attribute from the class, and then explicitly called on an instance:
+MyClass.myMethod(myInstance, someParameter)
+ 
+ 
+# Class or static methods
+MyClass.myClassMethod(someParameter)
+MyClass.myStaticMethod(someParameter)
+# You can also call class or static methods on an instance, which will simply call it on the instance's class
+myInstance.myClassMethod(someParameter)
+myInstance.myStaticMethod(someParameter)
+

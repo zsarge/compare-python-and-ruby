@@ -1,0 +1,93 @@
+====RUBY=====
+ 
+def sum_product(a)
+    { a.sum(), a.product() }
+end
+ 
+
+====RUBY=====
+ 
+def sum_product_imperative(a)
+    sum, product = 0, 1
+    a.each do |e|
+        sum += e
+        product *= e
+    end
+ 
+    {sum, product}
+end
+ 
+
+====RUBY=====
+ 
+require "benchmark"
+Benchmark.ips do |x|
+    x.report("declarative") { sum_product [1, 2, 3, 4, 5] }
+    x.report("imperative") { sum_product_imperative [1, 2, 3, 4, 5] }
+end
+ 
+
+====RUBY=====
+arr = [1,2,3,4,5]     # or ary = *1..5, or ary = (1..5).to_a
+p sum = arr.inject(0) { |sum, item| sum + item }
+# => 15
+p product = arr.inject(1) { |prod, element| prod * element }
+# => 120
+
+====RUBY=====
+arr = [1,2,3,4,5]
+p sum = arr.inject(0, :+)         #=> 15
+p product = arr.inject(1, :*)     #=> 120
+ 
+# If you do not explicitly specify an initial value for memo,
+# then the first element of collection is used as the initial value of memo.
+p sum = arr.inject(:+)            #=> 15
+p product = arr.inject(:*)        #=> 120
+
+====RUBY=====
+arr = []
+p arr.inject(0, :+)               #=> 0
+p arr.inject(1, :*)               #=> 1
+p arr.inject(:+)                  #=> nil
+p arr.inject(:*)                  #=> nil
+
+====RUBY=====
+arr = [1,2,3,4,5]
+p sum = arr.sum                   #=> 15
+p [].sum                          #=> 0
+
+====RUBY=====
+var ary = [1, 2, 3, 4, 5];
+say ary.sum;                 # => 15
+say ary.prod;                # => 120
+
+====RUBY=====
+var ary = [1, 2, 3, 4, 5];
+say ary«+»;                  # => 15
+say ary«*»;                  # => 120
+
+====PYTHON=====
+numbers = [1, 2, 3]
+total = sum(numbers)
+ 
+product = 1
+for i in numbers:
+    product *= i
+
+====PYTHON=====
+from operator import mul, add
+sum = reduce(add, numbers) # note: this version doesn't work with empty lists
+sum = reduce(add, numbers, 0)
+product = reduce(mul, numbers) # note: this version doesn't work with empty lists
+product = reduce(mul, numbers, 1)
+
+====PYTHON=====
+from numpy import r_
+numbers = r_[1:4]
+total = numbers.sum()
+product = numbers.prod()
+
+====PYTHON=====
+import math
+total = math.fsum(floats)
+

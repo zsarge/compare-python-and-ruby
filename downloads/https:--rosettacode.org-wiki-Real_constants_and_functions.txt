@@ -1,0 +1,69 @@
+====RUBY=====
+x = 3.25
+y = 4
+ 
+puts x.abs       # absolute value
+puts x.floor     # floor
+puts x.ceil      # ceiling
+puts x ** y      # power
+puts
+ 
+include Math     # without including
+ 
+puts E           # puts Math::E        -- exponential constant
+puts PI          # puts Math::PI       -- Archimedes  circle constant
+puts TAU         # puts Math::TAU      -- the correct circle constant, >= version 0.36
+puts sqrt(x)     # puts Math.sqrt(x)   -- real square root
+puts log(x)      # puts Math.log(x)    -- natural logarithm
+puts log10(x)    # puts Math.log10(x)  -- base 10 logarithm
+puts log(x, y)   # puts Math.log(x, y) -- logarithm x base y
+puts exp(x)      # puts Math.exp(x)    -- exponential
+puts E**x        # puts Math::E**x     -- same
+ 
+
+====RUBY=====
+x.abs #absolute value
+x.magnitude #absolute value
+x.floor #floor
+x.ceil #ceiling
+x ** y #power
+include Math
+E #e
+PI #pi
+sqrt(x) #square root
+log(x) #natural logarithm
+log(x, y) #logarithm base y
+log10(x) #base 10 logarithm
+exp(x) #exponential
+ 
+
+====RUBY=====
+Num.e     # e
+Num.pi    # pi
+x.sqrt    # square root
+x.log     # natural logarithm
+x.log10   # base 10 logarithm
+x.exp     # e raised to the power of x
+x.abs     # absolute value
+x.floor   # floor
+x.ceil    # ceiling
+x**y      # exponentiation
+
+====PYTHON=====
+import math
+ 
+math.e          # e
+math.pi         # pi
+math.sqrt(x)    # square root  (Also commonly seen as x ** 0.5 to obviate importing the math module)
+math.log(x)     # natural logarithm
+math.log10(x)   # base 10 logarithm
+math.exp(x)     # e raised to the power of x
+abs(x)          # absolute value
+math.floor(x)   # floor
+math.ceil(x)    # ceiling
+x ** y          # exponentiation 
+pow(x, y[, n])  # exponentiation [, modulo n (useful in certain encryption/decryption algorithms)]
+ 
+# The math module constants and functions can, of course, be imported directly by:
+#   from math import e, pi, sqrt, log, log10, exp, floor, ceil
+

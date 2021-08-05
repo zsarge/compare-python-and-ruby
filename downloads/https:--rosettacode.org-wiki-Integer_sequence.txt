@@ -1,0 +1,26 @@
+====RUBY=====
+require "big"
+ 
+(1.to_big_i ..).each { |i| puts i } 
+
+====RUBY=====
+1.step{|n| puts n}
+
+====RUBY=====
+(1..).each{|n| puts n}
+
+====RUBY=====
+{|i| say i } * Math.inf;
+
+====PYTHON=====
+i=1
+while i:
+    print(i)
+    i += 1
+
+====PYTHON=====
+from itertools import count
+ 
+for i in count(): 
+    print(i)
+

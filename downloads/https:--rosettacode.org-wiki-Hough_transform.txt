@@ -1,0 +1,116 @@
+====RUBY=====
+ 
+require 'mathn'
+require 'rubygems'
+require 'gd2'
+include GD2
+ 
+def hough_transform(img)
+  mx, my = img.w*0.5, img.h*0.5
+  max_d = Math.sqrt(mx**2 + my**2)
+  min_d = max_d * -1
+  hough = Hash.new(0)
+  (0..img.w).each do |x|
+    puts "#{x} of #{img.w}"
+    (0..img.h).each do |y|
+      if img.pixel2color(img.get_pixel(x,y)).g > 32
+        (0...180).each do |a|
+          rad = a * (Math::PI / 180.0)
+          d = (x-mx) * Math.cos(rad) + (y-my) * Math.sin(rad)
+          hough["#{a.to_i}_#{d.to_i}"] = hough["#{a.to_i}_#{d.to_i}"] + 1
+        end
+      end
+    end
+  end
+  heat = GD2::Image.import 'heatmap.png'
+  out = GD2::Image::TrueColor.new(180,max_d*2)
+  max = hough.values.max
+  p max
+  hough.each_pair do |k,v|
+    a,d = k.split('_').map(&:to_i)
+    c = (v / max) * 255
+    c = heat.get_pixel(c,0)
+    out.set_pixel(a, max_d + d, c)
+  end
+  out
+end
+
+====RUBY=====
+require('Imager')
+ 
+func hough(im, width=460, height=360) {
+ 
+    height = 2*floor(height / 2)
+ 
+    var xsize = im.getwidth
+    var ysize = im.getheight
+ 
+    var ht = %s|Imager|.new(xsize => width, ysize => height)
+    var canvas = height.of { width.of(255) }
+ 
+    ht.box(filled => true, color => 'white')
+ 
+    var rmax = hypot(xsize, ysize)
+    var dr = 2*(rmax / height)
+    var dth = (Num.pi / width)
+ 
+    for y,x in (^ysize ~X ^xsize) {
+        var col = im.getpixel(x => x, y => y)
+        var (r,g,b) = col.rgba
+        (r==255 && g==255 && b==255) && next
+        for k in ^width {
+            var th = dth*k
+            var r = (x*cos(th) + y*sin(th))
+            var iry = (height/2 + int(r/dr + 0.5))
+            ht.setpixel(x => k, y => iry, color => 3.of(--canvas[iry][k]))
+        }
+    }
+ 
+    return ht
+}
+ 
+var img = %s|Imager|.new(file => 'Pentagon.png')
+var ht = hough(img)
+ht.write(file => 'Hough transform.png')
+
+====PYTHON=====
+ 
+from math import hypot, pi, cos, sin
+from PIL import Image
+ 
+ 
+def hough(im, ntx=460, mry=360):
+    "Calculate Hough transform."
+    pim = im.load()
+    nimx, mimy = im.size
+    mry = int(mry/2)*2          #Make sure that this is even
+    him = Image.new("L", (ntx, mry), 255)
+    phim = him.load()
+ 
+    rmax = hypot(nimx, mimy)
+    dr = rmax / (mry/2)
+    dth = pi / ntx
+ 
+    for jx in xrange(nimx):
+        for iy in xrange(mimy):
+            col = pim[jx, iy]
+            if col == 255: continue
+            for jtx in xrange(ntx):
+                th = dth * jtx
+                r = jx*cos(th) + iy*sin(th)
+                iry = mry/2 + int(r/dr+0.5)
+                phim[jtx, iry] -= 1
+    return him
+ 
+ 
+def test():
+    "Test Hough transform with pentagon."
+    im = Image.open("pentagon.png").convert("L")
+    him = hough(im)
+    him.save("ho5.bmp")
+ 
+ 
+if __name__ == "__main__": test()
+ 
+ 
+

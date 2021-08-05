@@ -1,0 +1,28 @@
+====RUBY=====
+ 
+require "http/client"
+require "base64"
+ 
+response = HTTP::Client.get "https://rosettacode.org/favicon.ico"
+if response.success?
+    Base64.encode(response.body, STDOUT)
+end
+ 
+
+====RUBY=====
+require 'open-uri'
+require 'base64'
+ 
+puts Base64.encode64 open('http://rosettacode.org/favicon.ico') {|f| f.read}
+
+====RUBY=====
+var data = %f'favicon.ico'.read(:raw)   # binary string
+print data.encode_base64                # print to STDOUT
+
+====PYTHON=====
+import urllib
+import base64
+ 
+data = urllib.urlopen('http://rosettacode.org/favicon.ico').read()
+print base64.b64encode(data)
+

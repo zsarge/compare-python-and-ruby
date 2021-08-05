@@ -1,0 +1,56 @@
+====RUBY=====
+procs = Array.new(10){|i| ->{i*i} } # -> creates a lambda
+p procs[7].call # => 49
+
+====RUBY=====
+var f = (
+    10.of {|i| func(j){i * j} }
+)
+ 
+9.times { |j|
+    say f[j](j)
+}
+
+====RUBY=====
+var f = (1..10).map { |i|
+    func(j){i * j}
+}
+ 
+for j (1..9) {
+    say f[j-1](j)
+}
+
+====PYTHON=====
+funcs = []
+for i in range(10):
+    funcs.append(lambda: i * i)
+print funcs[3]() # prints 81
+
+====PYTHON=====
+funcs = []
+for i in range(10):
+    funcs.append(lambda i=i: i * i)
+print funcs[3]() # prints 9
+
+====PYTHON=====
+funcs = [lambda i=i: i * i for i in range(10)]
+print funcs[3]() # prints 9
+
+====PYTHON=====
+funcs = []
+for i in range(10):
+    funcs.append((lambda i: lambda: i * i)(i))
+print funcs[3]() # prints 9
+
+====PYTHON=====
+funcs = [(lambda i: lambda: i)(i * i) for i in range(10)]
+print funcs[3]() # prints 9
+
+====PYTHON=====
+funcs = map(lambda i: lambda: i * i, range(10))
+print funcs[3]() # prints 9
+
+====PYTHON=====
+funcs=[eval("lambda:%s"%i**2)for i in range(10)]
+print funcs[3]() # prints 9
+

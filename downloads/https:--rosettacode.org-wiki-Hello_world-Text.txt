@@ -1,0 +1,43 @@
+====RUBY=====
+puts "Hello world!"
+
+====RUBY=====
+puts "Hello world!"
+
+====RUBY=====
+$stdout.puts "Hello world!"
+
+====RUBY=====
+ STDOUT.write "Hello world!\n"
+
+====RUBY=====
+$>.puts "Hello world!"
+
+====RUBY=====
+$>.write "Hello world!\n"
+
+====PYTHON=====
+print "Hello world!"
+
+====PYTHON=====
+echo("Hello world!")
+
+====PYTHON=====
+print "Hello world!"
+
+====PYTHON=====
+import sys
+sys.stdout.write("Hello world!\n")
+
+====PYTHON=====
+print("Hello world!")
+
+====PYTHON=====
+import __hello__
+
+====PYTHON=====
+import __phello__
+
+====PYTHON=====
+import __phello__.spam
+

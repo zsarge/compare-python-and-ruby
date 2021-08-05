@@ -1,0 +1,241 @@
+====RUBY=====
+require "set"
+require "big"
+ 
+def add_reverse(num, max_iter=1000)
+  num = num.to_big_i
+  nums = [] of BigInt
+  (1..max_iter).each_with_object(Set.new([num])) do |_, nums|
+    num += reverse_int(num)
+    nums << num
+    return nums if palindrome?(num)
+  end
+end
+ 
+def palindrome?(num)
+  num == reverse_int(num)
+end
+ 
+def reverse_int(num)
+  num.to_s.reverse.to_big_i
+end
+ 
+def split_roots_from_relateds(roots_and_relateds)
+  roots = roots_and_relateds.dup
+  i = 1
+  while i < roots.size
+    this = roots[i]
+    if roots[0...i].any?{ |prev| this.intersects?(prev) }
+      roots.delete_at(i)
+    else
+      i += 1
+    end
+  end
+  root = roots.map{ |each_set| each_set.min }
+  related = roots_and_relateds.map{ |each_set| each_set.min }
+  related = related.reject{ |n| root.includes?(n) }
+  return root, related
+end
+ 
+def find_lychrel(maxn, max_reversions)
+  series = (1..maxn).map{ |n| add_reverse(n, max_reversions*2) }
+  roots_and_relateds = series.select{ |s| s.size > max_reversions }
+  split_roots_from_relateds(roots_and_relateds)
+end
+ 
+maxn, reversion_limit = 10000, 500
+puts "Calculations using n = 1..#{maxn} and limiting each search to 2*#{reversion_limit} reverse-digits-and-adds"
+lychrel, l_related = find_lychrel(maxn, reversion_limit)
+puts "  Number of Lychrel numbers: #{lychrel.size}"
+puts "    Lychrel numbers: #{lychrel}"
+puts "  Number of Lychrel related: #{l_related.size}"
+pals = (lychrel + l_related).select{|x| palindrome?(x)}.sort
+puts "  Number of Lychrel palindromes: #{pals.size}"
+puts "    Lychrel palindromes: #{pals}"
+
+====RUBY=====
+require 'set'
+ 
+def add_reverse(num, max_iter=1000)
+  (1..max_iter).each_with_object(Set.new([num])) do |_,nums|
+    num += reverse_int(num)
+    nums << num
+    return nums if palindrome?(num)
+  end
+end
+ 
+def palindrome?(num)
+  num == reverse_int(num)
+end
+ 
+def reverse_int(num)
+  num.to_s.reverse.to_i
+end
+ 
+def split_roots_from_relateds(roots_and_relateds)
+  roots = roots_and_relateds.dup
+  i = 1
+  while i < roots.length
+    this = roots[i]
+    if roots[0...i].any?{|prev| this.intersect?(prev)}
+      roots.delete_at(i)
+    else
+      i += 1
+    end
+  end
+  root = roots.map{|each_set| each_set.min}
+  related = roots_and_relateds.map{|each_set| each_set.min}
+  related = related.reject{|n| root.include?(n)}
+  return root, related
+end
+ 
+def find_lychrel(maxn, max_reversions)
+  series = (1..maxn).map{|n| add_reverse(n, max_reversions*2)}
+  roots_and_relateds = series.select{|s| s.length > max_reversions}
+  split_roots_from_relateds(roots_and_relateds)
+end
+ 
+maxn, reversion_limit = 10000, 500
+puts "Calculations using n = 1..#{maxn} and limiting each search to 2*#{reversion_limit} reverse-digits-and-adds"
+lychrel, l_related = find_lychrel(maxn, reversion_limit)
+puts "  Number of Lychrel numbers: #{lychrel.length}"
+puts "    Lychrel numbers: #{lychrel}"
+puts "  Number of Lychrel related: #{l_related.length}"
+pals = (lychrel + l_related).select{|x| palindrome?(x)}.sort
+puts "  Number of Lychrel palindromes: #{pals.length}"
+puts "    Lychrel palindromes: #{pals}"
+
+====RUBY=====
+var (
+    lychrels = [],
+    palindromes = [],
+    seeds = [],
+    max = 500,
+)
+ 
+for i in (1 .. 10_000) {
+    var (test = [], count = 0)
+ 
+    func lychrel(l) {
+        count++ > max && return true
+        test << (var m = (l + Num(Str(l).flip)))
+        Str(m).is_palindrome && return false
+        lychrel(m)
+    }
+ 
+    if (lychrel(i)) {
+        lychrels << Pair(Str(i), test)
+    }
+}
+ 
+seeds << lychrels[0]
+ 
+for l in lychrels {
+    if (l.key.is_palindrome) {
+        palindromes << l.key
+    }
+ 
+    var h = Hash()
+    h.set_keys(l.value...)
+ 
+    var trial = seeds.count_by { |s|
+        s.value.any { |k| h.contains(k) } ? break : true
+    }
+ 
+    if (trial == seeds.len) {
+        seeds << l
+    }
+}
+ 
+say ("   Number of Lychrel seed numbers < 10_000: ", seeds.len)
+say ("             Lychrel seed numbers < 10_000: ", seeds.map{.key}.join(', '))
+say ("Number of Lychrel related numbers < 10_000: ", lychrels.len - seeds.len)
+say ("    Number of Lychrel palindromes < 10_000: ", palindromes.len)
+say ("              Lychrel palindromes < 10_000: ", palindromes.join(', '))
+
+====PYTHON=====
+from __future__ import print_function
+ 
+def add_reverse(num, max_iter=1000):
+    i, nums = 0, {num}
+    while True:
+        i, num = i+1, num + reverse_int(num)
+        nums.add(num)
+        if reverse_int(num) == num or i >= max_iter:
+            break
+    return nums
+ 
+#@functools.lru_cache(maxsize=2**20)
+def reverse_int(num):
+    return int(str(num)[::-1])
+ 
+def split_roots_from_relateds(roots_and_relateds):
+    roots = roots_and_relateds[::]
+    i = 1
+    while i < len(roots):
+        this = roots[i]
+        if any(this.intersection(prev) for prev in roots[:i]):
+            del roots[i]
+        else:
+            i += 1
+    root = [min(each_set) for each_set in roots]
+    related = [min(each_set) for each_set in roots_and_relateds]
+    related = [n for n in related if n not in root]
+    return root, related
+ 
+def find_lychrel(maxn, max_reversions):
+    'Lychrel number generator'
+    series = [add_reverse(n, max_reversions*2) for n in range(1, maxn + 1)]
+    roots_and_relateds = [s for s in series if len(s) > max_reversions]
+    return split_roots_from_relateds(roots_and_relateds)
+ 
+ 
+if __name__ == '__main__':
+    maxn, reversion_limit = 10000, 500
+    print("Calculations using n = 1..%i and limiting each search to 2*%i reverse-digits-and-adds"
+          % (maxn, reversion_limit))
+    lychrel, l_related = find_lychrel(maxn, reversion_limit)
+    print('  Number of Lychrel numbers:', len(lychrel))
+    print('    Lychrel numbers:', ', '.join(str(n) for n in lychrel))
+    print('  Number of Lychrel related:', len(l_related))
+    #print('    Lychrel related:', ', '.join(str(n) for n in l_related))
+    pals = [x for x in lychrel + l_related  if x == reverse_int(x)]
+    print('  Number of Lychrel palindromes:', len(pals))
+    print('    Lychrel palindromes:', ', '.join(str(n) for n in pals))
+
+====PYTHON=====
+from __future__ import print_function
+ 
+def rev(n): return int(str(n)[::-1])
+ 
+def lychel(n, cache = {}):
+    if n in cache: return cache[n]
+ 
+    n0, r = n, rev(n)
+    res, seen = (True, n), []
+    for i in range(1000):
+        n += r
+        r = rev(n)
+        if n == r:
+            res = (False, 0)
+            break
+        if n in cache:
+            res = cache[n]
+            break
+        seen.append(n)
+ 
+    for x in seen: cache[x] = res
+    return res
+ 
+seeds, related, palin = [], [], []
+ 
+for i in range(1, 1000000):
+    tf, s = lychel(i)
+    if not tf: continue
+    (seeds if i == s else related).append(i)
+    if i == rev(i): palin.append(i)
+ 
+print("%d Lychel seeds:"%len(seeds), seeds)
+print("%d Lychel related" % len(related))
+print("%d Lychel palindromes:" % len(palin), palin)
+

@@ -1,0 +1,29 @@
+====RUBY=====
+module Camera
+  # define methods here
+end
+class MobilePhone
+  # define methods here
+end
+class CameraPhone < MobilePhone
+  include Camera
+  # define methods here
+end
+
+====RUBY=====
+class Camera {};
+class MobilePhone {};
+class CameraPhone << Camera, MobilePhone {};
+
+====PYTHON=====
+class Camera:
+  pass #functions go here...
+
+====PYTHON=====
+class MobilePhone:
+  pass #functions go here...
+
+====PYTHON=====
+class CameraPhone(Camera, MobilePhone):
+  pass #functions go here...
+

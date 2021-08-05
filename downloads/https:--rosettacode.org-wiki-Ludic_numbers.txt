@@ -1,0 +1,125 @@
+====RUBY=====
+def ludic(nmax=100000)
+  Enumerator.new do |y|
+    y << 1
+    ary = *2..nmax
+    until ary.empty?
+      y << (n = ary.first)
+      (0...ary.size).step(n){|i| ary[i] = nil}
+      ary.compact!
+    end
+  end
+end
+ 
+puts "First 25 Ludic numbers:", ludic.first(25).to_s
+ 
+puts "Ludics below 1000:", ludic(1000).count
+ 
+puts "Ludic numbers 2000 to 2005:", ludic.first(2005).last(6).to_s
+ 
+ludics = ludic(250).to_a
+puts "Ludic triples below 250:",
+     ludics.select{|x| ludics.include?(x+2) and ludics.include?(x+6)}.map{|x| [x, x+2, x+6]}.to_s
+
+====RUBY=====
+func ludics_upto(nmax=100000) {
+  Enumerator({ |collect|
+    collect(1)
+    var arr = @(2..nmax)
+    while (arr) {
+      collect(var n = arr[0])
+      arr.range.by(n).each {|i| arr[i] = nil}
+      arr.compact!
+    }
+  })
+}
+ 
+func ludics_first(n) {
+    ludics_upto(n * n.log2).first(n)
+}
+ 
+say("First 25 Ludic numbers: ",     ludics_first(25).join(' '))
+say("Ludics below 1000: ",          ludics_upto(1000).len)
+say("Ludic numbers 2000 to 2005: ", ludics_first(2005).last(6).join(' '))
+ 
+var a = ludics_upto(250).to_a
+say("Ludic triples below 250: ", a.grep{|x| a.contains_all([x+2, x+6]) } \
+                                  .map {|x| '(' + [x, x+2, x+6].join(' ') + ')' } \
+                                  .join(' '))
+
+====PYTHON=====
+def ludic(nmax=100000):
+    yield 1
+    lst = list(range(2, nmax + 1))
+    while lst:
+        yield lst[0]
+        del lst[::lst[0]]
+ 
+ludics = [l for l in ludic()]
+ 
+print('First 25 ludic primes:')
+print(ludics[:25])
+print("\nThere are %i ludic numbers <= 1000"
+      % sum(1 for l in ludics if l <= 1000)) 
+print("\n2000'th..2005'th ludic primes:")
+print(ludics[2000-1: 2005])
+ 
+n = 250
+triplets = [(x, x+2, x+6)
+            for x in ludics
+            if x+6 < n and x+2 in ludics and x+6 in ludics]
+print('\nThere are %i triplets less than %i:\n  %r'
+      % (len(triplets), n, triplets))
+
+====PYTHON=====
+def ludic(nmax=64):
+    yield 1
+    taken = []
+    while True:
+        lst, nmax = list(range(2, nmax + 1)), nmax * 2
+        for t in taken:
+            del lst[::t]
+        while lst:
+            t = lst[0]
+            taken.append(t)
+            yield t
+            del lst[::t]
+
+====PYTHON=====
+def ludic():
+    yield 1
+    ludics = []
+    while True:
+        k = 0 
+        for j in reversed(ludics):
+            k = (k*j)//(j-1) + 1
+        ludics.append(k+2) 
+        yield k+2
+def triplets():
+    a, b, c, d = 0, 0, 0, 0
+    for k in ludic():
+        if k-4 in (b, c, d) and k-6 in (a, b, c):
+            yield k-6, k-4, k
+        a, b, c, d = b, c, d, k
+ 
+first_25 = [k for i, k in zip(range(25), gen_ludic())]
+print(f'First 25 ludic numbers: {first_25}')
+count = 0
+for k in gen_ludic():
+    if k > 1000:
+        break
+    count += 1
+print(f'Number of ludic numbers <= 1000: {count}')
+it = iter(gen_ludic())
+for i in range(1999):
+    next(it)
+ludic2000 = [next(it) for i in range(6)]
+print(f'Ludic numbers 2000..2005: {ludic2000}')    
+ 
+print('Ludic triplets < 250:')
+for a, b, c in triplets():
+    if c >= 250:
+        break
+    print(f'[{a}, {b}, {c}]')
+ 
+

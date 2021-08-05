@@ -1,0 +1,152 @@
+====RUBY=====
+require 'cgi'
+ 
+puts '<table summary="csv2html program output">'
+ 
+def row2html str, wrap = "td"
+  "<tr>" +
+    str.split(",").map { |cell| "<#{wrap}>#{CGI.escapeHTML cell}</#{wrap}>" }.join +
+  "</tr>"
+end
+ 
+puts row2html gets.chomp, "th" if ARGV.delete "header"
+ 
+while str = gets
+  puts row2html str.chomp
+end
+ 
+puts "</table>"
+
+====RUBY=====
+func escape(str) { str.trans(« & < > », « &amp; &lt; &gt; ») }
+func tag(t, d)   { "<#{t}>#{d}</#{t}>" }
+ 
+func csv2html(str) {
+ 
+    var template = <<-'EOT'
+    <!DOCTYPE html>
+    <html>
+    <head><title>Some Text</title></head>
+    <body><table>
+    %s
+    </table></body></html>
+    EOT
+ 
+    template.sprintf(escape(str).lines.map{ |line|
+            tag('tr', line.split(',').map{|cell| tag('td', cell) }.join)
+        }.join("\n")
+    )
+}
+ 
+var str = <<'EOT';
+Character,Speech
+The multitude,The messiah! Show us the messiah!
+Brians mother,<angry>Now you listen here! He's not the messiah; he's a very naughty boy! Now go away!</angry>
+The multitude,Who are you?
+Brians mother,I'm his mother; that's who!
+The multitude,Behold his mother! Behold his mother!
+EOT
+ 
+print csv2html(str)
+
+====PYTHON=====
+csvtxt = '''\
+Character,Speech
+The multitude,The messiah! Show us the messiah!
+Brians mother,<angry>Now you listen here! He's not the messiah; he's a very naughty boy! Now go away!</angry>
+The multitude,Who are you?
+Brians mother,I'm his mother; that's who!
+The multitude,Behold his mother! Behold his mother!\
+'''
+ 
+from cgi import escape
+ 
+def _row2tr(row, attr=None):
+    cols = escape(row).split(',')
+    return ('<TR>'
+            + ''.join('<TD>%s</TD>' % data for data in cols)
+            + '</TR>')
+ 
+def csv2html(txt):
+    htmltxt = '<TABLE summary="csv2html program output">\n'
+    for rownum, row in enumerate(txt.split('\n')):
+        htmlrow = _row2tr(row)
+        htmlrow = '  <TBODY>%s</TBODY>\n' % htmlrow
+        htmltxt += htmlrow
+    htmltxt += '</TABLE>\n'
+    return htmltxt
+ 
+htmltxt = csv2html(csvtxt)
+print(htmltxt)
+
+====PYTHON=====
+def _row2trextra(row, attr=None):
+    cols = escape(row).split(',')
+    attr_tr = attr.get('TR', '')
+    attr_td = attr.get('TD', '')
+    return (('<TR%s>' % attr_tr)
+            + ''.join('<TD%s>%s</TD>' % (attr_td, data) for data in cols)
+            + '</TR>')
+ 
+def csv2htmlextra(txt, header=True, attr=None):
+    ' attr is a dictionary mapping tags to attributes to add to that tag'
+ 
+    attr_table = attr.get('TABLE', '')
+    attr_thead = attr.get('THEAD', '')
+    attr_tbody = attr.get('TBODY', '')
+    htmltxt = '<TABLE%s>\n' % attr_table
+    for rownum, row in enumerate(txt.split('\n')):
+        htmlrow = _row2trextra(row, attr)
+        rowclass = ('THEAD%s' % attr_thead) if (header and rownum == 0) else ('TBODY%s' % attr_tbody)
+        htmlrow = '  <%s>%s</%s>\n' % (rowclass, htmlrow, rowclass[:5])
+        htmltxt += htmlrow
+    htmltxt += '</TABLE>\n'
+    return htmltxt
+ 
+htmltxt = csv2htmlextra(csvtxt, True,
+                        dict(TABLE=' border="1" summary="csv2html extra program output"',
+                             THEAD=' bgcolor="yellow"',
+                             TBODY=' bgcolor="orange"' 
+                             )
+                        )
+print(htmltxt)
+
+====PYTHON=====
+from csv import DictReader
+from xml.etree import ElementTree as ET
+ 
+def csv2html_robust(txt, header=True, attr=None):
+    # Use DictReader because, despite what the docs say, reader() doesn't
+    # return an object with .fieldnames
+    # (DictReader expects an iterable that returns lines, so split on \n)
+    reader = DictReader(txt.split('\n'))
+ 
+    table = ET.Element("TABLE", **attr.get('TABLE', {}))
+    thead_tr = ET.SubElement(
+        ET.SubElement(table, "THEAD", **attr.get('THEAD', {})),
+        "TR")
+    tbody = ET.SubElement(table, "TBODY", **attr.get('TBODY', {}))
+ 
+    if header:
+        for name in reader.fieldnames:
+            ET.SubElement(thead_tr, "TD").text = name
+ 
+    for row in reader:
+        tr_elem = ET.SubElement(tbody, "TR", **attr.get('TR', {}))
+ 
+        # Use reader.fieldnames to query `row` in the correct order.
+        # (`row` isn't an OrderedDict prior to Python 3.6)
+        for field in reader.fieldnames:
+            td_elem = ET.SubElement(tr_elem, "TD", **attr.get('TD', {}))
+            td_elem.text = row[field]
+ 
+    return ET.tostring(table, method='html')
+ 
+htmltxt = csv2html_robust(csvtxt, True, {
+    'TABLE': {'border': "1", 'summary': "csv2html extra program output"},
+    'THEAD': {'bgcolor': "yellow"},
+    'TBODY': {'bgcolor': "orange"}
+})
+ 
+print(htmltxt.decode('utf8'))
+

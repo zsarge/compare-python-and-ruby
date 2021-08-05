@@ -1,0 +1,96 @@
+====RUBY=====
+puts 'Enter x and y'
+x = gets.to_i  # to check errors, use x=Integer(gets)
+y = gets.to_i
+ 
+puts "Sum: #{x+y}",
+     "Difference: #{x-y}",
+     "Product: #{x*y}",
+     "Quotient: #{x/y}",       # truncates towards negative infinity
+     "Quotient: #{x.fdiv(y)}", # float
+     "Remainder: #{x%y}",      # same sign as second operand
+     "Exponentiation: #{x**y}"
+
+====RUBY=====
+var a = Sys.scanln("First number: ").to_i;
+var b = Sys.scanln("Second number: ").to_i;
+ 
+%w'+ - * // % ** ^ | & << >>'.each { |op|
+    "#{a} #{op} #{b} = #{a.$op(b)}".say;
+}
+
+====PYTHON=====
+x = int(raw_input("Number 1: "))
+y = int(raw_input("Number 2: "))
+ 
+print "Sum: %d" % (x + y)
+print "Difference: %d" % (x - y)
+print "Product: %d" % (x * y)
+print "Quotient: %d" % (x / y)     #  or x // y  for newer python versions.
+                                   # truncates towards negative infinity
+print "Remainder: %d" % (x % y)    # same sign as second operand
+print "Quotient: %d with Remainder: %d" % divmod(x, y)
+print "Power: %d" % x**y
+ 
+## Only used to keep the display up when the program ends
+raw_input( )
+
+====PYTHON=====
+def getnum(prompt):
+    while True: # retrying ...
+        try:
+            n = int(raw_input(prompt))
+        except ValueError:
+            print "Input could not be parsed as an integer. Please try again."\
+            continue
+        break
+    return n
+ 
+x = getnum("Number1: ")
+y = getnum("Number2: ")
+...
+
+====PYTHON=====
+def arithmetic(x, y):
+    for op in "+ - * // % **".split():
+        expr = "%(x)s %(op)s %(y)s" % vars()
+        print("%s\t=> %s" % (expr, eval(expr)))
+ 
+ 
+arithmetic(12, 8)
+arithmetic(input("Number 1: "), input("Number 2: "))
+
+====PYTHON=====
+input1 = 18
+# input1 = input()
+input2 = 7
+# input2 = input()
+ 
+qq = input1 + input2
+print("Sum: 		  " + str(qq))
+ww = input1 - input2
+print("Difference: 	  " + str(ww))
+ee = input1 * input2
+print("Product: 	  " + str(ee))
+rr = input1 / input2
+print("Integer quotient: " + str(int(rr)))
+print("Float quotient:   " + str(float(rr)))
+tt = float(input1 / input2)
+uu = (int(tt) - float(tt))*-10
+#print(tt)
+print("Whole Remainder:  " + str(int(uu)))
+print("Actual Remainder: " + str(uu))
+yy = input1 ** input2
+print("Exponentiation:   " + str(yy))
+
+====PYTHON=====
+a <- (read)
+b <- (read)
+prn "sum: " a+b
+prn "difference: " a-b
+prn "product: " a*b
+prn "quotient: " a/b
+prn "integer quotient: " (int a/b)
+prn "remainder: " a%b
+prn "exponent: " a^b
+

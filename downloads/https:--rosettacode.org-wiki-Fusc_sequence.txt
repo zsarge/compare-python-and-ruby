@@ -1,0 +1,214 @@
+====RUBY=====
+fusc = Enumerator.new do |y|
+  y << 0
+  y << 1
+  arr = [0,1]
+  2.step do |n|
+    res = n.even? ? arr[n/2] : arr[(n-1)/2] + arr[(n+1)/2]
+    y   << res
+    arr << res
+  end
+end
+ 
+fusc_max_digits = Enumerator.new do |y|
+   cur_max, cur_exp = 0, 0
+   0.step do |i|
+      f = fusc.next
+      if f >= cur_max
+        cur_exp += 1
+        cur_max = 10**cur_exp
+        y << [i, f]
+      end
+   end
+end
+ 
+puts fusc.take(61).join(" ")
+fusc_max_digits.take(6).each{|pair| puts "%15s : %s" % pair }
+ 
+
+====RUBY=====
+func fusc(n) is cached {
+ 
+    return 0 if n.is_zero
+    return 1 if n.is_one
+ 
+    n.is_even ? fusc(n/2) : (fusc((n-1)/2) + fusc(((n-1)/2)+1))
+}
+ 
+say ("First 61 terms of the Stern-Brocot sequence: ", 61.of(fusc).join(' '))
+ 
+say "\nIndex and value for first term longer than any previous:"
+printf("%15s : %s\n", "Index", "Value");
+ 
+var (index=0, len=0)
+ 
+5.times {
+    index = (index..Inf -> first_by { fusc(_).len > len })
+    len = fusc(index).len
+    printf("%15s : %s\n", index.commify, fusc(index).commify)
+}
+
+====PYTHON=====
+from collections import deque
+from itertools import islice, count
+ 
+ 
+def fusc():
+    q = deque([1])
+    yield 0
+    yield 1
+ 
+    while True:
+        x = q.popleft()
+        q.append(x)
+        yield x
+ 
+        x += q[0]
+        q.append(x)
+        yield x
+ 
+ 
+def longest_fusc():
+    sofar = 0
+    for i, f in zip(count(), fusc()):
+        if f >= sofar:
+            yield(i, f)
+            sofar = 10 * sofar or 10
+ 
+ 
+print('First 61:')
+print(list(islice(fusc(), 61)))
+ 
+print('\nLength records:')
+for i, f in islice(longest_fusc(), 6):
+    print(f'fusc({i}) = {f}')
+ 
+
+====PYTHON=====
+'''Fusc sequence'''
+ 
+from itertools import chain, count, islice
+from operator import itemgetter
+ 
+ 
+# As an infinite stream of terms,
+ 
+# infiniteFusc :: [Int]
+def infiniteFusc():
+    '''Fusc sequence.
+       OEIS A2487
+    '''
+    def go(step):
+        isEven, n, xxs = step
+        x, xs = xxs[0], xxs[1:]
+        if isEven:
+            nxt = n + x
+            return not isEven, nxt, xxs + [nxt]
+        else:
+            return not isEven, x, xs + [x]
+ 
+    return chain(
+        [0, 1],
+        map(
+            itemgetter(1),
+            iterate(go)(
+                (True, 1, [1])
+            )
+        )
+    )
+ 
+ 
+# Or as a function over an integer:
+ 
+# fusc :: Int -> Int
+def fusc(i):
+    '''Fusc sequence'''
+    def go(n):
+        if 0 == n:
+            return (1, 0)
+        else:
+            x, y = go(n // 2)
+            return (x + y, y) if 0 == n % 2 else (
+                x, x + y
+            )
+    return 0 if 1 > i else (
+        go(i - 1)[0]
+    )
+ 
+ 
+# firstFuscOfEachMagnitude ::
+def firstFuscOfEachMagnitude():
+    '''Non-finite stream of each term
+       in OEIS A2487 that requires an
+       unprecedented quantity of decimal digits.
+    '''
+    a2487 = enumerate(map(fusc, count()))
+ 
+    def go(e):
+        limit = 10 ** e
+        return next(
+            (i, x) for i, x in a2487
+            if limit <= x
+        )
+    return (
+        chain([(0, 0)], map(go, count(1)))
+    )
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Tests'''
+ 
+    print('First 61 terms:')
+    print(showList(
+        take(61)(
+            map(fusc, count())
+        )
+    ))
+ 
+    print('\nFirst term of each decimal magnitude:')
+    print('(Index, Term):')
+    ixs = firstFuscOfEachMagnitude()
+    for _ in range(0, 5):
+        print(next(ixs))
+ 
+ 
+# -------------------------GENERIC-------------------------
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return lambda x: go(x)
+ 
+ 
+# showList :: [a] -> String
+def showList(xs):
+    '''Compact stringification of a list.'''
+    return '[' + ','.join(repr(x) for x in xs) + ']'
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    return lambda xs: (
+        xs[0:n]
+        if isinstance(xs, (list, tuple))
+        else list(islice(xs, n))
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

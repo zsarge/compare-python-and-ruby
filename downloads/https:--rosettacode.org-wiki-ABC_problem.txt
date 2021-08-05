@@ -1,0 +1,197 @@
+====RUBY=====
+words = %w(A BaRK BOoK tREaT COmMOn SqUAD CoNfuSE) << ""
+ 
+words.each do |word|
+  blocks = "BO XK DQ CP NA GT RE TG QD FS JW HU VI AN OB ER FS LY PC ZM"
+  res = word.each_char.all?{|c| blocks.sub!(/\w?#{c}\w?/i, "")}  #regexps can be interpolated like strings
+  puts "#{word.inspect}: #{res}"
+end
+ 
+
+====RUBY=====
+func can_make_word(word, blocks) {
+ 
+    blocks.map! { |b| b.uc.chars.sort.join }.freq!
+ 
+    func(word, blocks) {
+        var char = word.shift
+        var candidates = blocks.keys.grep { |k| 0 <= k.index(char) }
+ 
+        for candidate in candidates {
+            blocks{candidate} <= 0 && next;
+            local blocks{candidate} = (blocks{candidate} - 1);
+            return true if (word.is_empty || __FUNC__(word, blocks));
+        }
+ 
+        return false;
+    }(word.uc.chars, blocks)
+}
+
+====RUBY=====
+var b1 = %w(BO XK DQ CP NA GT RE TG QD FS JW HU VI AN OB ER FS LY PC ZM)
+var b2 = %w(US TZ AO QA)
+ 
+var tests = [
+    ["A", true, b1],
+    ["BARK", true, b1],
+    ["BOOK", false, b1],
+    ["TREAT", true, b1],
+    ["COMMON", false, b1],
+    ["SQUAD", true, b1],
+    ["CONFUSE", true, b1],
+    ["auto", true, b2],
+];
+ 
+tests.each { |t|
+    var bool = can_make_word(t[0], t[2]);
+    say ("%7s -> %s" % (t[0], bool));
+    assert(bool == t[1])
+}
+
+====PYTHON=====
+    >>> can_make_word("A")
+    True
+    >>> can_make_word("BARK")
+    True
+    >>> can_make_word("BOOK")
+    False
+    >>> can_make_word("TREAT")
+    True
+    >>> can_make_word("COMMON")
+    False
+    >>> can_make_word("SQUAD")
+    True
+    >>> can_make_word("CONFUSE")
+    True
+
+====PYTHON=====
+fun abc(s, ls):
+    if ls.isempty:
+        return true
+    for i in indices(list) where s[end] in list[i]:
+        return abc(s[:end-1], remove!(copy(list), at: i))
+    false
+ 
+let test = ["A", "BARK","BOOK","TREAT","COMMON","SQUAD","CONFUSE"]
+let ls = ["BO","XK","DQ","CP","NA","GT","RE","TG","QD","FS", "JW","HU","VI","AN","OB","ER","FS","LY","PC","ZM"]
+ 
+for s in test:
+    print "($|>8|{s} ${abc(s, list)})"
+
+====PYTHON=====
+ 
+'''
+Note that this code is broken, e.g., it won't work when 
+blocks = [("A", "B"), ("A","C")] and the word is "AB", where the answer
+should be True, but the code returns False.
+'''
+blocks = [("B", "O"),
+          ("X", "K"),
+          ("D", "Q"),
+          ("C", "P"),
+          ("N", "A"),
+          ("G", "T"),
+          ("R", "E"),
+          ("T", "G"),
+          ("Q", "D"),
+          ("F", "S"),
+          ("J", "W"),
+          ("H", "U"),
+          ("V", "I"),
+          ("A", "N"),
+          ("O", "B"),
+          ("E", "R"),
+          ("F", "S"),
+          ("L", "Y"),
+          ("P", "C"),
+          ("Z", "M")]
+ 
+ 
+def can_make_word(word, block_collection=blocks):
+    """
+    Return True if `word` can be made from the blocks in `block_collection`.
+ 
+    >>> can_make_word("")
+    False
+    >>> can_make_word("a")
+    True
+    >>> can_make_word("bark")
+    True
+    >>> can_make_word("book")
+    False
+    >>> can_make_word("treat")
+    True
+    >>> can_make_word("common")
+    False
+    >>> can_make_word("squad")
+    True
+    >>> can_make_word("coNFused")
+    True
+    """
+    if not word:
+        return False
+ 
+    blocks_remaining = block_collection[:]
+    for char in word.upper():
+        for block in blocks_remaining:
+            if char in block:
+                blocks_remaining.remove(block)
+                break
+        else:
+            return False
+    return True
+ 
+ 
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+    print(", ".join("'%s': %s" % (w, can_make_word(w)) for w in
+                    ["", "a", "baRk", "booK", "treat", 
+                     "COMMON", "squad", "Confused"]))
+ 
+
+====PYTHON=====
+BLOCKS = 'BO XK DQ CP NA GT RE TG QD FS JW HU VI AN OB ER FS LY PC ZM'.split()
+ 
+def _abc(word, blocks):
+    for i, ch in enumerate(word):
+        for blk in (b for b in blocks if ch in b):
+            whatsleft = word[i + 1:]
+            blksleft = blocks[:]
+            blksleft.remove(blk)
+            if not whatsleft: 
+                return True, blksleft
+            if not blksleft: 
+                return False, blksleft
+            ans, blksleft = _abc(whatsleft, blksleft)
+            if ans:
+                return ans, blksleft
+        else:
+            break
+    return False, blocks
+ 
+def abc(word, blocks=BLOCKS):
+    return _abc(word.upper(), blocks)[0]
+ 
+if __name__ == '__main__':
+    for word in [''] + 'A BARK BoOK TrEAT COmMoN SQUAD conFUsE'.split():
+        print('Can we spell %9r? %r' % (word, abc(word)))
+
+====PYTHON=====
+def mkword(w, b):
+    if not w: return []
+ 
+    c,w = w[0],w[1:]
+    for i in range(len(b)):
+        if c in b[i]:
+            m = mkword(w, b[0:i] + b[i+1:])
+            if m != None: return [b[i]] + m
+ 
+def abc(w, blk):
+    return mkword(w.upper(), [a.upper() for a in blk])
+ 
+blocks = 'BO XK DQ CP NA GT RE TG QD FS JW HU VI AN OB ER FS LY PC ZM'.split()
+ 
+for w in ", A, bark, book, treat, common, SQUAD, conFUsEd".split(', '):
+    print '\'' + w + '\'' + ' ->', abc(w, blocks)
+

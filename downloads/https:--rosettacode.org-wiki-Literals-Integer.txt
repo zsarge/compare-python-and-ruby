@@ -1,0 +1,33 @@
+====RUBY=====
+727 == 0b1011010111  # => true, binary
+727 == 0x2d7   # => true, hex
+727 == 0o1327  # => true, octal
+727 == 01327   # => true, octal
+ 
+12345 == 12_345 # => true underscores are ignored; useful for keeping track of places
+ 
+
+====RUBY=====
+say 255;
+say 0xff;
+say 0377;
+say 0b1111_1111;
+
+====PYTHON=====
+>>> # Bin(leading 0b or 0B), Oct(leading 0o or 0O), Dec, Hex(leading 0x or 0X), in order:
+>>> 0b1011010111 == 0o1327 == 727 == 0x2d7
+True
+>>>
+
+====PYTHON=====
+>>> # Bin(leading 0b or 0B), Oct(leading 0o or 0O, or just 0), Dec, Hex(leading 0x or 0X), in order:
+>>> 0b1011010111 == 0o1327 == 01327 == 727 == 0x2d7
+True
+>>>
+
+====PYTHON=====
+>>> # Oct(leading 0), Dec, Hex(leading 0x or 0X), in order:
+>>> 01327 == 727 == 0x2d7
+True
+>>>
+

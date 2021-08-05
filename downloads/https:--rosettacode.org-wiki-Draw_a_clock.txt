@@ -1,0 +1,232 @@
+====RUBY=====
+Shoes.app(:width=>205, :height => 228, :title => "A Clock") do
+  def draw_ray(width, start, stop, ratio)
+    angle = Math::PI * 2 * ratio - Math::PI/2
+    strokewidth width
+    cos = Math::cos(angle)
+    sin = Math::sin(angle)
+    line 101+cos*start, 101+sin*start, 101+cos*stop, 101+sin*stop
+  end
+ 
+  def update
+    t = Time.now
+    @time.text = t.strftime("%H:%M:%S")
+    h, m, s = (t.hour % 12).to_f, t.min.to_f, t.sec.to_f
+    s += t.to_f - t.to_i  # add the fractional seconds
+ 
+    @hands.clear do
+      draw_ray(3, 0, 70, (h + m/60)/12)
+      draw_ray(2, 0, 90, (m + s/60)/60)
+      draw_ray(1, 0, 95, s/60)
+    end
+  end
+ 
+  # a place for the text display
+  @time = para(:align=>"center", :family => "monospace")
+ 
+  # draw the clock face
+  stack(:width=>203, :height=>203) do
+    strokewidth 1
+    fill gradient(deepskyblue, aqua)
+    oval 1, 1, 200
+    fill black
+    oval 98, 98, 6
+    # draw the minute indicators
+    0.upto(59) {|m| draw_ray(1, (m % 5 == 0 ? 96 : 98), 100, m.to_f/60)}
+  end.move(0,23)
+ 
+  # the drawing area for the hands
+  @hands = stack(:width=>203, :height=>203) {}.move(0,23)
+ 
+  animate(5) {update}
+end
+
+====RUBY=====
+Shoes.app(:title => "Berlin-Uhr Clock", :width => 209, :height => 300) do
+  background lightgrey
+ 
+  Red = rgb(255, 20, 20)
+  Yellow = rgb(173, 255, 47)
+  Green = rgb(154, 205, 50)
+  Gray = rgb(128, 128, 128)
+ 
+  @time = para(:align => "center")
+  stack do
+    fill Gray
+    stroke black
+    strokewidth 2
+    @seconds = oval 75, 3, 50
+    @hrs_a  =  4.times.collect {|i| rect   51*i,  56, 48, 30, 4}
+    @hrs_b  =  4.times.collect {|i| rect   51*i,  89, 48, 30, 4}
+    @mins_a = 11.times.collect {|i| rect 2+18*i, 122, 15, 30, 4}
+    @mins_b =  4.times.collect {|i| rect   51*i, 155, 48, 30, 4}
+    # some decoration
+    fill white
+    stroke darkslategray
+    rect -10, -30, 75, 70, 10
+    rect 140, -30, 75, 70, 10
+    rect -13, 192, 105, 100, 10
+    rect 110, 192, 105, 100, 10
+  end.move(3,20)
+ 
+  animate(1) do
+    now = Time.now
+    @time.text = now.strftime("%H:%M:%S")
+    @seconds.style(:fill => now.sec.even? ? Green : Gray)
+    a, b = now.hour.divmod(5)
+    4.times {|i| @hrs_a[i].style(:fill => i < a ? Red : Gray)}
+    4.times {|i| @hrs_b[i].style(:fill => i < b ? Red : Gray)}
+    a, b = now.min.divmod(5)
+    11.times {|i| @mins_a[i].style(:fill => i < a ? (i%3==2 ? Red : Yellow) : Gray)}
+    4.times  {|i| @mins_b[i].style(:fill => i < b ? Yellow : Gray)}
+  end
+ 
+  keypress do |key|
+    case key
+    when :control_q, "\x11" then exit
+    end
+  end
+end
+
+====RUBY=====
+ 
+def setup
+  sketch_title 'Clock'
+  stroke 255
+  font = create_font 'NimbusRoman-Regular', 20
+  text_font font
+end
+ 
+def draw
+  background 0
+  fill 80
+  no_stroke
+  clock_x = lambda do |val, adj, length|
+    DegLut.cos((val * adj).to_i - 90) * length + width / 2
+  end
+  clock_y = lambda do |val, adj, length|
+    DegLut.sin((val * adj).to_i - 90) * length + height / 2
+  end
+  ellipse 100, 100, 160, 160
+  stroke 220
+  stroke_weight 6
+  t = Time.now
+  line(100, 100, clock_x.call(t.hour % 12 + (t.min / 60.0), 30, 50),
+    clock_y.call(t.hour % 12 + (t.min / 60.0), 30, 50))
+  stroke_weight 3
+  line(100, 100, clock_x.call(t.min + (t.sec / 60.0), 6, 60),
+    clock_y.call(t.min + (t.sec / 60.0), 6, 60))
+  stroke 255, 0, 0
+  stroke_weight 1
+  line(100, 100, clock_x.call(t.sec, 6, 72), clock_y.call(t.sec, 6, 72))
+  # Draw the minute ticks
+  stroke_weight 2
+  stroke 255
+  (0..360).step(6) do |a|
+    x = 100 + DegLut.cos(a) * 72
+    y = 100 + DegLut.sin(a) * 72
+    point x, y
+  end
+  fill 200
+  text t.strftime('%H:%M:%S'), 50, 200
+end
+ 
+def settings
+  size 200, 220
+  smooth 8
+end
+ 
+ 
+
+====RUBY=====
+STDOUT.autoflush(true)
+ 
+var (rows, cols) = `stty size`.nums...
+ 
+var x = (rows/2 - 1  -> int)
+var y = (cols/2 - 16 -> int)
+ 
+var chars = [
+                 "┌─┐  ╷╶─┐╶─┐╷ ╷┌─╴┌─╴╶─┐┌─┐┌─┐   ",
+                 "│ │  │┌─┘╶─┤└─┤└─┐├─┐  │├─┤└─┤ : ",
+                 "└─┘  ╵└─╴╶─┘  ╵╶─┘└─┘  ╵└─┘╶─┘   "
+             ].map {|s| s.split(3) }
+ 
+func position(i,j) {
+    "\e[%d;%dH" % (i, j)
+}
+ 
+func indices {
+    var t = Time.local
+    "%02d:%02d:%02d" % (t.hour, t.min, t.sec) -> split(1).map{|c| c.ord - '0'.ord }
+}
+ 
+loop {
+    print "\e[H\e[J"
+    for i in ^chars {
+      print position(x + i, y)
+      print [chars[i][indices()]].join(' ')
+    }
+    print position(1, 1)
+    Sys.sleep(0.1)
+}
+
+====PYTHON=====
+ 
+last_sec = second()
+ 
+def draw():
+    global last_sec
+    if last_sec != second():
+        draw_clock()
+        last_sec = second()
+ 
+def draw_clock():
+    background(192)
+    translate(width / 2, height / 2)
+    s = second() * TWO_PI / 60.0
+    m = minute() * TWO_PI / 60.0
+    h = hour() * TWO_PI / 12.0
+    rotate(s)
+    strokeWeight(1)
+    line(0, 0, 0, -width * 0.5)
+    rotate(-s + m)
+    strokeWeight(2)
+    line(0, 0, 0, -width * 0.4)
+    rotate(-m + h)
+    strokeWeight(4)
+    line(0, 0, 0, -width * 0.2)
+
+====PYTHON=====
+import time
+ 
+def chunks(l, n=5):
+    return [l[i:i+n] for i in range(0, len(l), n)]
+ 
+def binary(n, digits=8):
+    n=int(n)
+    return '{0:0{1}b}'.format(n, digits)
+ 
+def secs(n):
+    n=int(n)
+    h='x' * n
+    return "|".join(chunks(h))
+ 
+def bin_bit(h):
+    h=h.replace("1","x")
+    h=h.replace("0"," ")
+    return "|".join(list(h))
+ 
+ 
+x=str(time.ctime()).split()
+y=x[3].split(":")
+ 
+s=y[-1]
+y=map(binary,y[:-1])
+ 
+print bin_bit(y[0])
+print
+print bin_bit(y[1])
+print
+print secs(s)
+

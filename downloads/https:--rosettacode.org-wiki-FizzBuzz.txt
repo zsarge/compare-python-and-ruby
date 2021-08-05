@@ -1,0 +1,434 @@
+====RUBY=====
+1.upto(100) do |v|
+  p fizz_buzz(v)
+end
+ 
+def fizz_buzz(value)
+  word = ""
+  word += "fizz" if value % 3 == 0
+  word += "buzz" if value % 5 == 0
+  word += value.to_s if word.empty?
+  word
+end
+
+====RUBY=====
+1.upto(100) do |n|
+  case
+  when n % 15 == 0
+    puts "FizzBuzz" 
+  when n % 5 == 0
+    puts "Buzz"
+  when n % 3 == 0
+    puts "Fizz"
+  else
+    puts n
+  end
+end
+
+====RUBY=====
+1.upto(100) do |n|
+  print "Fizz" if a = (n % 3).zero?
+  print "Buzz" if b = (n % 5).zero?
+  print n unless (a || b)
+  puts
+end
+
+====RUBY=====
+(1..100).each do |n|
+  puts if (n % 15).zero?
+    "FizzBuzz"
+  elsif (n % 5).zero?
+    "Buzz"
+  elsif (n % 3).zero?
+    "Fizz"
+  else
+    n
+  end
+end
+
+====RUBY=====
+ 
+class Enumerator::Lazy
+  def filter_map
+    Lazy.new(self) do |holder, *values|
+      result = yield *values
+      holder << result if result
+    end
+  end
+end
+ 
+class Fizz
+  def initialize(head, tail)
+    @list = (head..Float::INFINITY).lazy.filter_map{|i| i if i % 3 == 0}.first(tail)
+  end
+ 
+  def fizz?(num)
+    search = @list
+    search.include?(num)
+  end
+ 
+  def drop(num)
+    list = @list
+    list.delete(num)
+  end
+ 
+  def to_a
+    @list.to_a
+  end
+end
+ 
+class Buzz
+  def initialize(head, tail)
+    @list = (head..Float::INFINITY).lazy.filter_map{|i| i if i % 5 == 0}.first(tail)
+  end
+ 
+  def buzz?(num)
+    search = @list
+    search.include?(num)
+  end
+ 
+  def drop(num)
+    list = @list
+    list.delete(num)
+  end
+ 
+  def to_a
+    @list.to_a
+  end
+end
+ 
+class FizzBuzz
+  def initialize(head, tail)
+    @list = (head..Float::INFINITY).lazy.filter_map{|i| i if i % 15 == 0}.first(tail)
+  end
+ 
+  def fizzbuzz?(num)
+    search = @list
+    search.include?(num)
+  end
+ 
+  def to_a
+    @list.to_a
+  end
+ 
+  def drop(num)
+    list = @list
+    list.delete(num)
+  end
+end
+stopper = 100
+@fizz = Fizz.new(1,100)
+@buzz = Buzz.new(1,100)
+@fizzbuzz = FizzBuzz.new(1,100)
+def min(v, n)
+  if v == 1
+    puts "Fizz: #{n}"
+    @fizz::drop(n)
+  elsif v == 2
+    puts "Buzz: #{n}"
+    @buzz::drop(n)
+  else
+    puts "FizzBuzz: #{n}"
+    @fizzbuzz::drop(n)
+  end
+end
+(@fizz.to_a & @fizzbuzz.to_a).map{|d| @fizz::drop(d)}
+(@buzz.to_a & @fizzbuzz.to_a).map{|d| @buzz::drop(d)}
+while @fizz.to_a.min < stopper or @buzz.to_a.min < stopper or @fizzbuzz.to_a.min < stopper
+  f, b, fb = @fizz.to_a.min, @buzz.to_a.min, @fizzbuzz.to_a.min
+  min(1,f)  if f < fb and f < b
+  min(2,b)  if b < f and b < fb
+  min(0,fb) if fb < b and fb < f
+end
+
+====RUBY=====
+(1..100).each do |n|
+  v = "#{"Fizz" if n % 3 == 0}#{"Buzz" if n % 5 == 0}"
+  puts v.empty? ? n : v
+end
+
+====RUBY=====
+1.upto(100) { |n| puts "#{'Fizz' if n % 3 == 0}#{'Buzz' if n % 5 == 0}#{n if n % 3 != 0 && n % 5 != 0}" }
+
+====RUBY=====
+1.upto 100 do |n|
+  r = ''
+  r << 'Fizz' if n % 3 == 0
+  r << 'Buzz' if n % 5 == 0
+  r << n.to_s if r.empty?
+  puts r
+end
+
+====RUBY=====
+1.upto(100){|i|puts'FizzBuzz '[n=i**4%-15,n+13]||i}
+
+====RUBY=====
+f = [nil, nil, :Fizz].cycle
+b = [nil, nil, nil, nil, :Buzz].cycle
+(1..100).each do |i|
+  puts "#{f.next}#{b.next}"[/.+/] || i
+end
+
+====RUBY=====
+seq = *0..100
+{Fizz:3, Buzz:5, FizzBuzz:15}.each{|k,n| n.step(100,n){|i|seq[i]=k}}
+puts seq.drop(1)
+
+====RUBY=====
+class Integer
+  def fizzbuzz
+    v = "#{"Fizz" if self % 3 == 0}#{"Buzz" if self % 5 == 0}"
+    v.empty? ? self : v
+  end
+end
+ 
+puts *(1..100).map(&:fizzbuzz)
+
+====RUBY=====
+fizzbuzz = ->(i) do
+  (i%15).zero? and next "FizzBuzz"
+  (i%3).zero?  and next "Fizz"
+  (i%5).zero?  and next "Buzz"
+  i
+end
+ 
+puts (1..100).map(&fizzbuzz).join("\n")
+
+====RUBY=====
+ 
+1.upto(100) do |n|
+  puts case [(n % 3).zero?, (n % 5).zero?]
+       in true, false
+         "Fizz"
+       in false, true
+         "Buzz"
+       in true, true
+         "FizzBuzz"
+       else
+         n
+       end
+end
+ 
+
+====RUBY=====
+ 
+require 'fizzbuzz'
+ 
+describe 'FizzBuzz' do
+  context 'knows that a number is divisible by' do
+    it '3' do
+      expect(is_divisible_by_three?(3)).to be_true
+    end
+    it '5' do
+      expect(is_divisible_by_five?(5)).to be_true
+    end
+    it '15' do
+      expect(is_divisible_by_fifteen?(15)).to be_true
+    end
+  end
+  context 'knows that a number is not divisible by' do
+    it '3' do
+      expect(is_divisible_by_three?(1)).not_to be_true
+    end
+    it '5' do
+      expect(is_divisible_by_five?(1)).not_to be_true
+    end
+    it '15' do
+      expect(is_divisible_by_fifteen?(1)).not_to be_true
+    end
+  end
+  context 'while playing the game it returns' do
+    it 'the number' do
+      expect(fizzbuzz(1)).to eq 1
+    end
+    it 'Fizz' do
+      expect(fizzbuzz(3)).to eq 'Fizz'
+    end
+    it 'Buzz' do
+      expect(fizzbuzz(5)).to eq 'Buzz'
+    end
+    it 'FizzBuzz' do
+      expect(fizzbuzz(15)).to eq 'FizzBuzz'
+    end
+  end
+end
+ 
+
+====RUBY=====
+ 
+def fizzbuzz(number)
+  return 'FizzBuzz' if is_divisible_by_fifteen?(number)
+  return 'Buzz' if is_divisible_by_five?(number)
+  return 'Fizz' if is_divisible_by_three?(number)
+  number
+end
+ 
+def is_divisible_by_three?(number)
+  is_divisible_by(number, 3)
+end
+ 
+def is_divisible_by_five?(number)
+  is_divisible_by(number, 5)
+end
+ 
+def is_divisible_by_fifteen?(number)
+  is_divisible_by(number, 15)
+end
+ 
+def is_divisible_by(number, divisor)
+  number % divisor == 0
+end
+ 
+ 
+
+====RUBY=====
+{ |i|
+    if (i %% 3) {
+        print "Fizz"
+        i %% 5 && print "Buzz"
+        print "\n"
+    }
+    elsif (i %% 5) { say "Buzz" }
+    else  { say i }
+} * 100
+
+====RUBY=====
+func fizzbuzz({ _ %% 15 }) { "FizzBuzz" }
+func fizzbuzz({ _ %%  5 }) {     "Buzz" }
+func fizzbuzz({ _ %%  3 }) {     "Fizz" }
+func fizzbuzz(        n  ) {          n }
+ 
+for n in (1..100) { say fizzbuzz(n) }
+
+====RUBY=====
+{|i|say "#{<Fizz>[i%3]}#{<Buzz>[i%5]}"||i}*100
+
+====PYTHON=====
+for i in xrange(1, 101):
+    if i % 15 == 0:
+        print "FizzBuzz"
+    elif i % 3 == 0:
+        print "Fizz"
+    elif i % 5 == 0:
+        print "Buzz"
+    else:
+        print i
+
+====PYTHON=====
+for i in range(1, 101):
+    if i % 15 == 0:
+        print("FizzBuzz")
+    elif i % 3 == 0:
+        print("Fizz")
+    elif i % 5 == 0:
+        print("Buzz")
+    else:
+        print(i)
+
+====PYTHON=====
+for n in range(1,101):
+    response = ''
+ 
+    if not n%3:
+        response += 'Fizz'
+    if not n%5:
+        response += 'Buzz'
+ 
+    print(response or n)
+ 
+
+====PYTHON=====
+for i in range(1,101): print("Fizz"*(i%3==0) + "Buzz"*(i%5==0) or i)
+
+====PYTHON=====
+for i in range(100):print(i%3//2*'Fizz'+i%5//4*'Buzz'or i+1)
+
+====PYTHON=====
+ 
+for n in range(1, 100):
+    fb = ''.join([ denom[1] if n % denom[0] == 0 else '' for denom in [(3,'fizz'),(5,'buzz')] ])
+    print fb if fb else n
+ 
+
+====PYTHON=====
+ 
+print (', '.join([(x%3<1)*'Fizz'+(x%5<1)*'Buzz' or str(x) for x in range(1,101)]))  
+ 
+
+====PYTHON=====
+[print("FizzBuzz") if i % 15 == 0 else print("Fizz") if i % 3 == 0 else print("Buzz") if i % 5 == 0 else print(i) for i in range(1,101)]
+
+====PYTHON=====
+from itertools import cycle, izip, count, islice
+ 
+fizzes = cycle([""] * 2 + ["Fizz"])
+buzzes = cycle([""] * 4 + ["Buzz"])
+both = (f + b for f, b in izip(fizzes, buzzes))
+ 
+# if the string is "", yield the number
+# otherwise yield the string
+fizzbuzz = (word or n for word, n in izip(both, count(1)))
+ 
+# print the first 100
+for i in islice(fizzbuzz, 100):
+    print i
+
+====PYTHON=====
+'''Fizz buzz'''
+ 
+from itertools import count, cycle, islice
+ 
+ 
+# fizzBuzz :: () -> Generator [String]
+def fizzBuzz():
+    '''A non-finite stream of fizzbuzz terms.
+    '''
+    return map(
+        lambda f, b, n: (f + b) or str(n),
+        cycle([''] * 2 + ['Fizz']),
+        cycle([''] * 4 + ['Buzz']),
+        count(1)
+    )
+ 
+ 
+# ------------------------- TEST -------------------------
+def main():
+    '''Display of first 100 terms of the fizzbuzz series.
+    '''
+    print(
+        '\n'.join(
+            list(islice(
+                fizzBuzz(),
+                100
+            ))
+        )
+    )
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+print(*map(lambda n: 'Fizzbuzz '[(i):i+13] if (i := n**4%-15) > -14 else n, range(1,100)))
+
+====PYTHON=====
+ 
+def numsum(n):
+	''' The recursive sum of all digits in a number 
+        unit a single character is obtained'''
+	res = sum([int(i) for i in str(n)])
+	if res < 10: return res
+	else : return numsum(res)
+ 
+for n in range(1,101):
+	response = 'Fizz'*(numsum(n) in [3,6,9]) + \
+                   'Buzz'*(str(n)[-1] in ['5','0'])\
+	            or n
+	print(response)
+ 
+
+====PYTHON=====
+ 
+print(*((lambda x=x: ''.join(chr(c) for c in (102, 105)) + (2 * chr(122)) + ''.join(chr(c) for c in (98, 117)) + (2 * chr(122)) + '\n' if x % (30 >> 1) == 0 else ''.join(chr(c) for c in (102, 105)) + (2 * chr(122)) + '\n' if x % (6 >> 1) == 0 else ''.join(chr(c) for c in (98, 117)) + (2 * chr(122)) + '\n' if x % (10 >> 1) == 0 else str(x) + '\n')() for x in range(1, 101)))
+ 
+

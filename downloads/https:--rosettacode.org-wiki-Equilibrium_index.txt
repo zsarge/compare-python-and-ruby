@@ -1,0 +1,185 @@
+====RUBY=====
+def eq_indices(list)
+  list.each_index.select do |i|
+    list[0...i].sum == list[i+1..-1].sum
+  end
+end
+
+====RUBY=====
+def eq_indices(list)
+  result = []
+  list.empty? and return result
+  final = list.size - 1
+ 
+  helper = lambda do |left, current, right, index|
+    left == right and result << index   # Push index to result?
+    index == final and return           # Terminate recursion?
+    new = list[index + 1]
+    helper.call(left + current, new, right - new, index + 1)
+  end
+  helper.call 0, list.first, list.drop(1).sum, 0
+  result
+end
+
+====RUBY=====
+def eq_indices(list)
+  left, right = 0, list.sum
+  equilibrium_indices = []
+ 
+  list.each_with_index do |val, i|
+    right -= val
+    equilibrium_indices << i if right == left
+    left += val
+  end
+ 
+  equilibrium_indices
+end
+
+====RUBY=====
+indices = [
+  [-7, 1, 5, 2,-4, 3, 0],
+  [2, 4, 6],
+  [2, 9, 2],
+  [1,-1, 1,-1, 1,-1, 1]
+]
+indices.each do |x|
+  puts "%p => %p" % [x, eq_indices(x)]
+end
+
+====RUBY=====
+func eq_index(nums) {
+    var (i, sum, sums) = (0, 0, Hash.new);
+    nums.each { |n|
+        sums{2*sum + n} := [] -> append(i++);
+        sum += n;
+    }
+    sums{sum} \\ [];
+}
+
+====RUBY=====
+var indices = [
+  [-7, 1, 5, 2,-4, 3, 0],
+  [2, 4, 6],
+  [2, 9, 2],
+  [1,-1, 1,-1, 1,-1, 1],
+]
+ 
+for x in indices {
+    say ("%s => %s" % @|[x, eq_index(x)].map{.dump});
+}
+
+====PYTHON=====
+def eqindex2Pass(data):
+    "Two pass"
+    suml, sumr, ddelayed = 0, sum(data), 0
+    for i, d in enumerate(data):
+        suml += ddelayed
+        sumr -= d
+        ddelayed = d
+        if suml == sumr:
+            yield i
+
+====PYTHON=====
+def eqindexMultiPass(data):
+    "Multi pass"
+    for i in range(len(data)):
+        suml, sumr = sum(data[:i]), sum(data[i+1:])
+        if suml == sumr:
+            yield i
+
+====PYTHON=====
+def eqindexMultiPass(s):
+    return [i for i in xrange(len(s)) if sum(s[:i]) == sum(s[i+1:])]
+ 
+print eqindexMultiPass([-7, 1, 5, 2, -4, 3, 0])
+
+====PYTHON=====
+from collections import defaultdict
+ 
+def eqindex1Pass(data):
+    "One pass"
+    l, h = 0, defaultdict(list)
+    for i, c in enumerate(data):
+        l += c
+        h[l * 2 - c].append(i)
+    return h[l]
+
+====PYTHON=====
+f = (eqindex2Pass, eqindexMultiPass, eqindex1Pass)
+d = ([-7, 1, 5, 2, -4, 3, 0],
+     [2, 4, 6],
+     [2, 9, 2],
+     [1, -1, 1, -1, 1, -1, 1])
+ 
+for data in d:
+    print("d = %r" % data)
+    for func in f:
+        print("  %16s(d) -> %r" % (func.__name__, list(func(data))))
+
+====PYTHON=====
+"""Equilibrium index"""
+ 
+from itertools import (accumulate)
+ 
+ 
+# equilibriumIndices :: [Num] -> [Int]
+def equilibriumIndices(xs):
+    '''List indices at which the sum of values to the left
+       equals the sum of values to the right.
+    '''
+    def go(xs):
+        '''Left scan from accumulate,
+           right scan derived from left
+        '''
+        ls = list(accumulate(xs))
+        n = ls[-1]
+        return [
+            i for (i, (x, y)) in enumerate(zip(
+                ls,
+                [n] + [n - x for x in ls[0:-1]]
+            )) if x == y
+        ]
+    return go(xs) if xs else []
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Tabulated test results'''
+    print(
+        tabulated('Equilibrium indices:\n')(
+            equilibriumIndices
+        )([
+            [-7, 1, 5, 2, -4, 3, 0],
+            [2, 4, 6],
+            [2, 9, 2],
+            [1, -1, 1, -1, 1, -1, 1],
+            [1],
+            []
+        ])
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# tabulated :: String -> (a -> b) -> [a] -> String
+def tabulated(s):
+    '''heading -> function -> input List
+       -> tabulated output string
+    '''
+    def go(f):
+        def width(x):
+            return len(str(x))
+        def cols(xs):
+            w = width(max(xs, key=width))
+            return s + '\n' + '\n'.join([
+                str(x).rjust(w, ' ') + ' -> ' + str(f(x))
+                for x in xs
+            ])
+        return cols
+    return go
+ 
+ 
+if __name__ == '__main__':
+    main()
+

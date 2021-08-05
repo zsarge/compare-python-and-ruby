@@ -1,0 +1,32 @@
+====RUBY=====
+10.downto(0) do |i|
+   puts i
+end
+
+====RUBY=====
+for (var i = 10; i >= 0; i--) {
+    say i
+}
+
+====RUBY=====
+for i in (11 ^.. 0) {
+    say i
+}
+
+====RUBY=====
+10.downto(0).each { |i|
+    say i
+}
+
+====PYTHON=====
+for i in xrange(10, -1, -1):
+    print i
+
+====PYTHON=====
+[i for i in xrange(10, -1, -1)]
+
+====PYTHON=====
+import pprint
+pprint.pprint([i for i in xrange(10, -1, -1)])
+ 
+

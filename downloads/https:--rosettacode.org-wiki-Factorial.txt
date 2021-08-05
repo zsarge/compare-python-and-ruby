@@ -1,0 +1,178 @@
+====RUBY=====
+# Recursive
+def factorial_recursive(n)
+  n.zero? ? 1 : n * factorial_recursive(n - 1)
+end
+ 
+# Tail-recursive
+def factorial_tail_recursive(n, prod = 1)
+  n.zero? ? prod : factorial_tail_recursive(n - 1, prod * n)
+end
+ 
+# Iterative with Range#each
+def factorial_iterative(n)
+  (2...n).each { |i| n *= i }
+  n.zero? ? 1 : n
+end
+ 
+# Iterative with Range#inject
+def factorial_inject(n)
+  (1..n).inject(1){ |prod, i| prod * i }
+end
+ 
+# Iterative with Range#reduce, requires Ruby 1.8.7
+def factorial_reduce(n)
+  (2..n).reduce(1, :*)
+end
+ 
+ 
+require 'benchmark'
+ 
+n = 400
+m = 10000
+ 
+Benchmark.bm(16) do |b|
+  b.report('recursive:')       {m.times {factorial_recursive(n)}}
+  b.report('tail recursive:')  {m.times {factorial_tail_recursive(n)}}
+  b.report('iterative:')       {m.times {factorial_iterative(n)}}
+  b.report('inject:')          {m.times {factorial_inject(n)}}
+  b.report('reduce:')          {m.times {factorial_reduce(n)}}
+end
+
+====RUBY=====
+func factorial_recursive(n) {
+    n == 0 ? 1 : (n * __FUNC__(n-1))
+}
+
+====RUBY=====
+func factorial_reduce(n) {
+    1..n -> reduce({|a,b| a * b }, 1)
+}
+
+====RUBY=====
+func factorial_iterative(n) {
+    var f = 1
+    {|i| f *= i } << 2..n
+    return f
+}
+
+====RUBY=====
+say 5!
+
+====PYTHON=====
+import math
+math.factorial(n)
+
+====PYTHON=====
+def factorial(n):
+    result = 1
+    for i in range(1, n+1):
+        result *= i
+    return result
+
+====PYTHON=====
+from operator import mul
+from functools import reduce
+ 
+def factorial(n):
+    return reduce(mul, range(1,n+1), 1)
+
+====PYTHON=====
+from itertools import (accumulate, chain)
+from operator import mul
+ 
+# factorial :: Integer
+def factorial(n):
+    return list(
+        accumulate(chain([1], range(1, 1 + n)), mul)
+    )[-1]
+
+====PYTHON=====
+from itertools import (accumulate, chain)
+from operator import mul
+ 
+ 
+# factorials :: [Integer]
+def factorials(n):
+    return list(
+        accumulate(chain([1], range(1, 1 + n)), mul)
+    )
+ 
+print(factorials(5))
+ 
+# -> [1, 1, 2, 6, 24, 120]
+
+====PYTHON=====
+from numpy import prod
+ 
+def factorial(n):
+    return prod(range(1, n + 1), dtype=int)
+
+====PYTHON=====
+def factorial(n):
+    z=1
+    if n>1:
+        z=n*factorial(n-1)
+    return z
+
+====PYTHON=====
+def factorial(n):
+    return n * factorial(n - 1) if n else 1
+
+====PYTHON=====
+from cmath import *
+ 
+# Coefficients used by the GNU Scientific Library
+g = 7
+p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+     771.32342877765313, -176.61502916214059, 12.507343278686905,
+     -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]
+ 
+def gamma(z):
+  z = complex(z)
+  # Reflection formula
+  if z.real < 0.5:
+    return pi / (sin(pi*z)*gamma(1-z))
+  else:
+    z -= 1
+    x = p[0]
+    for i in range(1, g+2):
+      x += p[i]/(z+i)
+    t = z + g + 0.5
+    return sqrt(2*pi) * t**(z+0.5) * exp(-t) * x
+ 
+def factorial(n):
+  return gamma(n+1)
+ 
+print "factorial(-0.5)**2=",factorial(-0.5)**2
+for i in range(10):
+  print "factorial(%d)=%s"%(i,factorial(i))
+
+====PYTHON=====
+def (fact n)
+  if (n = 0)
+    1
+    (n * (fact n-1))
+
+====PYTHON=====
+def (fact n)
+  (n * (fact n-1))
+ 
+def (fact 0)
+  1
+
+====PYTHON=====
+def (fact n)
+  ret result 1
+    for i 1 (i <= n) ++i
+      result <- result*i
+
+====PYTHON=====
+# a useful helper to generate all the natural numbers until n
+def (nums n)
+  collect+for i 1 (i <= n) ++i
+    yield i
+ 
+def (fact n)
+  (reduce (*) nums.n 1)
+

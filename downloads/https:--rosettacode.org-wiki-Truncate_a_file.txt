@@ -1,0 +1,33 @@
+====RUBY=====
+# Open a file for writing, and truncate it to 1234 bytes.
+File.open("file", "ab") do |f|
+  f.truncate(1234)
+  f << "Killroy was here" # write to file
+end  # file is closed now.
+ 
+# Just truncate a file to 567 bytes.
+File.truncate("file", 567)
+
+====RUBY=====
+func truncate(filename, len) {
+    var file = File(filename);
+    len > file.size ->
+        && die "The provided length is greater than the length of the file";
+    file.truncate(len);
+}
+ 
+# truncate "file.ext" to 1234 bytes
+truncate("file.ext", 1234);
+
+====PYTHON=====
+ 
+def truncate_file(name, length):
+    if not os.path.isfile(name):
+        return False
+    if length >= os.path.getsize(name):
+        return False
+    with open(name, 'ab') as f:
+        f.truncate(length)
+    return True
+ 
+

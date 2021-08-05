@@ -1,0 +1,41 @@
+====RUBY=====
+# current time in system's time zone:
+Time.local
+ 
+# current time in UTC
+Time.utc
+ 
+# monotonic time (useful for measuring elapsed time)
+Time.monotonic
+ 
+
+====RUBY=====
+t = Time.now
+ 
+# textual
+puts t        # => 2013-12-27 18:00:23 +0900
+ 
+# epoch time
+puts t.to_i   # => 1388134823
+ 
+# epoch time with fractional seconds
+puts t.to_f   # => 1388134823.9801579
+ 
+# epoch time as a rational (more precision):
+puts Time.now.to_r  # 1424900671883862959/1000000000
+ 
+
+====RUBY=====
+# textual
+say Time.local.ctime;        # => Thu Mar 19 15:10:41 2015
+ 
+# epoch time
+say Time.sec;                # => 1426770641
+ 
+# epoch time with fractional seconds
+say Time.micro_sec;          # => 1426770641.68409
+
+====PYTHON=====
+import time
+print time.ctime()
+

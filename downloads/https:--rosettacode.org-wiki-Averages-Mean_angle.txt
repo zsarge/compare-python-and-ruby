@@ -1,0 +1,45 @@
+====RUBY=====
+require 'complex' # Superfluous in Ruby >= 2.0; complex is added to core.
+ 
+def deg2rad(d)
+  d * Math::PI / 180
+end
+ 
+def rad2deg(r)
+  r * 180 / Math::PI
+end
+ 
+def mean_angle(deg)
+  rad2deg((deg.inject(0) {|z, d| z + Complex.polar(1, deg2rad(d))} / deg.length).arg)
+end
+ 
+[[350, 10], [90, 180, 270, 360], [10, 20, 30]].each {|angles|
+  puts "The mean angle of %p is: %f degrees" % [angles, mean_angle(angles)]
+}
+
+====RUBY=====
+func mean_angle(angles) {
+    atan2(
+        Math.avg(angles.map{ .deg2rad.sin }...),
+        Math.avg(angles.map{ .deg2rad.cos }...),
+    ) -> rad2deg
+}
+ 
+[[350,10], [90,180,270,360], [10,20,30]].each { |angles|
+  say "The mean angle of #{angles.dump} is: #{ '%.2f' % mean_angle(angles)} degrees"
+}
+
+====PYTHON=====
+>>> from cmath import rect, phase
+>>> from math import radians, degrees
+>>> def mean_angle(deg):
+...     return degrees(phase(sum(rect(1, radians(d)) for d in deg)/len(deg)))
+... 
+>>> for angles in [[350, 10], [90, 180, 270, 360], [10, 20, 30]]:
+...     print('The mean angle of', angles, 'is:', round(mean_angle(angles), 12), 'degrees')
+...     
+The mean angle of [350, 10] is: -0.0 degrees
+The mean angle of [90, 180, 270, 360] is: -90.0 degrees
+The mean angle of [10, 20, 30] is: 20.0 degrees
+>>> 
+

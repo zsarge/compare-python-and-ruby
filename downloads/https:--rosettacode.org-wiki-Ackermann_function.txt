@@ -1,0 +1,130 @@
+====RUBY=====
+def ack(m, n)
+  if m == 0
+    n + 1
+  elsif n == 0
+    ack(m-1, 1)
+  else
+    ack(m-1, ack(m, n-1))
+  end
+end
+ 
+#Example:
+(0..3).each do |m|
+  puts (0..6).map { |n| ack(m, n) }.join(' ')
+end
+ 
+
+====RUBY=====
+def ack(m, n)
+  if m == 0
+    n + 1
+  elsif n == 0
+    ack(m-1, 1)
+  else
+    ack(m-1, ack(m, n-1))
+  end
+end
+
+====RUBY=====
+(0..3).each do |m|
+  puts (0..6).map { |n| ack(m, n) }.join(' ')
+end
+
+====RUBY=====
+func A(m, n) {
+    m == 0 ? (n + 1)
+           : (n == 0 ? (A(m - 1, 1))
+                     : (A(m - 1, A(m, n - 1))));
+}
+
+====RUBY=====
+func A((0), n) { n + 1 }
+func A(m, (0)) { A(m - 1, 1) }
+func A(m,  n)  { A(m-1, A(m, n-1)) }
+
+====RUBY=====
+say A(3, 2);     # prints: 29
+
+====PYTHON=====
+from __future__ import print_function
+ 
+def setup():
+    for m in range(4):
+        for n in range(7):
+            print("{} ".format(ackermann(m, n)), end = "")
+        print()
+    # print('finished')
+ 
+def ackermann(m, n):
+    if m == 0:
+        return n + 1
+    elif m > 0 and n == 0:
+        return ackermann(m - 1, 1)
+    else:
+        return ackermann(m - 1, ackermann(m, n - 1))
+
+====PYTHON=====
+def ack1(M, N):
+   return (N + 1) if M == 0 else (
+      ack1(M-1, 1) if N == 0 else ack1(M-1, ack1(M, N-1)))
+
+====PYTHON=====
+from functools import lru_cache
+ 
+@lru_cache(None)
+def ack2(M, N):
+    if M == 0:
+        return N + 1
+    elif N == 0:
+        return ack2(M - 1, 1)
+    else:
+        return ack2(M - 1, ack2(M, N - 1))
+
+====PYTHON=====
+>>> import sys
+>>> sys.setrecursionlimit(3000)
+>>> ack1(0,0)
+1
+>>> ack1(3,4)
+125
+>>> ack2(0,0)
+1
+>>> ack2(3,4)
+125
+
+====PYTHON=====
+def ack2(M, N):
+   return (N + 1)   if M == 0 else (
+          (N + 2)   if M == 1 else (
+          (2*N + 3) if M == 2 else (
+          (8*(2**N - 1) + 5) if M == 3 else (
+          ack2(M-1, 1) if N == 0 else ack2(M-1, ack2(M, N-1))))))
+
+====PYTHON=====
+from collections import deque
+ 
+def ack_ix(m, n):
+    "Paddy3118's iterative with optimisations on m"
+ 
+    stack = deque([])
+    stack.extend([m, n])
+ 
+    while  len(stack) > 1:
+        n, m = stack.pop(), stack.pop()
+ 
+        if   m == 0:
+            stack.append(n + 1)
+        elif m == 1:
+            stack.append(n + 2)
+        elif m == 2:
+            stack.append(2*n + 3)
+        elif m == 3:
+            stack.append(2**(n + 3) - 3)
+        elif n == 0:
+            stack.extend([m-1, 1])
+        else:
+            stack.extend([m-1, m, n-1])
+ 
+    return stack[0]
+

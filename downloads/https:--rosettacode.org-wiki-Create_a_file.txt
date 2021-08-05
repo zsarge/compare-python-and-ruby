@@ -1,0 +1,39 @@
+====RUBY=====
+File.write "output.txt", ""
+Dir.mkdir "docs"
+ 
+File.write "/output.txt", ""
+Dir.mkdir "/docs"
+
+====RUBY=====
+['/', './'].each{|dir|
+  Dir.mkdir(dir + 'docs')      # create '/docs', then './docs'
+  File.open(dir + 'output.txt', 'w') {}  # create empty file /output.txt, then ./output.txt
+}
+
+====RUBY=====
+# Here
+%f'output.txt' -> create;
+%d'docs'       -> create;
+ 
+# Root dir
+Dir.root + %f'output.txt' -> create;
+Dir.root + %d'docs'       -> create;
+
+====PYTHON=====
+import os
+for directory in ['/', './']:
+  open(directory + 'output.txt', 'w').close()  # create /output.txt, then ./output.txt
+  os.mkdir(directory + 'docs')                 # create directory /docs, then ./docs
+
+====PYTHON=====
+from __future__ import with_statement
+import os
+def create(directory):
+    with open(os.path.join(directory, "output.txt"), "w"):
+        pass
+    os.mkdir(os.path.join(directory, "docs"))
+ 
+create(".") # current directory
+create("/") # root directory
+

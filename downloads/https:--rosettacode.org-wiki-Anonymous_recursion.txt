@@ -1,0 +1,156 @@
+====RUBY=====
+def fib(n)
+  raise RangeError, "fib of negative" if n < 0
+  (fib2 = proc { |m| m < 2 ? m : fib2[m - 1] + fib2[m - 2] })[n]
+end
+
+====RUBY=====
+(-2..12).map { |i| fib i rescue :error }
+=> [:error, :error, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]
+
+====RUBY=====
+def fib(n)
+  raise RangeError, "fib of negative" if n < 0
+  (fib2 = proc { |n| n < 2 ? n : fib2[n - 1] + fib2[n - 2] })[n]
+end
+
+====RUBY=====
+# Ruby 1.9
+(-2..12).map { |i| fib i rescue :error }
+=> [:error, :error, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]
+ 
+# Ruby 1.8
+(-2..12).map { |i| fib i rescue :error }
+=> [:error, :error, 0, 1, 0, -3, -8, -15, -24, -35, -48, -63, -80, -99, -120]
+
+====RUBY=====
+def fib(n)
+  raise RangeError, "fib of negative" if n < 0
+  Hash.new { |fib2, m|
+    fib2[m] = (m < 2 ? m : fib2[m - 1] + fib2[m - 2]) }[n]
+end
+
+====RUBY=====
+require 'continuation' unless defined? Continuation
+ 
+module Kernel
+  module_function
+ 
+  def recur(*args, &block)
+    cont = catch(:recur) { return block[*args] }
+    cont[block]
+  end
+ 
+  def recurse(*args)
+    block = callcc { |cont| throw(:recur, cont) }
+    block[*args]
+  end
+end
+ 
+def fib(n)
+  raise RangeError, "fib of negative" if n < 0
+  recur(n) { |m| m < 2 ? m : (recurse m - 1) + (recurse m - 2) }
+end
+
+====RUBY=====
+require 'continuation' unless defined? Continuation
+ 
+module Kernel
+  module_function
+ 
+  def function(&block)
+    f = (proc do |*args|
+           (class << args; self; end).class_eval do
+             define_method(:callee) { f }
+           end
+           ret = nil
+           cont = catch(:function) { ret = block.call(*args); nil }
+           cont[args] if cont
+           ret
+         end)
+  end
+ 
+  def arguments
+    callcc { |cont| throw(:function, cont) }
+  end
+end
+ 
+def fib(n)
+  raise RangeError, "fib of negative" if n < 0
+  function { |m|
+    if m < 2
+      m
+    else
+      arguments.callee[m - 1] + arguments.callee[m - 2]
+    end
+  }[n]
+end
+
+====RUBY=====
+func fib(n) {
+    return NaN if (n < 0)
+ 
+    func (n) {
+        n < 2 ? n
+              : (__FUNC__(n-1) + __FUNC__(n-2))
+    }(n)
+}
+
+====RUBY=====
+func fib(n) {
+    return NaN if (n < 0)
+ 
+    {|n|
+        n < 2 ? n
+              : (__BLOCK__(n-1) + __BLOCK__(n-2))
+    }(n)
+}
+
+====PYTHON=====
+>>> Y = lambda f: (lambda x: x(x))(lambda y: f(lambda *args: y(y)(*args)))
+>>> fib = lambda f: lambda n: None if n < 0 else (0 if n == 0 else (1 if n == 1 else f(n-1) + f(n-2)))
+>>> [ Y(fib)(i) for i in range(-2, 10) ]
+[None, None, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+====PYTHON=====
+>>>from functools import partial
+>>> Y = lambda f: (lambda x: x(x))(lambda y: partial(f, lambda *args: y(y)(*args)))
+>>> fib = lambda f, n: None if n < 0 else (0 if n == 0 else (1 if n == 1 else f(n-1) + f(n-2)))
+>>> [ Y(fib)(i) for i in range(-2, 10) ]
+[None, None, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+====PYTHON=====
+>>> from functools import partial
+>>> Y = lambda f: partial(f, f)
+>>> fib = lambda f, n: None if n < 0 else (0 if n == 0 else (1 if n == 1 else f(f, n-1) + f(f, n-2)))
+>>> [ Y(fib)(i) for i in range(-2, 10) ]
+[None, None, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+
+====PYTHON=====
+ 
+>>> from inspect import currentframe
+>>> from types import FunctionType
+>>> def myself (*args, **kw):
+...    caller_frame = currentframe(1)
+...    code = caller_frame.f_code
+...    return FunctionType(code, caller_frame.f_globals)(*args, **kw)
+...
+>>> print "factorial(5) =",
+>>> print (lambda n:1 if n<=1 else n*myself(n-1)) ( 5 )
+ 
+
+====PYTHON=====
+ 
+>>> Y = lambda f: lambda n: f(f,n)
+>>> fib = lambda f, n: None if n < 0 else (0 if n == 0 else (1 if n == 1 else f(f,n-1) + f(f,n-2))) #same as the first three implementations
+>>> [ Y(fib)(i) for i in range(-2, 10) ]
+[None, None, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+ 
+
+====PYTHON=====
+ 
+>>> fib_func = (lambda f: lambda n: f(f,n))(lambda f, n: None if n < 0 else (0 if n == 0 else (1 if n == 1 else f(f,n-1) + f(f,n-2))))
+>>> [ fib_func(i) for i in range(-2, 10) ]
+[None, None, 0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+ 
+

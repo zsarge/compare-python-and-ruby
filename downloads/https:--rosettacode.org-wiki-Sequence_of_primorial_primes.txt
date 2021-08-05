@@ -1,0 +1,64 @@
+====RUBY=====
+ 
+ 
+# Sequence of primorial primes
+ 
+require 'prime' # for creating prime_array
+require 'openssl' # for using fast Miller–Rabin primality test (just need 10.14 seconds to complete)
+ 
+i, urutan, primorial_number = 1, 1, OpenSSL::BN.new(1)
+start = Time.now
+prime_array = Prime.first (500)
+ 
+until urutan > 20
+  primorial_number *= prime_array[i-1] 
+  if (primorial_number - 1).prime_fasttest? || (primorial_number + 1).prime_fasttest?
+    puts "#{Time.now - start} \tPrimorial prime #{urutan}: #{i}"
+    urutan += 1
+  end 
+  i += 1
+end
+ 
+ 
+
+====RUBY=====
+func primorial_primes(n) {
+ 
+    var k = 1
+    var p = 2
+    var P = 2
+ 
+    var seq = []
+    for (var i = 0; i < n; ++k) {
+ 
+        if (is_prime(P-1) || is_prime(P+1)) {
+            seq << k
+            ++i
+        }
+ 
+        p.next_prime!
+        P *= p
+    }
+ 
+    return seq
+}
+ 
+say primorial_primes(20)
+
+====PYTHON=====
+import pyprimes
+ 
+def primorial_prime(_pmax=500):
+    isprime = pyprimes.isprime
+    n, primo = 0, 1
+    for prime in pyprimes.nprimes(_pmax):
+        n, primo = n+1, primo * prime
+        if isprime(primo-1) or isprime(primo+1):
+            yield n
+ 
+if __name__ == '__main__':
+    # Turn off warning on use of probabilistic formula for prime test
+    pyprimes.warn_probably = False  
+    for i, n in zip(range(20), primorial_prime()):
+        print('Primorial prime %2i at primorial index: %3i' % (i+1, n))
+

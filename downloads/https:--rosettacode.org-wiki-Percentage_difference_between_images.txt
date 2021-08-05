@@ -1,0 +1,106 @@
+====RUBY=====
+require 'raster_graphics'
+ 
+class RGBColour
+  # the difference between two colours
+  def -(a_colour)
+    (@red - a_colour.red).abs +
+    (@green - a_colour.green).abs +
+    (@blue - a_colour.blue).abs
+  end
+end
+ 
+class Pixmap
+  # the difference between two images
+  def -(a_pixmap)
+    if @width != a_pixmap.width or @height != a_pixmap.height
+      raise ArgumentError, "can't compare images with different sizes"
+    end
+    sum = 0
+    each_pixel {|x,y| sum += self[x,y] - a_pixmap[x,y]}
+    Float(sum) / (@width * @height * 255 * 3)
+  end
+end
+ 
+lenna50 = Pixmap.open_from_jpeg('Lenna50.jpg')
+lenna100 = Pixmap.open_from_jpeg('Lenna100.jpg')
+ 
+puts "difference: %.5f%%" % (100.0 * (lenna50 - lenna100))
+
+====RUBY=====
+require('Imager')
+ 
+func img_diff(a, b) {
+ 
+    func from_file(name) {
+         %s|Imager|.new(file => name)
+    }
+ 
+    func size(img) {
+        (img.getwidth, img.getheight)
+    }
+ 
+    func pixel_diff(p1, p2) {
+        [p1.rgba] »-« [p2.rgba] -> map { .abs }.sum
+    }
+ 
+    func read_pixel(img, x, y) {
+        img.getpixel(x => x, y => y)
+    }
+ 
+    var(img1, img2) = (from_file(a), from_file(b))
+ 
+    var(w1, h1) = size(img1)
+    var(w2, h2) = size(img2)
+ 
+    if ((w1 != w2) || (h1 != h2)) {
+        return nil
+    }
+ 
+    var sum = 0
+    for y,x in (^h1 ~X ^w1) {
+        sum += pixel_diff(read_pixel(img1, x, y), read_pixel(img2, x, y))
+    }
+ 
+    sum / (w1 * h1 * 255 * 3)
+}
+ 
+say 100*img_diff('Lenna50.jpg', 'Lenna100.jpg')
+
+====PYTHON=====
+from PIL import Image
+ 
+i1 = Image.open("image1.jpg")
+i2 = Image.open("image2.jpg")
+assert i1.mode == i2.mode, "Different kinds of images."
+assert i1.size == i2.size, "Different sizes."
+ 
+pairs = zip(i1.getdata(), i2.getdata())
+if len(i1.getbands()) == 1:
+    # for gray-scale jpegs
+    dif = sum(abs(p1-p2) for p1,p2 in pairs)
+else:
+    dif = sum(abs(c1-c2) for p1,p2 in pairs for c1,c2 in zip(p1,p2))
+ 
+ncomponents = i1.size[0] * i1.size[1] * 3
+print ("Difference (percentage):", (dif / 255.0 * 100) / ncomponents)
+
+====PYTHON=====
+from itertools import izip
+import Image
+ 
+i1 = Image.open("image1.jpg")
+i2 = Image.open("image2.jpg")
+assert i1.mode == i2.mode, "Different kinds of images."
+assert i1.size == i2.size, "Different sizes."
+ 
+pairs = izip(i1.getdata(), i2.getdata())
+if len(i1.getbands()) == 1:
+    # for gray-scale jpegs
+    dif = sum(abs(p1-p2) for p1,p2 in pairs)
+else:
+    dif = sum(abs(c1-c2) for p1,p2 in pairs for c1,c2 in zip(p1,p2))
+ 
+ncomponents = i1.size[0] * i1.size[1] * 3
+print "Difference (percentage):", (dif / 255.0 * 100) / ncomponents
+

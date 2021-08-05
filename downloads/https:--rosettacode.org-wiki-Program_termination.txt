@@ -1,0 +1,30 @@
+====RUBY=====
+if problem
+  exit(1)
+end
+ 
+# or
+if problem
+  abort   # equivalent to exit(1)
+end
+
+====RUBY=====
+if problem
+  exit!   # default value 1
+end
+
+====RUBY=====
+if (problem) {
+    Sys.exit(code);
+}
+
+====PYTHON=====
+import sys
+if problem:
+    sys.exit(1)
+
+====PYTHON=====
+import os
+if problem:
+    os.abort()
+

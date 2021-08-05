@@ -1,0 +1,33 @@
+====RUBY=====
+p "Enter a variable name"
+x = "@" + gets.chomp!
+instance_variable_set x, 42
+p "The value of #{x} is #{instance_variable_get x}"
+ 
+
+====RUBY=====
+var name = read("Enter a variable name: ", String);     # type in 'foo'
+ 
+class DynamicVar(name, value) {
+    method init {
+        DynamicVar.def_method(name, ->(_) { value })
+    }
+}
+ 
+var v = DynamicVar(name, 42);       # creates a dynamic variable
+say v.foo;                          # retrieves the value
+
+====PYTHON=====
+>>> name = raw_input("Enter a variable name: ")
+Enter a variable name: X
+>>> globals()[name] = 42
+>>> X
+42
+
+====PYTHON=====
+>>> name = input("Enter a variable name: ")
+Enter a variable name: X
+>>> globals()[name] = 42
+>>> X
+42
+

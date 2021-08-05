@@ -1,0 +1,66 @@
+====RUBY=====
+time = Time.parse("March 7 2009 7:30pm EST", "%B %-d %Y %l:%M%p", Time::Location.load("EST"))
+ 
+time += 12.hours
+puts time                                          # 2009-03-08 07:30:00 -05:00
+puts time.in(Time::Location.load("Europe/Berlin")) # 2009-03-08 13:30:00 +01:00
+ 
+
+====RUBY=====
+require 'time'
+d = "March 7 2009 7:30pm EST"
+t = Time.parse(d)
+puts t.rfc2822
+puts t.zone
+ 
+new = t + 12*3600
+puts new.rfc2822
+puts new.zone
+ 
+# another timezone
+require 'rubygems'
+require 'active_support'
+zone = ActiveSupport::TimeZone['Beijing']
+remote = zone.at(new)
+# or, remote = new.in_time_zone('Beijing')
+puts remote.rfc2822
+puts remote.zone
+
+====RUBY=====
+new = t + 12.hours
+new = t.in(12.hours)
+new = t.advance(:hours => 12)
+
+====RUBY=====
+require "date"
+ 
+puts d1 = DateTime.parse("March 7 2009 7:30pm EST")  
+# d1 + 1 would add a day, so add half a day:
+puts d2 = d1 + 1/2r # 1/2r is a rational; 0.5 would also work
+puts d3 = d2.new_offset('+09:00')
+
+====RUBY=====
+var dt = frequire('DateTime::Format::Strptime')
+ 
+var input =  'March 7 2009 7:30pm EST'
+input.sub!('EST', 'America/New_York')
+ 
+say dt.strptime('%b %d %Y %I:%M%p %O', input)   \
+      .add(hours => 12)                         \
+      .set_time_zone('America/Edmonton')        \
+      .format_cldr('MMMM d yyyy h:mma zzz')
+
+====PYTHON=====
+import datetime
+ 
+def mt():
+	datime1="March 7 2009 7:30pm EST"
+	formatting = "%B %d %Y %I:%M%p "
+	datime2 = datime1[:-3]  # format can't handle "EST" for some reason
+	tdelta = datetime.timedelta(hours=12)		# twelve hours..
+	s3 = datetime.datetime.strptime(datime2, formatting)
+	datime2 = s3+tdelta
+	print datime2.strftime("%B %d %Y %I:%M%p %Z") + datime1[-3:]
+ 
+mt()
+

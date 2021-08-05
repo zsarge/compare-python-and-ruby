@@ -1,0 +1,274 @@
+====RUBY=====
+require 'rubygems'
+require 'RMagick'
+ 
+NUM_PARTICLES = 1000
+SIZE          = 800
+ 
+def draw_brownian_tree world
+  # set the seed
+  world[rand SIZE][rand SIZE] = 1
+ 
+  NUM_PARTICLES.times do
+    # set particle's position
+    px = rand SIZE
+    py = rand SIZE
+ 
+    loop do
+      # randomly choose a direction
+      dx = rand(3) - 1
+      dy = rand(3) - 1
+ 
+      if dx + px < 0 or dx + px >= SIZE or dy + py < 0 or dy + py >= SIZE
+        # plop the particle into some other random location
+        px = rand SIZE
+        py = rand SIZE
+      elsif world[py + dy][px + dx] != 0
+        # bumped into something
+        world[py][px] = 1
+        break
+      else
+        py += dy
+        px += dx
+      end
+    end
+  end
+end
+ 
+world = Array.new(SIZE) { Array.new(SIZE, 0) }
+srand Time.now.to_i
+ 
+draw_brownian_tree world
+ 
+img = Magick::Image.new(SIZE, SIZE) do 
+  self.background_color = "black"
+end
+ 
+draw = Magick::Draw.new
+draw.fill "white"
+ 
+world.each_with_index do |row, y|
+  row.each_with_index do |colour, x|
+    draw.point x, y if colour != 0
+  end
+end
+ 
+draw.draw img
+img.write "brownian_tree.bmp"
+
+====RUBY=====
+const size = 100
+const mid = size>>1
+const particlenum = 1000
+ 
+var map = []
+var spawnradius = 5
+ 
+func set(x, y) {
+    map[x][y] = 1
+}
+ 
+func get(x, y) {
+    map[x][y] \\ 0
+}
+ 
+set(mid, mid)
+ 
+var blocks = [
+    " ",
+    "\N{UPPER HALF BLOCK}",
+    "\N{LOWER HALF BLOCK}",
+    "\N{FULL BLOCK}"
+]
+ 
+func block(a, b) {
+    blocks[2*b + a]
+}
+ 
+func display {
+    0..size `by` 2 -> map {|y|
+        0..size -> map {|x|
+            if ([x, y].all { .-mid < spawnradius }) {
+                block(get(x, y), get(x, y+1))
+            } else { " " }
+        }.join
+    }.join("\n").say
+}
+ 
+for progress in (^particlenum) {
+    var (x=0, y=0)
+ 
+    var reset = {
+        do {
+            (x, y) = (
+                (mid-spawnradius .. mid+spawnradius  -> pick),
+                [mid-spawnradius,   mid+spawnradius] -> pick
+            )
+            (x, y) = (y, x) if (1.rand < 0.5)
+        } while(get(x, y))
+    }
+ 
+    reset.run
+ 
+    while ([[-1, 0, 1]]*2 -> cartesian.any {|pair|
+        get(x+pair[0], y+pair[1])
+    } -> not) {
+        x = [x-1, x, x+1].pick
+        y = [y-1, y, y+1].pick
+ 
+        if (1.rand < 0.25) {
+            x = (x >= mid ? (x-1) : (x+1))
+            y = (y >= mid ? (y-1) : (y+1))
+        }
+ 
+        if ([x,y].any { .-mid > spawnradius }) {
+            reset.run
+        }
+    }
+ 
+    set(x, y)
+    display() if (progress %% 50)
+ 
+    if ((spawnradius < mid) && [x,y].any { .-mid > spawnradius-5 }) {
+        ++spawnradius
+    }
+}
+ 
+display()
+
+====PYTHON=====
+SIDESTICK = False
+ 
+def setup() :
+    global is_taken
+    size(512, 512)
+    background(0)
+    is_taken = [[False] * height for _ in range(width)]
+    is_taken[width/2][height/2] = True
+ 
+ 
+def draw() :
+    x = floor(random(width))
+    y = floor(random(height))
+    if is_taken[x][y]: 
+        return
+    while True:
+        xp = x + floor(random(-1, 2))
+        yp = y + floor(random(-1, 2))
+        is_contained = 0 <= xp < width and 0 <= yp < height
+        if is_contained and not is_taken[xp][yp]:
+            x = xp
+            y = yp
+            continue
+        else:
+            if SIDESTICK or (is_contained and is_taken[xp][yp]):
+                is_taken[x][y] = True
+                set(x, y, color(255))            
+            break
+ 
+    if frameCount > width * height:
+        noLoop()
+
+====PYTHON=====
+import pygame, sys, os
+from pygame.locals import *
+from random import randint
+pygame.init()
+ 
+MAXSPEED = 15
+SIZE = 3
+COLOR = (45, 90, 45)
+WINDOWSIZE = 400
+TIMETICK = 1
+MAXPART = 50
+ 
+freeParticles = pygame.sprite.Group()
+tree = pygame.sprite.Group()
+ 
+window = pygame.display.set_mode((WINDOWSIZE, WINDOWSIZE))
+pygame.display.set_caption("Brownian Tree")
+ 
+screen = pygame.display.get_surface()
+ 
+ 
+class Particle(pygame.sprite.Sprite):
+    def __init__(self, vector, location, surface):
+        pygame.sprite.Sprite.__init__(self)
+        self.vector = vector
+        self.surface = surface
+        self.accelerate(vector)
+        self.add(freeParticles)
+        self.rect = pygame.Rect(location[0], location[1], SIZE, SIZE)
+        self.surface.fill(COLOR, self.rect)
+ 
+    def onEdge(self):
+        if self.rect.left <= 0:
+            self.vector = (abs(self.vector[0]), self.vector[1])
+        elif self.rect.top <= 0:
+            self.vector = (self.vector[0], abs(self.vector[1]))
+        elif self.rect.right >= WINDOWSIZE:
+            self.vector = (-abs(self.vector[0]), self.vector[1])
+        elif self.rect.bottom >= WINDOWSIZE:
+            self.vector = (self.vector[0], -abs(self.vector[1]))
+ 
+    def update(self):
+        if freeParticles in self.groups():
+            self.surface.fill((0,0,0), self.rect)
+            self.remove(freeParticles)
+            if pygame.sprite.spritecollideany(self, freeParticles):
+                self.accelerate((randint(-MAXSPEED, MAXSPEED), 
+                                 randint(-MAXSPEED, MAXSPEED)))
+                self.add(freeParticles)
+            elif pygame.sprite.spritecollideany(self, tree):
+                self.stop()
+            else:
+                self.add(freeParticles)
+ 
+            self.onEdge()
+ 
+            if (self.vector == (0,0)) and tree not in self.groups():
+                self.accelerate((randint(-MAXSPEED, MAXSPEED), 
+                                 randint(-MAXSPEED, MAXSPEED)))
+            self.rect.move_ip(self.vector[0], self.vector[1])
+        self.surface.fill(COLOR, self.rect)
+ 
+    def stop(self):
+        self.vector = (0,0)
+        self.remove(freeParticles)
+        self.add(tree)
+ 
+    def accelerate(self, vector):
+        self.vector = vector
+ 
+NEW = USEREVENT + 1
+TICK = USEREVENT + 2
+ 
+pygame.time.set_timer(NEW, 50)
+pygame.time.set_timer(TICK, TIMETICK)
+ 
+ 
+def input(events):
+    for event in events:
+        if event.type == QUIT:
+            sys.exit(0)
+        elif event.type == NEW and (len(freeParticles) < MAXPART):
+            Particle((randint(-MAXSPEED,MAXSPEED),
+                      randint(-MAXSPEED,MAXSPEED)),
+                     (randint(0, WINDOWSIZE), randint(0, WINDOWSIZE)), 
+                     screen)
+        elif event.type == TICK:
+            freeParticles.update()
+ 
+ 
+half = WINDOWSIZE/2
+tenth = WINDOWSIZE/10
+ 
+root = Particle((0,0),
+                (randint(half-tenth, half+tenth), 
+                 randint(half-tenth, half+tenth)), screen)
+root.stop()
+ 
+while True:
+    input(pygame.event.get())
+    pygame.display.flip()
+

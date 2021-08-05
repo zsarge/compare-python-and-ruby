@@ -1,0 +1,35 @@
+====RUBY=====
+require "curses"
+include Curses
+ 
+init_screen
+begin
+  curs_set(1) #visible cursor
+  sleep 3
+  curs_set(0) #invisible cursor
+  sleep 3
+  curs_set(1) #visible cursor
+  sleep 3
+ensure
+  close_screen
+end
+
+====PYTHON=====
+print("\x1b[?25l") # hidden
+print("\x1b[?25h") # shown
+ 
+
+====PYTHON=====
+import curses
+import time
+ 
+stdscr = curses.initscr()
+curses.curs_set(1)  # visible
+time.sleep(2)
+curses.curs_set(0)  # invisible
+time.sleep(2)
+curses.curs_set(1)  # visible
+time.sleep(2)
+curses.endwin()
+ 
+

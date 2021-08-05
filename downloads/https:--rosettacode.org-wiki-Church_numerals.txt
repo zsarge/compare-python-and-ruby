@@ -1,0 +1,212 @@
+====RUBY=====
+def zero(f)
+  return lambda {|x| x}
+end
+Zero = lambda { |f| zero(f) }
+ 
+def succ(n)
+  return lambda { |f| lambda { |x| f.(n.(f).(x)) } }
+end
+ 
+Three = succ(succ(succ(Zero)))
+ 
+def add(n, m)
+  return lambda { |f| lambda { |x| m.(f).(n.(f).(x)) } }
+end
+ 
+def mult(n, m)
+  return lambda { |f| lambda { |x| m.(n.(f)).(x) } }
+end
+ 
+def power(b, e)
+  return e.(b)
+end
+ 
+def int_from_couch(f)
+  countup = lambda { |i| i+1 }
+  f.(countup).(0)
+end
+ 
+def couch_from_int(x)
+  countdown = lambda { |i|
+    case i 
+      when 0 then Zero 
+      else succ(countdown.(i-1))
+    end
+  }
+  countdown.(x)
+end
+ 
+Four  = couch_from_int(4)
+ 
+puts [ add(Three, Four),
+       mult(Three, Four),
+       power(Three, Four),
+       power(Four, Three) ].map {|f| int_from_couch(f) }
+ 
+
+====RUBY=====
+Zero  = proc { |f| proc { |x| x } }
+ 
+Succ = proc { |n| proc { |f| proc { |x| f[n[f][x]] } } }
+ 
+Add = proc { |n, m| proc { |f| proc { |x| m[f][n[f][x]] } } }
+ 
+Mult = proc { |n, m| proc { |f| proc { |x| m[n[f]][x] } } }
+ 
+Power = proc { |b, e| e[b] }
+ 
+ToInt = proc { |f| countup = proc { |i| i+1 }; f[countup][0] }
+ 
+FromInt = proc { |x|
+  countdown = proc { |i|
+    case i
+      when 0 then Zero
+      else Succ[countdown[i-1]]
+    end
+  }
+  countdown[x]
+}
+ 
+Three = Succ[Succ[Succ[Zero]]]
+Four  = FromInt[4]
+ 
+puts [ Add[Three, Four],
+       Mult[Three, Four],
+       Power[Three, Four],
+       Power[Four, Three] ].map(&ToInt)
+
+====PYTHON=====
+'''Church numerals'''
+ 
+from itertools import repeat
+from functools import reduce
+ 
+ 
+# ----- CHURCH ENCODINGS OF NUMERALS AND OPERATIONS ------
+ 
+def churchZero():
+    '''The identity function.
+       No applications of any supplied f
+       to its argument.
+    '''
+    return lambda f: identity
+ 
+ 
+def churchSucc(cn):
+    '''The successor of a given
+       Church numeral. One additional
+       application of f. Equivalent to
+       the arithmetic addition of one.
+    '''
+    return lambda f: compose(f)(cn(f))
+ 
+ 
+def churchAdd(m):
+    '''The arithmetic sum of two Church numerals.'''
+    return lambda n: lambda f: compose(m(f))(n(f))
+ 
+ 
+def churchMult(m):
+    '''The arithmetic product of two Church numerals.'''
+    return lambda n: compose(m)(n)
+ 
+ 
+def churchExp(m):
+    '''Exponentiation of Church numerals. m^n'''
+    return lambda n: n(m)
+ 
+ 
+def churchFromInt(n):
+    '''The Church numeral equivalent of
+       a given integer.
+    '''
+    return lambda f: (
+        foldl
+        (compose)
+        (identity)
+        (replicate(n)(f))
+    )
+ 
+ 
+# OR, alternatively:
+def churchFromInt_(n):
+    '''The Church numeral equivalent of a given
+       integer, by explicit recursion.
+    '''
+    if 0 == n:
+        return churchZero()
+    else:
+        return churchSucc(churchFromInt(n - 1))
+ 
+ 
+def intFromChurch(cn):
+    '''The integer equivalent of a
+       given Church numeral.
+    '''
+    return cn(succ)(0)
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    'Tests'
+ 
+    cThree = churchFromInt(3)
+    cFour = churchFromInt(4)
+ 
+    print(list(map(intFromChurch, [
+        churchAdd(cThree)(cFour),
+        churchMult(cThree)(cFour),
+        churchExp(cFour)(cThree),
+        churchExp(cThree)(cFour),
+    ])))
+ 
+ 
+# ------------------ GENERIC FUNCTIONS -------------------
+ 
+# compose (flip (.)) :: (a -> b) -> (b -> c) -> a -> c
+def compose(f):
+    '''A left to right composition of two
+       functions f and g'''
+    return lambda g: lambda x: g(f(x))
+ 
+ 
+# foldl :: (a -> b -> a) -> a -> [b] -> a
+def foldl(f):
+    '''Left to right reduction of a list,
+       using the binary operator f, and
+       starting with an initial value a.
+    '''
+    def go(acc, xs):
+        return reduce(lambda a, x: f(a)(x), xs, acc)
+    return lambda acc: lambda xs: go(acc, xs)
+ 
+ 
+# identity :: a -> a
+def identity(x):
+    '''The identity function.'''
+    return x
+ 
+ 
+# replicate :: Int -> a -> [a]
+def replicate(n):
+    '''A list of length n in which every
+       element has the value x.
+    '''
+    return lambda x: repeat(x, n)
+ 
+ 
+# succ :: Enum a => a -> a
+def succ(x):
+    '''The successor of a value.
+       For numeric types, (1 +).
+    '''
+    return 1 + x if isinstance(x, int) else (
+        chr(1 + ord(x))
+    )
+ 
+ 
+if __name__ == '__main__':
+    main()
+

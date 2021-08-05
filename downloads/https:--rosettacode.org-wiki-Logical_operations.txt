@@ -1,0 +1,24 @@
+====RUBY=====
+def logic(a, b)
+  print 'a and b: ', a && b, "\n"
+  print 'a or b: ' , a || b, "\n"
+  print 'not a: '  , !a    , "\n"
+  print 'a xor b: ' , a ^ b, "\n"
+end
+
+====RUBY=====
+func logic(a, b) {
+    say ("a and b: ", a && b);
+    say ("a  or b: ", a || b);
+    say ("a xor b: ", a ^ b);
+    say ("  not a: ", !a);
+}
+ 
+logic(false, true);
+
+====PYTHON=====
+def logic(a, b):
+    print('a and b:', a and b)
+    print('a or b:', a or b)
+    print('not a:', not a)
+

@@ -1,0 +1,67 @@
+====RUBY=====
+require 'pstore'
+require 'set'
+ 
+Address = Struct.new :id, :street, :city, :state, :zip
+ 
+db = PStore.new("addresses.pstore")
+db.transaction do
+  db[:next] ||= 0       # Next available Address#id
+  db[:ids] ||= Set[]    # Set of all ids in db
+end
+
+====RUBY=====
+db.transaction do
+  id = (db[:next] += 1)
+  db[id] = Address.new(id,
+                       "1600 Pennsylvania Avenue NW",
+                       "Washington", "DC", 20500)
+  db[:ids].add id
+end
+
+====RUBY=====
+require 'sqlite3'
+ 
+db = SQLite3::Database.new(':memory:')
+db.execute("
+    CREATE TABLE address (
+        addrID     INTEGER PRIMARY KEY AUTOINCREMENT,
+        addrStreet TEXT NOT NULL,
+        addrCity   TEXT NOT NULL,
+        addrState  TEXT NOT NULL,
+        addrZIP    TEXT NOT NULL
+    )
+")
+
+====RUBY=====
+require('DBI');
+ 
+var db = %s'DBI'.connect('DBI:mysql:database:server','login','password');
+ 
+var statment = <<'EOF';
+CREATE TABLE `Address` (
+    `addrID`       int(11)     NOT NULL   auto_increment,
+    `addrStreet`   varchar(50) NOT NULL   default '',
+    `addrCity`     varchar(25) NOT NULL   default '',
+    `addrState`    char(2)     NOT NULL   default '',
+    `addrZIP`      char(10)    NOT NULL   default '',
+    PRIMARY KEY (`addrID`)
+);
+EOF
+ 
+var exec = db.prepare(statment);
+exec.execute;
+
+====PYTHON=====
+>>> import sqlite3
+>>> conn = sqlite3.connect(':memory:')
+>>> conn.execute('''CREATE TABLE address (
+	addrID		INTEGER PRIMARY KEY AUTOINCREMENT,
+	addrStreet	TEXT NOT NULL,
+	addrCity	TEXT NOT NULL,
+	addrState	TEXT NOT NULL,
+	addrZIP		TEXT NOT NULL
+    )''')
+<sqlite3.Cursor object at 0x013265C0>
+>>> 
+

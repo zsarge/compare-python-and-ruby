@@ -1,0 +1,169 @@
+====RUBY=====
+class String
+  def lookandsay
+    gsub(/(.)\1*/){ |s| s.size.to_s + s[0] }
+  end
+end
+ 
+ss = '1'
+12.times { puts ss; ss = ss.to_s.lookandsay }
+
+====RUBY=====
+def lookandsay(str)
+  str.gsub(/(.)\1*/) { |s| s.size.to_s + $1 }
+end
+ 
+num = "1"
+12.times { puts num;  num = lookandsay(num) }
+
+====RUBY=====
+def lookandsay(str)  
+  str.chars.chunks(&.itself).map{ |(c, x)| x.size.to_s + c }.join
+end
+ 
+num = "1"
+12.times { puts num; num = lookandsay(num) }
+
+====RUBY=====
+ 
+class String
+  def look_and_say
+    gsub(/(.)\1*/){|s| s.size.to_s + s[0]}
+  end
+end
+ 
+ss = '1'
+12.times {puts ss; ss = ss.look_and_say}
+ 
+
+====RUBY=====
+def lookandsay(str)
+  str.gsub(/(.)\1*/) {$&.length.to_s + $1}
+end
+ 
+num = "1"
+10.times do
+  puts num
+  num = lookandsay(num)
+end
+
+====RUBY=====
+def lookandsay(str)
+  str.chars.chunk{|c| c}.map{|c,x| [x.size, c]}.join
+end
+ 
+puts num = "1"
+9.times do
+  puts num = lookandsay(num)
+end
+
+====RUBY=====
+# Adding clusterization (http://apidock.com/rails/Enumerable/group_by)
+module Enumerable
+  # clumps adjacent elements together
+  # >> [2,2,2,3,3,4,2,2,1].cluster
+  # => [[2, 2, 2], [3, 3], [4], [2, 2], [1]]
+  def cluster
+    cluster = []
+    each do |element|
+      if cluster.last && cluster.last.last == element
+        cluster.last << element
+      else
+        cluster << [element]
+      end
+    end
+    cluster
+  end
+end
+
+====RUBY=====
+def print_sequence(input_sequence, seq=10)
+  return unless seq > 0
+  puts input_sequence.join
+  result_array = input_sequence.cluster.map do |cluster|
+    [cluster.count, cluster.first]
+  end
+  print_sequence(result_array.flatten, seq-1)
+end
+ 
+print_sequence([1])
+
+====RUBY=====
+func lookandsay(str) {
+    str.gsub(/((.)\2*)/, {|a,b| a.len.to_s + b });
+}
+ 
+var num = "1";
+{
+  say num;
+  num = lookandsay(num);
+} * 10;
+
+====PYTHON=====
+def lookandsay(number):
+    result = ""
+ 
+    repeat = number[0]
+    number = number[1:]+" "
+    times = 1
+ 
+    for actual in number:
+        if actual != repeat:
+            result += str(times)+repeat
+            times = 1
+            repeat = actual
+        else:
+            times += 1
+ 
+    return result
+ 
+num = "1"
+ 
+for i in range(10):
+    print num
+    num = lookandsay(num)
+
+====PYTHON=====
+>>> from itertools import groupby
+>>> def lookandsay(number):
+	return ''.join( str(len(list(g))) + k
+		        for k,g in groupby(number) )
+ 
+>>> numberstring='1'
+>>> for i in range(10):
+	print numberstring
+	numberstring = lookandsay(numberstring)
+
+====PYTHON=====
+>>> from itertools import groupby, islice
+>>> 
+>>> def lookandsay(number='1'):
+	while True:
+		yield number
+		number = ''.join( str(len(list(g))) + k
+		                  for k,g in groupby(number) )
+ 
+ 
+>>> print('\n'.join(islice(lookandsay(), 10)))
+1
+11
+21
+1211
+111221
+312211
+13112221
+1113213211
+31131211131221
+13211311123113112211
+
+====PYTHON=====
+import re
+ 
+def lookandsay(str):
+    return re.sub(r'(.)\1*', lambda m: str(len(m.group(0))) + m.group(1), str)
+ 
+num = "1"
+for i in range(10):
+    print num
+    num = lookandsay(num)
+

@@ -1,0 +1,62 @@
+====RUBY=====
+# sum:
+p (1..10).inject(:+)
+# smallest number divisible by all numbers from 1 to 20:
+p (1..20).inject(:lcm) #lcm: lowest common multiple
+ 
+
+====RUBY=====
+p row = [1]
+10.times{p row = row.each_cons(2).inject([1,1]){|ar,(a,b)| ar.insert(-2, a+b)} }
+ 
+# [1]
+# [1, 1]
+# [1, 2, 1]
+# [1, 3, 3, 1]
+# [1, 4, 6, 4, 1]
+# [1, 5, 10, 10, 5, 1]
+# [1, 6, 15, 20, 15, 6, 1]
+# etc
+ 
+
+====RUBY=====
+say (1..10 -> reduce('+'));
+say (1..10 -> reduce{|a,b| a + b});
+
+====PYTHON=====
+>>> # Python 2.X
+>>> from operator import add
+>>> listoflists = [['the', 'cat'], ['sat', 'on'], ['the', 'mat']]
+>>> help(reduce)
+Help on built-in function reduce in module __builtin__:
+ 
+reduce(...)
+    reduce(function, sequence[, initial]) -> value
+ 
+    Apply a function of two arguments cumulatively to the items of a sequence,
+    from left to right, so as to reduce the sequence to a single value.
+    For example, reduce(lambda x, y: x+y, [1, 2, 3, 4, 5]) calculates
+    ((((1+2)+3)+4)+5).  If initial is present, it is placed before the items
+    of the sequence in the calculation, and serves as a default when the
+    sequence is empty.
+ 
+>>> reduce(add, listoflists, [])
+['the', 'cat', 'sat', 'on', 'the', 'mat']
+>>> 
+
+====PYTHON=====
+# Python 3.X
+ 
+from functools import reduce
+from operator import add, mul
+ 
+nums = range(1,11)
+ 
+summation = reduce(add, nums)
+ 
+product = reduce(mul, nums)
+ 
+concatenation = reduce(lambda a, b: str(a) + str(b), nums)
+ 
+print(summation, product, concatenation)
+

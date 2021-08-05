@@ -1,0 +1,19 @@
+====RUBY=====
+puts "Enter a number of seconds:"
+seconds = gets.chomp.to_i
+puts "Enter a MP3 file to be played"
+mp3filepath = File.dirname(__FILE__) + "/" + gets.chomp + ".mp3"
+sleep(seconds)
+pid = fork{ exec 'mpg123','-q', mp3filepath }
+ 
+
+====PYTHON=====
+import time
+import os
+ 
+seconds = input("Enter a number of seconds: ")
+sound = input("Enter an mp3 filename: ")
+ 
+time.sleep(float(seconds))
+os.startfile(sound + ".mp3")
+

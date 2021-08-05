@@ -1,0 +1,74 @@
+====RUBY=====
+struct Int
+  def gapful?
+    a = self.to_s.chars.map(&.to_i)
+    self % (a.first*10 + a.last) == 0
+  end
+end
+ 
+specs = {100 => 30, 1_000_000 => 15, 1_000_000_000 => 10, 7123 => 25}
+ 
+specs.each do |start, count|
+  puts "first #{count} gapful numbers >= #{start}:"
+  puts (start..).each.select(&.gapful?).first(count).to_a, "\n"
+end
+
+====RUBY=====
+struct Int
+  def gapful?
+    a = self.to_s.chars.map(&.to_i)
+    self % (a.first*10 + a.last) == 0
+  end
+end
+ 
+specs = {100 => 30, 1_000_000 => 15, 1_000_000_000 => 10, 7123 => 25}
+ 
+specs.each do |start, count|
+  puts "first #{count} gapful numbers >= #{start}:"
+  i, gapful = 0, [] of Int32
+  (start..).each { |n| n.gapful? && (gapful << n; i += 1); break if i == count }
+  puts gapful, "\n"
+end
+
+====RUBY=====
+class Integer
+  def gapful?
+    a = digits
+    self % (a.last*10 + a.first) == 0
+  end
+end
+ 
+specs = {100 => 30, 1_000_000 => 15, 1_000_000_000 => 10, 7123 => 25}
+ 
+specs.each do |start, num|
+  puts "first #{num} gapful numbers >= #{start}:"
+  p (start..).lazy.select(&:gapful?).take(num).to_a
+end
+ 
+
+====RUBY=====
+func is_gapful(n, base=10) {
+    n.is_div(base*floor(n / base**n.ilog(base)) + n%base)
+}
+ 
+var task = [
+    "(Required) The first %s gapful numbers (>= %s)", 30, 1e2, 10,
+    "(Required) The first %s gapful numbers (>= %s)", 15, 1e6, 10,
+    "(Required) The first %s gapful numbers (>= %s)", 10, 1e9, 10,
+    "(Extra) The first %s gapful numbers (>= %s)", 10, 987654321, 10,
+    "(Extra) The first %s gapful numbers (>= %s)", 10, 987654321, 12,
+]
+ 
+task.each_slice(4, {|title, n, from, b|
+    say sprintf("\n#{title} for base #{b}:", n, from.commify)
+    say (from..Inf -> lazy.grep{ is_gapful(_,b) }.first(n).join(' '))
+})
+
+====PYTHON=====
+from itertools import islice, count
+for start, n in [(100, 30), (1_000_000, 15), (1_000_000_000, 10)]:
+    print(f"\nFirst {n} gapful numbers from {start:_}")
+    print(list(islice(( x for x in count(start) 
+                        if (x % (int(str(x)[0]) * 10 + (x % 10)) == 0) )
+                      , n)))
+

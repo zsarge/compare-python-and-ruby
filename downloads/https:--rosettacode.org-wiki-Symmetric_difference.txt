@@ -1,0 +1,52 @@
+====RUBY=====
+a = ["John", "Serena", "Bob", "Mary", "Serena"]
+b = ["Jim", "Mary", "John", "Jim", "Bob"]
+# the union minus the intersection:
+p sym_diff = (a | b)-(a & b)  # => ["Serena", "Jim"]
+
+====RUBY=====
+require 'set'
+a = Set["John", "Serena", "Bob", "Mary", "Serena"] #Set removes duplicates
+b = Set["Jim", "Mary", "John", "Jim", "Bob"]
+p sym_diff = a ^ b # => #<Set: {"Jim", "Serena"}>
+
+====RUBY=====
+var a = ["John", "Serena", "Bob", "Mary", "Serena"];
+var b = ["Jim", "Mary", "John", "Jim", "Bob"];
+a ^ b -> unique.dump.say;
+
+====PYTHON=====
+>>> setA = {"John", "Bob", "Mary", "Serena"}
+>>> setB = {"Jim", "Mary", "John", "Bob"}
+>>> setA ^ setB # symmetric difference of A and B
+{'Jim', 'Serena'}
+>>> setA - setB # elements in A that are not in B
+{'Serena'}
+>>> setB - setA # elements in B that are not in A
+{'Jim'}
+>>> setA | setB # elements in A or B (union)
+{'John', 'Bob', 'Jim', 'Serena', 'Mary'}
+>>> setA & setB # elements in both A and B (intersection)
+{'Bob', 'John', 'Mary'}
+
+====PYTHON=====
+>>> setA = set(["John", "Bob", "Mary", "Serena"])
+>>> setB = set(["Jim", "Mary", "John", "Bob"])
+>>> setA ^ setB # symmetric difference of A and B
+set(['Jim', 'Serena'])
+>>> setA - setB # elements in A that are not in B
+set(['Serena'])
+>>> # and so on...
+
+====PYTHON=====
+>>> setA.symmetric_difference(setB)
+{'Jim', 'Serena'}
+>>> setA.difference(setB)
+{'Serena'}
+>>> setB.difference(setA)
+{'Jim'}
+>>> setA.union(setB)
+{'Jim', 'Mary', 'Serena', 'John', 'Bob'}
+>>> setA.intersection(setB)
+{'Mary', 'John', 'Bob'}
+

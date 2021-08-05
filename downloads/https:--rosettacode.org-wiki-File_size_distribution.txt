@@ -1,0 +1,65 @@
+====RUBY=====
+func traverse(Block callback, Dir dir) {
+    dir.open(\var dir_h) || return nil
+ 
+    for entry in (dir_h.entries) {
+        if (entry.kind_of(Dir)) {
+            traverse(callback, entry)
+        } else {
+            callback(entry)
+        }
+    }
+}
+ 
+var dir = (ARGV ? Dir(ARGV[0]) : Dir.cwd)
+ 
+var group = Hash()
+var files_num = 0
+var total_size = 0
+ 
+traverse({ |file|
+    group{file.size+1 -> log10.round} := 0 += 1
+    total_size += file.size
+    files_num += 1
+}, dir)
+ 
+for k,v in (group.sort_by { |k,_| Num(k) }) {
+    say "log10(size) ~~ #{k} -> #{v} files"
+}
+ 
+say "Total: #{total_size} bytes in #{files_num} files"
+
+====PYTHON=====
+import sys, os
+from collections import Counter
+ 
+def dodir(path):
+    global h
+ 
+    for name in os.listdir(path):
+        p = os.path.join(path, name)
+ 
+        if os.path.islink(p):
+            pass
+        elif os.path.isfile(p):
+            h[os.stat(p).st_size] += 1
+        elif os.path.isdir(p):
+            dodir(p)
+        else:
+            pass
+ 
+def main(arg):
+    global h
+    h = Counter()
+    for dir in arg:
+        dodir(dir)
+ 
+    s = n = 0
+    for k, v in sorted(h.items()):
+        print("Size %d -> %d file(s)" % (k, v))
+        n += v
+        s += k * v
+    print("Total %d bytes for %d files" % (s, n))
+ 
+main(sys.argv[1:])
+

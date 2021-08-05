@@ -1,0 +1,162 @@
+====RUBY=====
+ 
+attr_reader :buffer, :palette, :r, :g, :b, :rd, :gd, :bd, :dim
+ 
+def settings
+  size(600, 600)
+end
+ 
+def setup
+  sketch_title 'Plasma Effect'
+  frame_rate 25
+  @r = 42
+  @g = 84
+  @b = 126
+  @rd = true
+  @gd = true
+  @bd = true
+  @dim = width * height
+  @buffer = Array.new(dim)
+  grid(width, height) do |x, y|
+    buffer[x + y * width] = (
+      (
+        (128 + (128 * sin(x / 32.0))) +
+        (128 + (128 * cos(y / 32.0))) +
+        (128 + (128 * sin(Math.hypot(x, y) / 32.0)))
+      ) / 4
+    ).to_i
+  end
+  load_pixels
+end
+ 
+def draw
+  if rd
+    @r -= 1
+    @rd = false if r.negative?
+  else
+    @r += 1
+    @rd = true if r > 128
+  end
+  if gd
+    @g -= 1
+    @gd = false if g.negative?
+  else
+    @g += 1
+    @gd = true if g > 128
+  end
+  if bd
+    @b -= 1
+    @bd = false if b.negative?
+  else
+    @b += 1
+    @bd = true if b > 128
+  end
+  @palette = (0..127).map do |col|
+    s1 = sin(col * Math::PI / 25)
+    s2 = sin(col * Math::PI / 50 + Math::PI / 4)
+    color(r + s1 * 128, g + s2 * 128, b + s1 * 128)
+  end
+  dim.times do |idx|
+    pixels[idx] = palette[(buffer[idx] + frame_count) & 127]
+  end
+  update_pixels
+end
+ 
+
+====RUBY=====
+require('Imager')
+ 
+class Plasma(width=400, height=400) {
+ 
+    has img = nil
+ 
+    method init {
+        img = %O|Imager|.new(xsize => width, ysize => height)
+    }
+ 
+    method generate {
+        for y=(^height), x=(^width) {
+            var hue = (4 + sin(x/19) + sin(y/9) + sin((x+y)/25) + sin(hypot(x, y)/8))
+            img.setpixel(x => x, y => y, color => Hash(hsv => [360 * hue / 8, 1, 1]))
+        }
+    }
+ 
+    method save_as(filename) {
+        img.write(file => filename)
+    }
+}
+ 
+var plasma = Plasma(256, 256)
+plasma.generate
+plasma.save_as('plasma.png')
+
+====PYTHON=====
+"""
+Plasmas with Palette Looping
+https://lodev.org/cgtutor/plasma.html#Plasmas_with_Palette_Looping_
+"""
+ 
+pal = [0] * 128
+r = 42
+g = 84
+b = 126
+rd = gd = bd = False
+ 
+def setup():
+    global buffer
+    size(600, 600)
+    frameRate(25)
+    buffer = [None] * width * height
+    for x in range(width):
+        for y in range(width):
+            value = int(((128 + (128 * sin(x / 32.0)))
+                         + (128 + (128 * cos(y / 32.0)))
+                         + (128 + (128 * sin(sqrt((x * x + y * y)) / 32.0)))) / 4)
+            buffer[x + y * width] = value
+ 
+def draw():
+    global r, g, b, rd, gd, bd
+    if r > 128: rd = True
+    if not rd: r += 1
+    else: r-=1
+    if r < 0: rd = False
+    if g > 128: gd = True
+    if not gd: g += 1
+    else: g- = 1
+    if r < 0: gd = False 
+    if b > 128: bd = True
+    if not bd: b += 1
+    else: b- = 1
+    if b < 0: bd = False
+ 
+    for i in range(128):
+          s_1 = sin(i * PI / 25)
+          s_2 = sin(i * PI / 50 + PI / 4)
+          pal[i] = color(r + s_1 * 128, g + s_2 * 128, b + s_1 * 128)
+ 
+    loadPixels()
+    for i, b in enumerate(buffer):
+          pixels[i] = pal[(b + frameCount) % 127]
+    updatePixels()
+ 
+
+====PYTHON=====
+import math
+import colorsys
+from PIL import Image
+ 
+def plasma (w, h):
+	out = Image.new("RGB", (w, h))
+	pix = out.load()
+	for x in range (w):
+		for y in range(h):
+			hue = 4.0 + math.sin(x / 19.0) + math.sin(y / 9.0) \
+				+ math.sin((x + y) / 25.0) + math.sin(math.sqrt(x**2.0 + y**2.0) / 8.0)
+			hsv = colorsys.hsv_to_rgb(hue/8.0, 1, 1)
+			pix[x, y] = tuple([int(round(c * 255.0)) for c in hsv])
+	return out
+ 
+if __name__=="__main__":
+	im = plasma(400, 400)
+	im.show()
+

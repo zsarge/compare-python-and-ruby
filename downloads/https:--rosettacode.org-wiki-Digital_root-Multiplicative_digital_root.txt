@@ -1,0 +1,84 @@
+====RUBY=====
+def mdroot(n)
+  mdr, persist = n, 0
+  until mdr < 10 do
+    mdr = mdr.digits.inject(:*)
+    persist += 1
+  end
+  [mdr, persist]
+end
+ 
+puts "Number: MDR  MP", "======  ===  =="
+[123321, 7739, 893, 899998].each{|n| puts "%6d:   %d  %2d" % [n, *mdroot(n)]}
+ 
+counter = Hash.new{|h,k| h[k]=[]}
+0.step do |i|
+  counter[mdroot(i).first] << i
+  break if counter.values.all?{|v| v.size >= 5 }
+end
+puts "", "MDR: [n0..n4]", "===  ========"
+10.times{|i| puts "%3d: %p" % [i, counter[i].first(5)]}
+
+====RUBY=====
+func mdroot(n) {
+  var (mdr, persist) = (n, 0)
+  while (mdr >= 10) {
+    mdr = mdr.digits.prod
+    ++persist
+  }
+  [mdr, persist]
+}
+ 
+say "Number: MDR  MP\n======  ===  =="
+[123321, 7739, 893, 899998].each{|n| "%6d: %3d %3d\n" \
+                           .printf(n, mdroot(n)...) }
+ 
+var counter = Hash()
+ 
+Inf.times { |j|
+  counter{mdroot(j).first} := [] << j
+  break if counter.values.all {|v| v.len >= 5 }
+}
+ 
+say "\nMDR: [n0..n4]\n===  ========"
+10.times {|i| "%3d: %s\n".printf(i, counter{i}.first(5)) }
+
+====PYTHON=====
+try:
+    from functools import reduce
+except:
+    pass
+ 
+def mdroot(n):
+    'Multiplicative digital root'
+    mdr = [n]
+    while mdr[-1] > 9:
+        mdr.append(reduce(int.__mul__, (int(dig) for dig in str(mdr[-1])), 1))
+    return len(mdr) - 1, mdr[-1]
+ 
+if __name__ == '__main__':
+    print('Number: (MP, MDR)\n======  =========')
+    for n in (123321, 7739, 893, 899998):
+        print('%6i: %r' % (n, mdroot(n)))
+ 
+    table, n = {i: [] for i in range(10)}, 0
+    while min(len(row) for row in table.values()) < 5:
+        mpersistence, mdr = mdroot(n)
+        table[mdr].append(n)
+        n += 1
+    print('\nMP: [n0..n4]\n==  ========')
+    for mp, val in sorted(table.items()):
+        print('%2i: %r' % (mp, val[:5]))
+
+====PYTHON=====
+def mdroot(n):
+    count, mdr = 0, n 
+    while mdr > 9:
+        m, digitsMul = mdr, 1
+        while m:
+            m, md = divmod(m, 10)
+            digitsMul *= md
+        mdr = digitsMul
+        count += 1
+    return count, mdr
+

@@ -1,0 +1,50 @@
+====RUBY=====
+define τ = Num.tau
+ 
+func normdist (m, σ) {
+    var r = sqrt(-2 * 1.rand.log)
+    var Θ = (τ * 1.rand)
+    r * Θ.cos * σ + m
+}
+ 
+var size = 100_000
+var mean = 50
+var stddev = 4
+ 
+var dataset = size.of { normdist(mean, stddev) }
+var m = (dataset.sum / size)
+say ("m: #{m}")
+ 
+var σ = sqrt(dataset »**» 2 -> sum / size - m**2)
+say ("s: #{σ}")
+ 
+var hash = Hash()
+dataset.each { |n| hash{ n.round } := 0 ++ }
+ 
+var scale = (180 * stddev / size)
+const subbar = < ⎸ ▏ ▎ ▍ ▌ ▋ ▊ ▉ █ >
+ 
+for i in (hash.keys.map{.to_i}.sort) {
+    var x = (hash{i} * scale)
+    var full = x.int
+    var part = (8 * (x - full))
+    say (i, "\t", '█' * full, subbar[part])
+}
+
+====PYTHON=====
+from __future__ import division
+import matplotlib.pyplot as plt 
+import random
+ 
+mean, stddev, size = 50, 4, 100000
+data = [random.gauss(mean, stddev) for c in range(size)]
+ 
+mn = sum(data) / size
+sd = (sum(x*x for x in data) / size 
+      - (sum(data) / size) ** 2) ** 0.5
+ 
+print("Sample mean = %g; Stddev = %g; max = %g; min = %g for %i values" 
+      % (mn, sd, max(data), min(data), size))
+ 
+plt.hist(data,bins=50)
+

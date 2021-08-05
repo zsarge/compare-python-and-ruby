@@ -1,0 +1,66 @@
+====RUBY=====
+def notcell(c)
+  c.tr('01','10')
+end
+ 
+def eca_infinite(cells, rule)
+  neighbours2next = Hash[8.times.map{|i|["%03b"%i, "01"[rule[i]]]}]
+  c = cells
+  Enumerator.new do |y|
+    loop do
+      y << c
+      c = notcell(c[0])*2 + c + notcell(c[-1])*2        # Extend and pad the ends
+      c = (1..c.size-2).map{|i| neighbours2next[c[i-1..i+1]]}.join
+    end
+  end
+end
+ 
+if __FILE__ == $0
+  lines = 25
+  for rule in [90, 30]
+    puts "\nRule: %i" % rule
+    for i, c in (0...lines).zip(eca_infinite('1', rule))
+      puts '%2i: %s%s' % [i, ' '*(lines - i), c.tr('01', '.#')]
+    end
+  end
+end
+
+====RUBY=====
+func evolve(rule, bin) {
+    var offset = 0
+    var (l='', r='')
+    Inf.times {
+        bin.sub!(/^((.)\g2*)/, {|_s1, s2| l = s2; offset -= s2.len; s2*2 })
+        bin.sub!(/(.)\g1*$/, {|s1| r = s1; s1*2 })
+        printf("%5d| %s%s\n", offset, ' ' * (40 + offset), bin.tr('01','.#'))
+        bin = [l*3, 0.to(bin.len-3).map{|i| bin.substr(i, 3) }..., r*3 ].map { |t|
+                1 & (rule >> t.bin)
+        }.join
+    }
+}
+ 
+evolve(90, "010")
+
+====PYTHON=====
+def _notcell(c):
+    return '0' if c == '1' else '1'
+ 
+def eca_infinite(cells, rule):
+    lencells = len(cells)
+    rulebits = '{0:08b}'.format(rule)
+    neighbours2next = {'{0:03b}'.format(n):rulebits[::-1][n] for n in range(8)}
+    c = cells
+    while True:
+        yield c
+        c = _notcell(c[0])*2 + c + _notcell(c[-1])*2    # Extend and pad the ends
+ 
+        c = ''.join(neighbours2next[c[i-1:i+2]] for i in range(1,len(c) - 1))
+        #yield c[1:-1]
+ 
+if __name__ == '__main__':
+    lines = 25
+    for rule in (90, 30):
+        print('\nRule: %i' % rule)
+        for i, c in zip(range(lines), eca_infinite('1', rule)):
+            print('%2i: %s%s' % (i, ' '*(lines - i), c.replace('0', '.').replace('1', '#')))
+

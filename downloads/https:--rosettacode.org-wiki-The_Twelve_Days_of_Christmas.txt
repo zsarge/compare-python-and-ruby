@@ -1,0 +1,101 @@
+====RUBY=====
+days = "first second third fourth fifth sixth seventh eighth ninth tenth eleventh twelfth".split " "
+gifts = "A partridge in a pear tree
+Two turtle doves and
+Three french hens
+Four calling birds
+Five golden rings
+Six geese a-laying
+Seven swans a-swimming
+Eight maids a-milking
+Nine ladies dancing
+Ten lords a-leaping
+Eleven pipers piping
+Twelve drummers drumming".split "\n"
+ 
+days.each_with_index do |day, i|
+    puts "On the #{day} day of Christmas\nMy true love gave to me:"
+    gifts[0, i + 1].reverse.each &->puts(String)
+    puts
+end
+
+====RUBY=====
+gifts = "A partridge in a pear tree
+Two turtle doves and
+Three french hens
+Four calling birds
+Five golden rings
+Six geese a-laying
+Seven swans a-swimming
+Eight maids a-milking
+Nine ladies dancing
+Ten lords a-leaping
+Eleven pipers piping
+Twelve drummers drumming".split("\n")
+ 
+days = %w(first second third fourth fifth sixth
+seventh eighth ninth tenth eleventh twelfth)
+ 
+days.each_with_index do |day, i| 
+  puts "On the #{day} day of Christmas"
+  puts "My true love gave to me:"
+  puts gifts[0, i+1].reverse
+  puts
+end
+
+====RUBY=====
+var days = <first second third fourth fifth sixth seventh eighth ninth tenth eleventh twelfth>;
+ 
+var gifts = <<'EOT'.lines;
+  And a partridge in a pear tree.
+  Two turtle doves,
+  Three french hens,
+  Four calling birds,
+  Five golden rings,
+  Six geese a-laying,
+  Seven swans a-swimming,
+  Eight maids a-milking,
+  Nine ladies dancing,
+  Ten lords a-leaping,
+  Eleven pipers piping,
+  Twelve drummers drumming,
+EOT
+ 
+func nth(n) { say "On the #{days[n]} day of Christmas, my true love gave to me:" };
+ 
+nth(0);
+say gifts[0].sub('And a', 'A');
+ 
+range(1, 11).each { |d|
+    say '';
+    nth(d);
+    d.downto(0).each { |i|
+        say gifts[i];
+    }
+}
+
+====PYTHON=====
+gifts = '''\
+A partridge in a pear tree.
+Two turtle doves
+Three french hens
+Four calling birds
+Five golden rings
+Six geese a-laying
+Seven swans a-swimming
+Eight maids a-milking
+Nine ladies dancing
+Ten lords a-leaping
+Eleven pipers piping
+Twelve drummers drumming'''.split('\n')
+ 
+days = '''first second third fourth fifth
+          sixth seventh eighth ninth tenth
+          eleventh twelfth'''.split()
+ 
+for n, day in enumerate(days, 1):
+    g = gifts[:n][::-1]
+    print(('\nOn the %s day of Christmas\nMy true love gave to me:\n' % day) +
+          '\n'.join(g[:-1]) +
+          (' and\n' + g[-1] if n > 1 else g[-1].capitalize()))
+

@@ -1,0 +1,207 @@
+====RUBY=====
+def humble?(i)
+  return true if (i < 2)
+  return humble?(i // 2) if (i % 2 == 0)
+  return humble?(i // 3) if (i % 3 == 0)
+  return humble?(i // 5) if (i % 5 == 0)
+  return humble?(i // 7) if (i % 7 == 0)
+  false
+end
+ 
+count, num = 0, 0_i64
+digits = 10                        # max digits for humble numbers
+limit  = 10_i64 ** digits          # max numbers to search through
+humble = Array.new(digits + 1, 0)
+ 
+while (num += 1) < limit
+  if humble?(num)
+    humble[num.to_s.size] += 1
+    print num, " " if count < 50
+    count += 1
+  end
+end
+ 
+print "\n\nOf the first #{count} humble numbers:\n"
+(1..digits).each { |num|  printf("%5d have %2d digits\n", humble[num], num) }
+
+====RUBY=====
+require "big"
+ 
+def humble(digits)
+  h = [1.to_big_i]
+  x2, x3, x5, x7 = 2.to_big_i, 3.to_big_i, 5.to_big_i, 7.to_big_i
+  i, j, k, l = 0, 0, 0, 0
+  (1..).each do |n|
+    x = {x2, x3, x5, x7}.min              # {} tuple|stack faster [] array|heap
+    break if x.to_s.size > digits
+    h << x
+    x2 = 2 * h[i += 1] if x2 == h[n]
+    x3 = 3 * h[j += 1] if x3 == h[n]
+    x5 = 5 * h[k += 1] if x5 == h[n]
+    x7 = 7 * h[l += 1] if x7 == h[n]
+  end
+  h
+end
+ 
+digits = 50                               # max digits for humble numbers
+h = humble(digits)                        # humble numbers <= digits size
+count  = h.size                           # the total humble numbers count
+counts = h.map { |n| n.to_s.size }.tally  # hash of digits counts 1..digits
+print "First 50 Humble Numbers: \n"; (0...50).each { |i| print "#{h[i]} " }
+print "\n\nOf the first #{count} humble numbers:\n"
+(1..digits).each { |num|  printf("%6d have %2d digits\n", counts[num], num) }
+
+====RUBY=====
+def humble?(i)
+  while i % 2 == 0; i /= 2 end
+  while i % 3 == 0; i /= 3 end
+  while i % 5 == 0; i /= 5 end
+  while i % 7 == 0; i /= 7 end
+  i == 1
+end
+ 
+count, num = 0, 0
+digits = 10                        # max digits for humble numbers
+limit  = 10 ** digits              # max numbers to search through
+humble = Array.new(digits + 1, 0)
+ 
+while (num += 1) < limit
+  if humble?(num)
+    humble[num.to_s.size] += 1
+    print num, " " if count < 50
+    count += 1
+  end
+end
+ 
+print "\n\nOf the first #{count} humble numbers:\n"
+(1..digits).each { |num|  printf("%5d have %2d digits\n", humble[num], num) }
+
+====RUBY=====
+def humble(digits)
+  h = [1]
+  x2, x3, x5, x7 = 2, 3, 5, 7
+  i, j, k, l = 0, 0, 0, 0
+  n = 0
+  while n += 1                            # ruby => 2.6: (1..).each do |n|
+    x = [x2, x3, x5, x7].min
+    break if x.to_s.size > digits
+    h[n] = x
+    x2 = 2 * h[i += 1] if x2 == h[n]
+    x3 = 3 * h[j += 1] if x3 == h[n]
+    x5 = 5 * h[k += 1] if x5 == h[n]
+    x7 = 7 * h[l += 1] if x7 == h[n]
+  end
+  h
+end
+ 
+digits = 50                               # max digits for humble numbers
+h = humble(digits)                        # humble numbers <= digits size
+count  = h.size                           # the total humble numbers count                   
+#counts = h.map { |n| n.to_s.size }.tally # hash of digits counts 1..digits: Ruby => 2.7
+counts = h.map { |n| n.to_s.size }.group_by(&:itself).transform_values(&:size) # Ruby => 2.4
+print "First 50 Humble Numbers: \n"; (0...50).each { |i| print "#{h[i]} " }
+print "\n\nOf the first #{count} humble numbers:\n"
+(1..digits).each { |num|  printf("%6d have %2d digits\n", counts[num], num) }
+
+====RUBY=====
+func smooth_generator(primes) {
+ 
+    var s = primes.len.of { [1] }
+ 
+    {
+        var n = s.map { .first }.min
+        { |i|
+            s[i].shift if (s[i][0] == n)
+            s[i] << (n * primes[i])
+        } * primes.len
+        n
+    }
+}
+ 
+with (smooth_generator([2,3,5,7])) {|g|
+    say 50.of { g.run }.join(' ')
+}
+ 
+say "\nThe digit counts of humble numbers"
+say '═'*35
+ 
+with (smooth_generator([2,3,5,7])) {|g|
+    for (var(d=1,c=0); d <= 20; ++c) {
+        var n = g.run
+        n.len > d || next
+        say "#{'%10s'%c.commify}  have  #{'%2d'%d}  digit#{[:s,''][d==1]}"
+        (c, d) = (0, n.len)
+    }
+}
+
+====PYTHON=====
+'''Humble numbers'''
+ 
+from itertools import groupby, islice
+from functools import reduce
+ 
+ 
+# humbles :: () -> [Int]
+def humbles():
+    '''A non-finite stream of Humble numbers.
+       OEIS A002473
+    '''
+    hs = set([1])
+    while True:
+        nxt = min(hs)
+        yield nxt
+        hs.remove(nxt)
+        hs.update(nxt * x for x in [2, 3, 5, 7])
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''First 50, and counts with N digits'''
+ 
+    print('First 50 Humble numbers:\n')
+    for row in chunksOf(10)(
+            take(50)(humbles())
+    ):
+        print(' '.join(map(
+            lambda x: str(x).rjust(3),
+            row
+        )))
+ 
+    print('\nCounts of Humble numbers with n digits:\n')
+    for tpl in take(10)(
+            (k, len(list(g))) for k, g in
+            groupby(len(str(x)) for x in humbles())
+    ):
+        print(tpl)
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divible, the final list will be shorter than n.
+    '''
+    return lambda xs: reduce(
+        lambda a, i: a + [xs[i:n + i]],
+        range(0, len(xs), n), []
+    ) if 0 < n else []
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.
+    '''
+    return lambda xs: (
+        list(islice(xs, n))
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

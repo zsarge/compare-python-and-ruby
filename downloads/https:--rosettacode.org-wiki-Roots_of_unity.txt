@@ -1,0 +1,68 @@
+====RUBY=====
+require "complex"
+ 
+def roots_of_unity(n)
+  (0...n).map { |k| Math.exp((2 * Math::PI * k / n).i) }
+end
+ 
+p roots_of_unity(3)
+ 
+
+====RUBY=====
+ 
+def roots_of_unity(n)
+  (0...n).map { |k| Complex.new(Math.cos(2 * Math::PI * k / n), Math.sin(2 * Math::PI * k / n)) }
+end
+ 
+
+====RUBY=====
+def roots_of_unity(n)
+  (0...n).map {|k| Complex.polar(1, 2 * Math::PI * k / n)}
+end
+ 
+p roots_of_unity(3)
+
+====RUBY=====
+func roots_of_unity(n) {
+    n.of { |j|
+        exp(2i * Num.pi / n * j)
+    }
+}
+ 
+roots_of_unity(5).each { |c|
+    printf("%+.5f%+.5fi\n", c.reals)
+}
+
+====PYTHON=====
+import cmath
+ 
+ 
+class Complex(complex):
+    def __repr__(self):
+        rp = '%7.5f' % self.real if not self.pureImag() else ''
+        ip = '%7.5fj' % self.imag if not self.pureReal() else ''
+        conj = '' if (
+            self.pureImag() or self.pureReal() or self.imag < 0.0
+        ) else '+'
+        return '0.0' if (
+            self.pureImag() and self.pureReal()
+        ) else rp + conj + ip
+ 
+    def pureImag(self):
+        return abs(self.real) < 0.000005
+ 
+    def pureReal(self):
+        return abs(self.imag) < 0.000005
+ 
+ 
+def croots(n):
+    if n <= 0:
+        return None
+    return (Complex(cmath.rect(1, 2 * k * cmath.pi / n)) for k in range(n))
+    # in pre-Python 2.6:
+    #   return (Complex(cmath.exp(2j*k*cmath.pi/n)) for k in range(n))
+ 
+ 
+for nr in range(2, 11):
+    print(nr, list(croots(nr)))
+

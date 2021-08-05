@@ -1,0 +1,152 @@
+====RUBY=====
+def crunch(ascii)
+  bitstring = ascii.bytes.collect {|b| "%07b" % b}.join
+  [bitstring].pack("B*")
+end
+ 
+def expand(binary)
+  bitstring = binary.unpack("B*")[0]
+  bitstring.scan(/[01]{7}/).collect {|b| b.to_i(2).chr}.join
+end
+ 
+original = "This is an ascii string that will be crunched, written, read and expanded."
+puts "my ascii string is #{original.length} bytes"
+ 
+filename = "crunched.out"
+ 
+# write the compressed data
+File.open(filename, "w") do |fh|
+  fh.binmode
+  fh.print crunch(original)
+end
+ 
+filesize = File.size(filename)
+puts "the file containing the crunched text is #{filesize} bytes"
+ 
+# read and expand
+expanded = File.open(filename, "r") do |fh| 
+  fh.binmode
+  expand(fh.read)
+end
+ 
+if original == expanded
+  puts "success"
+else
+  puts "fail!"
+end
+
+====PYTHON=====
+class BitWriter(object):
+    def __init__(self, f):
+        self.accumulator = 0
+        self.bcount = 0
+        self.out = f
+ 
+    def __enter__(self):
+        return self
+ 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.flush()
+ 
+    def __del__(self):
+        try:
+            self.flush()
+        except ValueError:   # I/O operation on closed file.
+            pass
+ 
+    def _writebit(self, bit):
+        if self.bcount == 8:
+            self.flush()
+        if bit > 0:
+            self.accumulator |= 1 << 7-self.bcount
+        self.bcount += 1
+ 
+    def writebits(self, bits, n):
+        while n > 0:
+            self._writebit(bits & 1 << n-1)
+            n -= 1
+ 
+    def flush(self):
+        self.out.write(bytearray([self.accumulator]))
+        self.accumulator = 0
+        self.bcount = 0
+ 
+ 
+class BitReader(object):
+    def __init__(self, f):
+        self.input = f
+        self.accumulator = 0
+        self.bcount = 0
+        self.read = 0
+ 
+    def __enter__(self):
+        return self
+ 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+ 
+    def _readbit(self):
+        if not self.bcount:
+            a = self.input.read(1)
+            if a:
+                self.accumulator = ord(a)
+            self.bcount = 8
+            self.read = len(a)
+        rv = (self.accumulator & (1 << self.bcount-1)) >> self.bcount-1
+        self.bcount -= 1
+        return rv
+ 
+    def readbits(self, n):
+        v = 0
+        while n > 0:
+            v = (v << 1) | self._readbit()
+            n -= 1
+        return v
+ 
+if __name__ == '__main__':
+    import os
+    import sys
+    # Determine this module's name from it's file name and import it.
+    module_name = os.path.splitext(os.path.basename(__file__))[0]
+    bitio = __import__(module_name)
+ 
+    with open('bitio_test.dat', 'wb') as outfile:
+        with bitio.BitWriter(outfile) as writer:
+            chars = '12345abcde'
+            for ch in chars:
+                writer.writebits(ord(ch), 7)
+ 
+    with open('bitio_test.dat', 'rb') as infile:
+        with bitio.BitReader(infile) as reader:
+            chars = []
+            while True:
+                x = reader.readbits(7)
+                if not reader.read:  # End-of-file?
+                    break
+                chars.append(chr(x))
+            print(''.join(chars))
+ 
+
+====PYTHON=====
+import sys
+import bitio
+ 
+o = bitio.BitWriter(sys.stdout)
+c = sys.stdin.read(1)
+while len(c) > 0:
+    o.writebits(ord(c), 7)
+    c = sys.stdin.read(1)
+o.flush()
+ 
+
+====PYTHON=====
+import sys
+import bitio
+ 
+r = bitio.BitReader(sys.stdin)
+while True:
+    x = r.readbits(7)
+    if not r.read:  # nothing read
+        break
+    sys.stdout.write(chr(x))
+

@@ -1,0 +1,40 @@
+====RUBY=====
+ 
+(1..10).each do |i|
+  print i
+  break if i == 10
+  print ", "
+end
+puts
+
+====RUBY=====
+ 
+puts (1..10).join(", ")
+
+====RUBY=====
+for (1..10) { |i|
+    print i;
+    i == 10 && break;
+    print ', ';
+}
+ 
+print "\n";
+
+====PYTHON=====
+print ( ', '.join(str(i+1) for i in range(10)) )
+
+====PYTHON=====
+>>> from sys import stdout
+>>> write = stdout.write
+>>> n, i = 10, 1
+>>> while True:
+    write(i)
+    i += 1
+    if i > n:
+        break
+    write(', ')
+ 
+ 
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+>>>
+

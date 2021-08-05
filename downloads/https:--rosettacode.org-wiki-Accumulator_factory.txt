@@ -1,0 +1,126 @@
+====RUBY=====
+def accumulator(sum)
+  lambda {|n| sum += n}
+end
+ 
+# mixing Integer and Float
+x = accumulator(1)
+x.call(5)
+accumulator(3)
+puts x.call(2.3)  # prints 8.3
+
+====RUBY=====
+require 'rational'
+require 'complex'
+y = accumulator(Rational(2, 3))
+puts y[Rational(1, 2)]  # 7/6
+puts y[4]               # 31/6
+puts y[Complex(0, 1)]   # 31/6+1i
+ 
+t = accumulator(Time.utc(1999, 8, 7, 6, 5))
+                       # (Ruby 1.8.6)                  (Ruby 1.9.2)
+puts t[4]              # Sat Aug 07 06:05:04 UTC 1999  1999-08-07 06:05:04 UTC
+puts t[-12 * 60 * 60]  # Fri Aug 06 18:05:04 UTC 1999  1999-08-06 18:05:04 UTC
+ 
+require 'matrix'
+m = accumulator(Matrix[[1, 2], [3, 4]])
+puts m[Matrix[[5, 6], [7, 8]]]  # Matrix[[6, 8], [10, 12]]
+
+====RUBY=====
+def accumulator(sum)
+  lambda {|n| sum += n}
+end
+class << self
+  define_method :x, &accumulator(1)
+end
+x(5)
+accumulator(3)
+puts x(2.3)  # prints 8.3
+
+====RUBY=====
+class Accumulator(sum) {
+    method add(num) {
+        sum += num;
+    }
+}
+ 
+var x = Accumulator(1);
+x.add(5);
+Accumulator(3);
+say x.add(2.3);               # prints: 8.3
+
+====RUBY=====
+func Accumulator(sum) {
+    func(num) { sum += num };
+}
+ 
+var x = Accumulator(1);
+x(5);
+Accumulator(3);
+say x(2.3);                  # prints: 8.3
+
+====PYTHON=====
+fun accumulator(var sum): :: Real -> _
+    n => sum += n
+ 
+let f = accumulator!(5)
+print f(5)   # 10
+print f(10)  # 20
+print f(2.4) # 22.4
+
+====PYTHON=====
+>>> def accumulator(sum):
+  def f(n):
+    f.sum += n
+    return f.sum
+  f.sum = sum
+  return f
+ 
+>>> x = accumulator(1)
+>>> x(5)
+6
+>>> x(2.3)
+8.3000000000000007
+>>> x = accumulator(1)
+>>> x(5)
+6
+>>> x(2.3)
+8.3000000000000007
+>>> x2 = accumulator(3)
+>>> x2(5)
+8
+>>> x2(3.3)
+11.300000000000001
+>>> x(0)
+8.3000000000000007
+>>> x2(0)
+11.300000000000001
+
+====PYTHON=====
+def accumulator(sum):
+  def f(n):
+    nonlocal sum
+    sum += n
+    return sum
+  return f
+ 
+x = accumulator(1)
+x(5)
+print(accumulator(3))
+print(x(2.3))
+
+====PYTHON=====
+def accumulator(sum):
+  while True:
+    sum += yield sum
+ 
+x = accumulator(1)
+x.send(None)
+x.send(5)
+print(accumulator(3))
+print(x.send(2.3))
+
+====PYTHON=====
+def (accumulator n)
+  (fn() ++n)
+

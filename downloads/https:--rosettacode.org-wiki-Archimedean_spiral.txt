@@ -1,0 +1,74 @@
+====RUBY=====
+ 
+INCR = 0.1
+attr_reader :x, :theta
+ 
+def setup
+  sketch_title 'Archimedian Spiral'
+  @theta = 0
+  @x = 0
+  background(255)
+  translate(width / 2.0, height / 2.0)
+  begin_shape
+  (0..50*PI).step(INCR) do |theta|
+    @x = theta * cos(theta / PI)
+    curve_vertex(x, theta * sin(theta / PI))
+  end
+  end_shape
+end
+ 
+def settings
+  size(300, 300)
+end
+ 
+
+====RUBY=====
+require('Imager')
+define π = Num.pi
+ 
+var (w, h) = (400, 400)
+var img = %O<Imager>.new(xsize => w, ysize => h)
+ 
+for Θ in (0 .. 52*π -> by(0.025)) {
+    img.setpixel(
+        x => floor(cos(Θ / π)*Θ + w/2),
+        y => floor(sin(Θ / π)*Θ + h/2),
+        color => [255, 0, 0]
+    )
+}
+ 
+img.write(file => 'Archimedean_spiral.png')
+
+====PYTHON=====
+theta = 0
+rotation = 0.1
+ 
+def setup():
+    size(300, 300)
+    background(255)
+ 
+def draw():
+    global theta
+    translate(width / 2.0, height / 2.0)
+    x = theta * cos(theta / PI)
+    y = theta * sin(theta / PI)
+    point(x, y)
+    theta = theta + rotation
+    # check restart
+    if x > width / 2.0:
+        background(255)
+        theta = 0
+
+====PYTHON=====
+from turtle import *
+from math import *
+color("blue")
+down()
+for i in range(200):
+    t = i / 20 * pi
+    x = (1 + 5 * t) * cos(t)
+    y = (1 + 5 * t) * sin(t)
+    goto(x, y)
+up()
+done()
+

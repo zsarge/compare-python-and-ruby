@@ -1,0 +1,179 @@
+====RUBY=====
+require 'zlib'
+printf "0x%08x\n", Zlib.crc32('The quick brown fox jumps over the lazy dog')
+# => 0x414fa339
+
+====RUBY=====
+module CRC
+  # Divisor is a polynomial of degree 32 with coefficients modulo 2.
+  # We store Divisor in a 33-bit Integer; the polynomial is
+  #   Divisor[32] + Divisor[31] * x + ... + Divisor[0] * x**32
+  Divisor = [0, 1, 2, 4, 5, 7, 8, 10, 11, 12, 16, 22, 23, 26, 32] \
+    .inject(0) {|sum, exponent| sum + (1 << (32 - exponent))}
+ 
+  # This table gives the crc (without conditioning) of every possible
+  # _octet_ from 0 to 255. Each _octet_ is a polynomial of degree 7,
+  #   octet[7] + octet[6] * x + ... + octet[0] * x**7
+  # Then remainder = Table[octet] is the remainder from
+  # _octet_ times x**32 divided by Divisor,
+  #   remainder[31] + remainder[30] + ... + remainder[0] * x**31
+  Table = Array.new(256) do |octet|
+    # Find remainder from polynomial long division.
+    #    octet[ 7] * x**32 + ... +   octet[0] * x**39
+    #  Divisor[32] * x**0  + ... + Divisor[0] * x**32
+    remainder = octet
+    (0..7).each do |i|
+      # Find next term of quotient. To simplify the code,
+      # we assume that Divisor[0] is 1, and we only check
+      # remainder[i]. We save remainder, forget quotient.
+      if remainder[i].zero?
+        # Next term of quotient is 0 * x**(7 - i).
+        # No change to remainder.
+      else
+        # Next term of quotient is 1 * x**(7 - i). Multiply
+        # this term by Divisor, then subtract from remainder.
+        #  * Multiplication uses left shift :<< to align
+        #    the x**(39 - i) terms.
+        #  * Subtraction uses bitwise exclusive-or :^.
+        remainder ^= (Divisor << i)
+      end
+    end
+    remainder >> 8      # Remove x**32 to x**39 terms.
+  end
+ 
+  module_function
+ 
+  def crc32(string, crc = 0)
+    # Pre-conditioning: Flip all 32 bits. Without this step, a string
+    # preprended with extra "\0" would have same crc32 value.
+    crc ^= 0xffff_ffff
+ 
+    # Iterate octets to perform polynomial long division.
+    string.each_byte do |octet|
+ 
+      # Update _crc_ by continuing its polynomial long division.
+      # Our current remainder is old _crc_ times x**8, plus
+      # new _octet_ times x**32, which is
+      #   crc[32] * x**8 + crc[31] * x**9 + ... + crc[8] * x**31 \
+      #     + (crc[7] + octet[7]) * x**32 + ... \
+      #     + (crc[0] + octet[0]) * x**39
+      #
+      # Our new _crc_ is the remainder from this polynomial divided by
+      # Divisor. We split the terms into part 1 for x**8 to x**31, and
+      # part 2 for x**32 to x**39, and divide each part separately.
+      # Then remainder 1 is trivial, and remainder 2 is in our Table.
+ 
+      remainder_1 = crc >> 8
+      remainder_2 = Table[(crc & 0xff) ^ octet]
+ 
+      # Our new _crc_ is sum of both remainders. (This sum never
+      # overflows to x**32, so is not too big for Divisor.)
+      crc = remainder_1 ^ remainder_2
+    end
+ 
+    # Post-conditioning: Flip all 32 bits. If we later update _crc_,
+    # this step cancels the next pre-conditioning.
+    crc ^ 0xffff_ffff
+  end
+end
+ 
+printf "0x%08x\n", CRC.crc32("The quick brown fox jumps over the lazy dog")
+# => 0x414fa339
+
+====PYTHON=====
+>>> s = 'The quick brown fox jumps over the lazy dog'
+>>> import zlib
+>>> hex(zlib.crc32(s))
+'0x414fa339'
+ 
+>>> import binascii
+>>> hex(binascii.crc32(s))
+'0x414fa339'
+
+====PYTHON=====
+def create_table():
+    a = []
+    for i in range(256):
+        k = i
+        for j in range(8):
+            if k & 1:
+                k ^= 0x1db710640
+            k >>= 1
+        a.append(k)
+    return a
+ 
+def crc_update(buf, crc):
+    crc ^= 0xffffffff
+    for k in buf:
+        crc = (crc >> 8) ^ crc_table[(crc & 0xff) ^ k]
+    return crc ^ 0xffffffff
+ 
+crc_table = create_table()
+print(hex(crc_update(b"The quick brown fox jumps over the lazy dog", 0)))
+
+====PYTHON=====
+'''CRC-32 checksums for ascii strings'''
+ 
+from functools import (reduce)
+from itertools import (islice)
+ 
+ 
+# crc32 :: String -> Int
+def crc32(s):
+    '''CRC-32 checksum for an ASCII encoded string'''
+    def go(x):
+        x2 = x >> 1
+        return 0xedb88320 ^ x2 if x & 1 else x2
+    table = [
+        index(iterate(go)(n))(8)
+        for n in range(0, 256)
+    ]
+    return reduce(
+        lambda a, c: (a >> 8) ^ table[
+            (a ^ ord(c)) & 0xff
+        ],
+        s,
+        (0xffffffff)
+    ) ^ 0xffffffff
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+    print(
+        format(
+            crc32('The quick brown fox jumps over the lazy dog'),
+            '02x'
+        )
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# index (!!) :: [a] -> Int -> a
+def index(xs):
+    '''Item at given (zero-based) index.'''
+    return lambda n: None if 0 > n else (
+        xs[n] if (
+            hasattr(xs, "__getitem__")
+        ) else next(islice(xs, n, None))
+    )
+ 
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return go
+ 
+ 
+if __name__ == '__main__':
+    main()
+

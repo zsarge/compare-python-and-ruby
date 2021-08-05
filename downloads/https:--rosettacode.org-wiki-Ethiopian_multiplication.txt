@@ -1,0 +1,264 @@
+====RUBY=====
+def halve(x)   x/2  end
+def double(x)  x*2  end
+ 
+# iterative
+def ethiopian_multiply(a, b)
+  product = 0
+  while a >= 1 
+    p [a, b, a.even? ? "STRIKE" : "KEEP"] if $DEBUG
+    product += b unless a.even?
+    a = halve(a)
+    b = double(b)
+  end
+  product
+end
+ 
+# recursive
+def rec_ethiopian_multiply(a, b)
+  return 0 if a < 1
+  p [a, b, a.even? ? "STRIKE" : "KEEP"] if $DEBUG
+  (a.even? ? 0 : b) + rec_ethiopian_multiply(halve(a), double(b))
+end
+ 
+$DEBUG = true   # $DEBUG also set to true if "-d" option given
+a, b = 20, 5
+puts "#{a} * #{b} = #{ethiopian_multiply(a,b)}"; puts
+
+====RUBY=====
+require 'test/unit'
+class EthiopianTests < Test::Unit::TestCase
+  def test_iter1; assert_equal(578, ethopian_multiply(17,34)); end
+  def test_iter2; assert_equal(100, ethopian_multiply(20,5));  end
+  def test_iter3; assert_equal(5,   ethopian_multiply(5,1));   end
+  def test_iter4; assert_equal(5,   ethopian_multiply(1,5));   end
+  def test_iter5; assert_equal(0,   ethopian_multiply(5,0));   end
+  def test_iter6; assert_equal(0,   ethopian_multiply(0,5));   end
+  def test_rec1;  assert_equal(578, rec_ethopian_multiply(17,34)); end
+  def test_rec2;  assert_equal(100, rec_ethopian_multiply(20,5));  end
+  def test_rec3;  assert_equal(5,   rec_ethopian_multiply(5,1));   end
+  def test_rec4;  assert_equal(5,   rec_ethopian_multiply(1,5));   end
+  def test_rec5;  assert_equal(0,   rec_ethopian_multiply(5,0));   end
+  def test_rec6;  assert_equal(0,   rec_ethopian_multiply(0,5));   end
+end
+
+====RUBY=====
+func double (n) { n << 1 }
+func halve  (n) { n >> 1 }
+func isEven (n) { n&1 == 0 }
+ 
+func ethiopian_mult(a, b) {
+    var r = 0
+    while (a > 0) {
+        r += b if !isEven(a)
+        a = halve(a)
+        b = double(b)
+    }
+    return r
+}
+ 
+say ethiopian_mult(17, 34)
+
+====PYTHON=====
+tutor = True
+ 
+def halve(x):
+    return x // 2
+ 
+def double(x):
+    return x * 2
+ 
+def even(x):
+    return not x % 2
+ 
+def ethiopian(multiplier, multiplicand):
+    if tutor:
+        print("Ethiopian multiplication of %i and %i" %
+              (multiplier, multiplicand))
+    result = 0
+    while multiplier >= 1:
+        if even(multiplier):
+            if tutor:
+                print("%4i %6i STRUCK" %
+                      (multiplier, multiplicand))
+        else:
+            if tutor:
+                print("%4i %6i KEPT" %
+                      (multiplier, multiplicand))
+            result += multiplicand
+        multiplier   = halve(multiplier)
+        multiplicand = double(multiplicand)
+    if tutor:
+        print()
+    return result
+
+====PYTHON=====
+halve  = lambda x: x // 2
+double = lambda x: x*2
+even   = lambda x: not x % 2
+ 
+def ethiopian(multiplier, multiplicand):
+    result = 0
+ 
+    while multiplier >= 1:
+        if not even(multiplier):
+            result += multiplicand
+        multiplier   = halve(multiplier)
+        multiplicand = double(multiplicand)
+ 
+    return result
+
+====PYTHON=====
+tutor = True
+ 
+from itertools import izip, takewhile
+ 
+def iterate(function, arg):
+    while 1:
+        yield arg
+        arg = function(arg)
+ 
+def halve(x): return x // 2
+def double(x): return x * 2
+def even(x): return x % 2 == 0
+ 
+def show_heading(multiplier, multiplicand):
+    print "Multiplying %d by %d" % (multiplier, multiplicand),
+    print "using Ethiopian multiplication:"
+    print
+ 
+TABLE_FORMAT = "%8s %8s %8s %8s %8s"
+ 
+def show_table(table):
+    for p, q in table:
+        print TABLE_FORMAT % (p, q, "->",
+                              p, q if not even(p) else "-" * len(str(q)))
+ 
+def show_result(result):
+    print TABLE_FORMAT % ('', '', '', '', "=" * (len(str(result)) + 1))
+    print TABLE_FORMAT % ('', '', '', '', result)
+ 
+def ethiopian(multiplier, multiplicand):
+    def column1(x): return takewhile(lambda v: v >= 1, iterate(halve, x))
+    def column2(x): return iterate(double, x)
+    def rows(x, y): return izip(column1(x), column2(y))
+    table = rows(multiplier, multiplicand)
+    if tutor: 
+        table = list(table)
+        show_heading(multiplier, multiplicand)
+        show_table(table)
+    result = sum(q for p, q in table if not even(p))
+    if tutor: 
+        show_result(result)
+    return result
+
+====PYTHON=====
+'''Ethiopian multiplication'''
+ 
+from functools import reduce
+ 
+ 
+# ethMult :: Int -> Int -> Int
+def ethMult(n):
+    '''Ethiopian multiplication of n by m.'''
+ 
+    def doubled(x):
+        return x + x
+ 
+    def halved(h):
+        qr = divmod(h, 2)
+        if 0 < h:
+            print('halve:', str(qr).rjust(8, ' '))
+        return qr if 0 < h else None
+ 
+    def addedWhereOdd(a, remx):
+        odd, x = remx
+        if odd:
+            print(
+                str(a).rjust(2, ' '), '+',
+                str(x).rjust(3, ' '), '->',
+                str(a + x).rjust(3, ' ')
+            )
+            return a + x
+        else:
+            print(str(x).rjust(8, ' '))
+            return a
+ 
+    return lambda m: reduce(
+        addedWhereOdd,
+        zip(
+            unfoldr(halved)(n),
+            iterate(doubled)(m)
+        ),
+        0
+    )
+ 
+ 
+# ------------------------- TEST -------------------------
+def main():
+    '''Tests of multiplication.'''
+ 
+    print(
+        '\nProduct:    ' + str(
+            ethMult(17)(34)
+        ),
+        '\n_______________\n'
+    )
+    print(
+        '\nProduct:    ' + str(
+            ethMult(34)(17)
+        )
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return go
+ 
+ 
+# showLog :: a -> IO String
+def showLog(*s):
+    '''Arguments printed with
+       intercalated arrows.'''
+    print(
+        ' -> '.join(map(str, s))
+    )
+ 
+ 
+# unfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+def unfoldr(f):
+    '''Dual to reduce or foldr.
+       Where catamorphism reduces a list to a summary value,
+       the anamorphic unfoldr builds a list from a seed value.
+       As long as f returns Just(a, b), a is prepended to the list,
+       and the residual b is used as the argument for the next
+       application of f.
+       When f returns Nothing, the completed list is returned.'''
+    def go(v):
+        xr = v, v
+        xs = []
+        while True:
+            xr = f(xr[0])
+            if xr:
+                xs.append(xr[1])
+            else:
+                return xs
+        return xs
+    return go
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+ 
+

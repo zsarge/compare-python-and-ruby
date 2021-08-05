@@ -1,0 +1,143 @@
+====RUBY=====
+require 'prime'
+ 
+def powerMod(b, p, m)
+  p.to_s(2).each_char.inject(1) do |result, bit|
+    result = (result * result) % m
+    bit=='1' ? (result * b) % m : result
+  end
+end
+ 
+def multOrder_(a, p, k)
+  pk = p ** k
+  t = (p - 1) * p ** (k - 1)
+  r = 1
+  for q, e in t.prime_division
+    x = powerMod(a, t / q**e, pk)
+    while x != 1
+      r *= q
+      x = powerMod(x, q, pk)
+    end
+  end      
+  r
+end
+ 
+def multOrder(a, m)
+  m.prime_division.inject(1) do |result, f|
+    result.lcm(multOrder_(a, *f))
+  end
+end
+ 
+puts multOrder(37, 1000)
+b = 10**20-1
+puts multOrder(2, b)
+puts multOrder(17,b)
+b = 100001
+puts multOrder(54,b)
+puts powerMod(54, multOrder(54,b), b)
+if (1...multOrder(54,b)).any? {|r| powerMod(54, r, b) == 1}
+  puts 'Exists a power r < 9090 where powerMod(54,r,b)==1'
+else
+  puts 'Everything checks.'
+end
+
+====RUBY=====
+say 37.znorder(1000)     #=> 100
+say 54.znorder(100001)   #=> 9090
+
+====RUBY=====
+func mo_prime(a, p, e) {
+    var m  = p**e
+    var t  = (p-1)*(p**(e-1))
+    var qs = [1]
+ 
+    for f in (t.factor_exp) {
+        qs.map! {|q|
+            0..f[1] -> map {|j| q * f[0]**j }...
+        }
+    }
+ 
+    qs.sort.first_by {|q| powmod(a, q, m) == 1 }
+}
+ 
+func mo(a, m) {
+    gcd(a, m) == 1 || die "#{a} and #{m} are not relatively prime"
+    Math.lcm(1, m.factor_exp.map {|r| mo_prime(a, r...) }...)
+}
+ 
+say mo(37, 1000)
+say mo(54, 100001)
+ 
+with (10**20 - 1) {|b|
+    say mo(2, b)
+    say mo(17, b)
+}
+
+====PYTHON=====
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+ 
+def lcm(a, b):
+    return (a*b) / gcd(a, b)
+ 
+def isPrime(p):
+    return (p > 1) and all(f == p for f,e in factored(p))
+ 
+primeList = [2,3,5,7]
+def primes():
+    for p in primeList:
+        yield p
+    while 1:
+        p += 2
+        while not isPrime(p):
+            p += 2
+        primeList.append(p)
+        yield p
+ 
+def factored( a):
+    for p in primes():
+        j = 0
+        while a%p == 0:
+            a /= p
+            j += 1
+        if j > 0:
+            yield (p,j)
+        if a < p*p: break
+    if a > 1:
+        yield (a,1)
+ 
+ 
+def multOrdr1(a,(p,e) ):
+    m = p**e
+    t = (p-1)*(p**(e-1)) #  = Phi(p**e) where p prime
+    qs = [1,]
+    for f in factored(t):
+        qs = [ q * f[0]**j for j in range(1+f[1]) for q in qs ]
+    qs.sort()
+ 
+    for q in qs:
+        if pow( a, q, m )==1: break
+    return q
+ 
+ 
+def multOrder(a,m):
+    assert gcd(a,m) == 1
+    mofs = (multOrdr1(a,r) for r in factored(m))
+    return reduce(lcm, mofs, 1)
+ 
+ 
+if __name__ == "__main__":
+    print multOrder(37, 1000)        # 100
+    b = 10**20-1
+    print multOrder(2, b) # 3748806900
+    print multOrder(17,b) # 1499522760
+    b = 100001
+    print multOrder(54,b)
+    print pow( 54, multOrder(54,b),b)
+    if any( (1==pow(54,r, b)) for r in range(1,multOrder(54,b))):
+        print 'Exists a power r < 9090 where pow(54,r,b)==1'
+    else:
+        print 'Everything checks.'
+

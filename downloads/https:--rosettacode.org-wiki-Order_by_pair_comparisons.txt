@@ -1,0 +1,63 @@
+====RUBY=====
+items = ["violet", "red", "green", "indigo", "blue", "yellow", "orange"]
+count = 0
+sortedItems = []
+items.each {|item|
+  puts "Inserting '#{item}' into #{sortedItems}"
+  spotToInsert = sortedItems.bsearch_index{|x|
+    count += 1
+    print "(#{count}) Is #{item} < #{x}? "
+    gets.start_with?('y')
+  } || sortedItems.length # if insertion point is at the end, bsearch_index returns nil
+  sortedItems.insert(spotToInsert, item)
+}
+p sortedItems
+
+====RUBY=====
+items = ["violet", "red", "green", "indigo", "blue", "yellow", "orange"]
+count = 0
+p items.sort {|a, b|
+  count += 1
+  print "(#{count}) Is #{a} <, =, or > #{b}. Answer -1, 0, or 1: "
+  gets.to_i
+}
+
+====PYTHON=====
+def _insort_right(a, x, q):
+    """
+    Insert item x in list a, and keep it sorted assuming a is sorted.
+    If x is already in a, insert it to the right of the rightmost x.
+    """
+ 
+    lo, hi = 0, len(a)
+    while lo < hi:
+        mid = (lo+hi)//2
+        q += 1
+        less = input(f"{q:2}: IS {x:>6} LESS-THAN {a[mid]:>6} ? y/n: ").strip().lower() == 'y'
+        if less: hi = mid
+        else: lo = mid+1
+    a.insert(lo, x)
+    return q
+ 
+def order(items):
+    ordered, q = [], 0
+    for item in items:
+        q = _insort_right(ordered, item, q)
+    return ordered, q
+ 
+if __name__ == '__main__':
+    items = 'violet red green indigo blue yellow orange'.split()
+    ans, questions = order(items)
+    print('\n' + ' '.join(ans))
+
+====PYTHON=====
+from functools import cmp_to_key
+ 
+def user_cmp(a, b):
+    return int(input(f"IS {a:>6} <, ==, or > {b:>6}  answer -1, 0 or 1:"))
+ 
+if __name__ == '__main__':
+    items = 'violet red green indigo blue yellow orange'.split()
+    ans = sorted(items, key=cmp_to_key(user_cmp))
+    print('\n' + ' '.join(ans))
+

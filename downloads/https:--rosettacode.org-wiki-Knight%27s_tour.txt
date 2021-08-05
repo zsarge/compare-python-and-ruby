@@ -1,0 +1,204 @@
+====RUBY=====
+class Board
+  Cell = Struct.new(:value, :adj) do
+    def self.end=(end_val)
+      @@end = end_val
+    end
+ 
+    def try(seq_num)
+      self.value = seq_num
+      return true  if [email protected]@end
+      a = []
+      adj.each_with_index do |cell, n|
+        a << [wdof(cell.adj)*10+n, cell]  if cell.value.zero?
+      end
+      a.sort.each {|_, cell| return true  if cell.try(seq_num+1)}
+      self.value = 0
+      false
+    end
+ 
+    def wdof(adj)
+      adj.count {|cell| cell.value.zero?}
+    end
+  end
+ 
+  def initialize(rows, cols)
+    @rows, @cols = rows, cols
+    unless defined? ADJACENT                      # default move (Knight)
+      eval("ADJACENT = [[-1,-2],[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2]]")
+    end
+    frame = ADJACENT.flatten.map(&:abs).max
+    @board = Array.new(rows+frame) do |i|
+      Array.new(cols+frame) do |j|
+        (i<rows and j<cols) ? Cell.new(0) : nil   # frame (Sentinel value : nil)
+      end
+    end
+    rows.times do |i|
+      cols.times do |j|
+        @board[i][j].adj = ADJACENT.map{|di,dj| @board[i+di][j+dj]}.compact
+      end
+    end
+    Cell.end = rows * cols
+    @format = " %#{(rows * cols).to_s.size}d"
+  end
+ 
+  def solve(sx, sy)
+    if (@rows*@cols).odd? and (sx+sy).odd?
+      puts "No solution"
+    else
+      puts (@board[sx][sy].try(1) ? to_s : "No solution")
+    end
+  end
+ 
+  def to_s
+    (0[email protected]).map do |x|
+      (0[email protected]).map{|y| @format % @board[x][y].value}.join
+    end
+  end
+end
+ 
+def knight_tour(rows=8, cols=rows, sx=rand(rows), sy=rand(cols))
+  puts "\nBoard (%d x %d), Start:[%d, %d]" % [rows, cols, sx, sy]
+  Board.new(rows, cols).solve(sx, sy)
+end
+ 
+knight_tour(8,8,3,1)
+ 
+knight_tour(5,5,2,2)
+ 
+knight_tour(4,9,0,0)
+ 
+knight_tour(5,5,0,1)
+ 
+knight_tour(12,12,1,1)
+
+====RUBY=====
+var board = []
+var I = 8
+var J = 8
+var F = (I*J > 99 ? '%3d' : '%2d')
+ 
+var (i, j) = (I.irand, J.irand)
+ 
+func from_algebraic(square) {
+     if (var match = square.match(/^([a-z])([0-9])\z/)) {
+         return(I - Num(match[1]), match[0].ord - 'a'.ord)
+     }
+     die "Invalid block square: #{square}"
+}
+ 
+func possible_moves(i,j) {
+    gather {
+        for ni,nj in [
+            [i-2,j-1], [i-2,j+1], [i-1,j-2], [i-1,j+2],
+            [i+1,j-2], [i+1,j+2], [i+2,j-1], [i+2,j+1],
+        ] {
+            if ((ni ~~ ^I) && (nj ~~ ^J) && !board[ni][nj]) {
+                take([ni, nj])
+            }
+        }
+    }
+}
+ 
+func to_algebraic(i,j) {
+    ('a'.ord + j).chr + Str(I - i)
+}
+ 
+if (ARGV[0]) {
+    (i, j) = from_algebraic(ARGV[0])
+}
+ 
+var moves = []
+for move in (1 .. I*J) {
+    moves << to_algebraic(i, j)
+    board[i][j] = move
+    var min = [9]
+    for target in possible_moves(i, j) {
+        var (ni, nj) = target...
+        var nxt = possible_moves(ni, nj).len
+        if (nxt < min[0]) {
+            min = [nxt, ni, nj]
+        }
+    }
+ 
+    (i, j) = min[1,2]
+}
+ 
+say (moves/4 -> map { .join(', ') }.join("\n") + "\n")
+ 
+for i in ^I {
+    for j in ^J {
+        (i%2 == j%2) && print "\e[7m"
+        F.printf(board[i][j])
+        print "\e[0m"
+    }
+    print "\n"
+}
+
+====PYTHON=====
+import copy
+ 
+boardsize=6
+_kmoves = ((2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2,-1)) 
+ 
+ 
+def chess2index(chess, boardsize=boardsize):
+    'Convert Algebraic chess notation to internal index format'
+    chess = chess.strip().lower()
+    x = ord(chess[0]) - ord('a')
+    y = boardsize - int(chess[1:])
+    return (x, y)
+ 
+def boardstring(board, boardsize=boardsize):
+    r = range(boardsize)
+    lines = ''
+    for y in r:
+        lines += '\n' + ','.join('%2i' % board[(x,y)] if board[(x,y)] else '  '
+                                 for x in r)
+    return lines
+ 
+def knightmoves(board, P, boardsize=boardsize):
+    Px, Py = P
+    kmoves = set((Px+x, Py+y) for x,y in _kmoves)
+    kmoves = set( (x,y)
+                  for x,y in kmoves
+                  if 0 <= x < boardsize
+                     and 0 <= y < boardsize
+                     and not board[(x,y)] )
+    return kmoves
+ 
+def accessibility(board, P, boardsize=boardsize):
+    access = []
+    brd = copy.deepcopy(board)
+    for pos in knightmoves(board, P, boardsize=boardsize):
+        brd[pos] = -1
+        access.append( (len(knightmoves(brd, pos, boardsize=boardsize)), pos) )
+        brd[pos] = 0
+    return access
+ 
+def knights_tour(start, boardsize=boardsize, _debug=False):
+    board = {(x,y):0 for x in range(boardsize) for y in range(boardsize)}
+    move = 1
+    P = chess2index(start, boardsize)
+    board[P] = move
+    move += 1
+    if _debug:
+        print(boardstring(board, boardsize=boardsize))
+    while move <= len(board):
+        P = min(accessibility(board, P, boardsize))[1]
+        board[P] = move
+        move += 1
+        if _debug:
+            print(boardstring(board, boardsize=boardsize))
+            input('\n%2i next: ' % move)
+    return board
+ 
+if __name__ == '__main__':
+    while 1:
+        boardsize = int(input('\nboardsize: '))
+        if boardsize < 5:
+            continue
+        start = input('Start position: ')
+        board = knights_tour(start, boardsize)
+        print(boardstring(board, boardsize=boardsize))
+

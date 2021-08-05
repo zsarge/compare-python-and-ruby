@@ -1,0 +1,86 @@
+====RUBY=====
+require "prime"
+ 
+class Integer
+  def square_free?
+    prime_division.none?{|pr, exp| exp > 1}
+  end
+end
+ 
+puts (1..145).select(&:square_free?).each_slice(20).map{|a| a.join(" ")}
+puts
+ 
+m = 10**12
+puts (m..m+145).select(&:square_free?).each_slice(6).map{|a| a.join(" ")}
+puts
+ 
+markers = [100, 1000, 10_000, 100_000, 1_000_000]
+count = 0
+(1..1_000_000).each do |n|
+  count += 1 if n.square_free?
+  puts "#{count} square-frees upto #{n}" if markers.include?(n)
+end 
+ 
+
+====RUBY=====
+func is_square_free(n) {
+ 
+    n.abs!       if (n <  0)
+    return false if (n == 0)
+ 
+    n.factor_exp + [[1,1]] -> all { .[1] == 1 }
+}
+ 
+func square_free_count(n) {
+    1 .. n.isqrt -> sum {|k|
+        moebius(k) * idiv(n, k*k)
+    }
+}
+ 
+func display_results(a, c, f = { _ }) {
+    a.each_slice(c, {|*s|
+        say s.map(f).join(' ')
+    })
+}
+ 
+var a = range(   1,      145).grep {|n| is_square_free(n) }
+var b = range(1e12, 1e12+145).grep {|n| is_square_free(n) }
+ 
+say "There are #{a.len} square─free numbers between 1 and 145:"
+display_results(a, 17, {|n| "%3s" % n })
+ 
+say "\nThere are #{b.len} square─free numbers between 10^12 and 10^12 + 145:"
+display_results(b, 5)
+say ''
+ 
+for (2 .. 6) { |n|
+    var c = square_free_count(10**n)
+    say "The number of square─free numbers between 1 and 10^#{n} (inclusive) is: #{c}"
+}
+
+====PYTHON=====
+ 
+import math
+ 
+def SquareFree ( _number ) :
+	max = (int) (math.sqrt ( _number ))
+ 
+	for root in range ( 2, max+1 ):					# Create a custom prime sieve
+		if 0 == _number % ( root * root ):
+			return False
+ 
+	return True
+ 
+def ListSquareFrees( _start, _end ):
+	count = 0
+	for i in range ( _start, _end+1 ):
+		if True == SquareFree( i ):
+			print ( "{}\t".format(i), end="" )
+			count += 1
+ 
+	print ( "\n\nTotal count of square-free numbers between {} and {}: {}".format(_start, _end, count))
+ 
+ListSquareFrees( 1, 100 )
+ListSquareFrees( 1000000000000, 1000000000145 )
+ 
+

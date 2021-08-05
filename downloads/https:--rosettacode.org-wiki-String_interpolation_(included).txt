@@ -1,0 +1,46 @@
+====RUBY=====
+irb(main):001:0> extra = 'little'
+=> "little"
+irb(main):002:0> "Mary had a #{extra} lamb."
+=> "Mary had a little lamb."
+irb(main):003:0> "Mary had a %s lamb." % extra
+=> "Mary had a little lamb."
+
+====RUBY=====
+var extra = 'little';
+say "Mary had a #{extra} lamb";
+
+====RUBY=====
+say ("Mary had a %s lamb" % 'little');
+
+====PYTHON=====
+>>> original = 'Mary had a %s lamb.'
+>>> extra = 'little'
+>>> original % extra
+'Mary had a little lamb.'
+
+====PYTHON=====
+>>> original = 'Mary had a {extra} lamb.'
+>>> extra = 'little'
+>>> original.format(**locals())
+'Mary had a little lamb.'
+
+====PYTHON=====
+>>> original = 'Mary had a {0} lamb.'
+>>> extra = 'little'
+>>> original.format(extra)
+'Mary had a little lamb.'
+
+====PYTHON=====
+>>> from string import Template
+>>> original = Template('Mary had a $extra lamb.')
+>>> extra = 'little'
+>>> original.substitute(**locals())
+'Mary had a little lamb.'
+
+====PYTHON=====
+>>> extra = 'little'
+>>> f'Mary had a {extra} lamb.'
+'Mary had a little lamb.'
+>>> 
+

@@ -1,0 +1,20 @@
+====RUBY=====
+puts Time.now
+puts Time.now.strftime('%Y-%m-%d')
+puts Time.now.strftime('%F')            # same as %Y-%m-%d (ISO 8601 date formats)
+puts Time.now.strftime('%A, %B %d, %Y')
+
+====RUBY=====
+var time = Time.local;
+say time.ctime;
+say time.strftime("%Y-%m-%d");
+say time.strftime("%A, %B %d, %Y");
+
+====PYTHON=====
+import datetime
+today = datetime.date.today()
+# This one is built in:
+print today.isoformat()
+# Or use a format string for full flexibility:
+print today.strftime('%Y-%m-%d')
+

@@ -1,0 +1,73 @@
+====RUBY=====
+def validISBN13?(str)
+  cleaned = str.delete("^0-9").chars
+  return false unless cleaned.size == 13
+  cleaned.each_slice(2).sum{|d1, d2| d1.to_i + 3*d2.to_i }.remainder(10) == 0
+end
+ 
+isbns = ["978-1734314502", "978-1734314509", "978-1788399081", "978-1788399083"]
+isbns.each{|isbn| puts "#{isbn}: #{validISBN13?(isbn)}" }
+ 
+
+====PYTHON=====
+def is_isbn13(n):
+    n = n.replace('-','').replace(' ', '')
+    if len(n) != 13:
+        return False
+    product = (sum(int(ch) for ch in n[::2]) 
+               + sum(int(ch) * 3 for ch in n[1::2]))
+    return product % 10 == 0
+ 
+if __name__ == '__main__':
+    tests = '''
+978-1734314502
+978-1734314509
+978-1788399081
+978-1788399083'''.strip().split()
+    for t in tests:
+        print(f"ISBN13 {t} validates {is_isbn13(t)}")
+
+====PYTHON=====
+'''ISBN13 check digit'''
+ 
+ 
+from itertools import cycle
+ 
+ 
+# isISBN13 :: String -> Bool
+def isISBN13(s):
+    '''True if s is a valid ISBN13 string
+    '''
+    digits = [int(c) for c in s if c.isdigit()]
+    return 13 == len(digits) and (
+        0 == sum(map(
+            lambda f, x: f(x),
+            cycle([
+                lambda x: x,
+                lambda x: 3 * x
+            ]),
+            digits
+        )) % 10
+    )
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Test strings for ISBN-13 validity.'''
+ 
+    print('\n'.join(
+        repr((s, isISBN13(s))) for s
+        in ["978-1734314502",
+            "978-1734314509",
+            "978-1788399081",
+            "978-1788399083"
+            ]
+    ))
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+ 
+

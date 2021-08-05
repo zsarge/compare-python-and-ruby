@@ -1,0 +1,128 @@
+====RUBY=====
+class StraddlingCheckerboard
+  EncodableChars = "A-Z0-9."
+  SortedChars = "  ./" + [*"A".."Z"].join
+ 
+  def initialize(board = nil)
+    if board.nil?
+      # create a new random board
+      rest = "BCDFGHJKLMPQUVWXYZ/.".chars.shuffle
+      @board = ["  ESTONIAR".chars.shuffle, rest[0..9], rest[10..19]]
+    elsif board.chars.sort.join == SortedChars
+      @board = board.chars.each_slice(10).to_a
+    else
+      raise ArgumentError, "invalid #{self.class}: #{board}"
+    end
+    # find the indices of the first row blanks
+    @row_labels = @board[0].each_with_index.select {|v, i| v == " "}.map {|v,i| i}
+ 
+    @mapping = {}
+    @board[0].each_with_index {|char, idx| @mapping[char] = idx.to_s unless char == " "}
+    @board[1..2].each_with_index do |row, row_idx|
+      row.each_with_index do |char, idx|
+        @mapping[char] = "%d%d" % [@row_labels[row_idx], idx]
+      end
+    end
+  end
+ 
+  def encode(message)
+    msg = message.upcase.delete("^#{EncodableChars}")
+    msg.chars.inject("") do |crypt, char|
+      crypt << (char =~ /[0-9]/ ? @mapping["/"] + char : @mapping[char])
+    end
+  end
+ 
+  def decode(code)
+    msg = ""
+    tokens = code.chars
+    until tokens.empty?
+      token = tokens.shift
+      itoken = token.to_i
+      unless @row_labels.include?(itoken)
+        msg << @board[0][itoken]
+      else
+        token2 = tokens.shift
+        if @mapping["/"] == token + token2
+          msg << tokens.shift
+        else
+          msg << @board[[email protected]_labels.index(itoken)][token2.to_i]
+        end
+      end
+    end
+    msg
+  end
+ 
+  def to_s
+    @board.inject("") {|res, row| res << row.join}
+  end
+ 
+  def inspect
+    "#<%s board=%p, row_labels=%p, mapping=%p>" % [self.class, to_s, @row_labels, @mapping]
+  end
+end
+
+====RUBY=====
+require 'test/unit'
+class StraddlingCheckerboardTest < Test::Unit::TestCase
+  def setup
+    @msg = "One night-it was on the twentieth of March, 1888-I was returning"
+    @expected = "ONENIGHTITWASONTHETWENTIETHOFMARCH1888IWASRETURNING"
+  end
+ 
+  def test1
+    sc = StraddlingCheckerboard.new "ET AON RISBCDFGHJKLMPQ/UVWXYZ."
+    code = sc.encode(@msg)
+    plaintext = sc.decode(code)
+ 
+    puts "using checkerboard: #{sc}"
+    puts "original: #{@msg}"
+    puts "encoded: #{code}"
+    puts "decoded: #{plaintext}"
+    assert_equal("450582425181653945125016505180125423293721256216286286288653970163758524", code)
+    assert_equal(@expected, plaintext)
+  end
+ 
+  def test_board_with_space_in_first_char
+    sc = StraddlingCheckerboard.new " RIOESN ATG./LXYBDKQMJUHWPVCFZ"
+    code = sc.encode(@msg)
+    plaintext = sc.decode(code)
+    #p sc
+    #puts "encoded: #{code}"
+    #puts "decoded: #{plaintext}"
+    assert_equal(@expected, plaintext)
+  end
+ 
+  def test_random_board
+    sc = StraddlingCheckerboard.new
+    plaintext = sc.decode(sc.encode(@msg))
+    assert_equal(@expected, plaintext)
+  end
+ 
+  def test_invalid_input
+    assert_raise(ArgumentError) {StraddlingCheckerboard.new "ET ON RISBCDFGHJKLMPQ/UVWXYZ.!"}
+  end
+end
+
+====PYTHON=====
+T = [["79", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+     ["",   "H", "O", "L", "",  "M", "E", "S", "",  "R", "T"],
+     ["3",  "A", "B", "C", "D", "F", "G", "I", "J", "K", "N"],
+     ["7",  "P", "Q", "U", "V", "W", "X", "Y", "Z", ".", "/"]]
+ 
+def straddle(s):
+    return "".join(L[0]+T[0][L.index(c)] for c in s.upper() for L in T if c in L)
+ 
+def unstraddle(s):
+    s = iter(s)
+    for c in s:
+        if c in [T[2][0], T[3][0]]:
+            i = [T[2][0], T[3][0]].index(c)
+            n = T[2 + i][T[0].index(s.next())]
+            yield s.next() if n == "/" else n
+        else:
+            yield T[1][T[0].index(c)]
+ 
+O = "One night-it was on the twentieth of March, 1888-I was returning"
+print "Encoded:", straddle(O)
+print "Decoded:", "".join(unstraddle(straddle(O)))
+

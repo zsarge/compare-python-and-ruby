@@ -1,0 +1,116 @@
+====RUBY=====
+class RGBColour
+  def to_grayscale
+    luminosity = (0.2126*@red + 0.7152*@green + 0.0722*@blue).to_i
+    self.class.new(luminosity, luminosity, luminosity)
+  end
+end
+ 
+class Pixmap
+  def to_grayscale
+    gray = self.class.new(@width, @height)
+    @width.times do |x|
+      @height.times do |y|
+        gray[x,y] = self[x,y].to_grayscale
+      end
+    end
+    gray
+  end
+end
+
+====RUBY=====
+class RGBColour
+  def to_grayscale
+    luminosity = Integer(0.2126*@red + 0.7152*@green + 0.0722*@blue)
+    self.class.new(luminosity, luminosity, luminosity)
+  end
+end
+ 
+class Pixmap
+  def to_grayscale
+    gray = self.class.new(@width, @height)
+    @width.times do |x|
+      @height.times do |y|
+        gray[x,y] = self[x,y].to_grayscale
+      end
+    end
+    gray
+  end
+end
+
+====RUBY=====
+require('Image::Imlib2')
+ 
+func tograyscale(img) {
+    var (width, height) = (img.width, img.height)
+    var gimg = %s'Image::Imlib2'.new(width, height)
+    for y,x in (^height ~X ^width) {
+        var (r, g, b) = img.query_pixel(x, y)
+        var gray = int(0.2126*r + 0.7152*g + 0.0722*b)
+        gimg.set_color(gray, gray, gray, 255)
+        gimg.draw_point(x, y)
+    }
+    return gimg
+}
+ 
+var (input='input.png', output='output.png') = ARGV...
+var image = %s'Image::Imlib2'.load(input)
+var gscale = tograyscale(image)
+gscale.set_quality(80)
+gscale.save(output)
+
+====PYTHON=====
+# String masquerading as ppm file (version P3)
+import io
+ppmfileout = io.StringIO('')
+ 
+def togreyscale(self):
+    for h in range(self.height):
+        for w in range(self.width):
+            r, g, b = self.get(w, h)
+            l = int(0.2126 * r + 0.7152 * g + 0.0722 * b)
+            self.set(w, h, Colour(l, l, l))
+ 
+Bitmap.togreyscale = togreyscale    
+ 
+ 
+# Draw something simple
+bitmap = Bitmap(4, 4, white)
+bitmap.fillrect(1, 0, 1, 2, Colour(127, 0, 63))
+bitmap.set(3, 3, Colour(0, 127, 31))
+print('Colour:')
+# Write to the open 'file' handle
+bitmap.writeppmp3(ppmfileout)
+print(ppmfileout.getvalue())
+print('Grey:')
+bitmap.togreyscale()
+ppmfileout = io.StringIO('')
+bitmap.writeppmp3(ppmfileout)
+print(ppmfileout.getvalue())
+ 
+ 
+'''
+The print statement above produces the following output :
+ 
+Colour:
+P3
+# generated from Bitmap.writeppmp3
+4 4
+255
+   255 255 255   255 255 255   255 255 255     0 127  31
+   255 255 255   255 255 255   255 255 255   255 255 255
+   255 255 255   127   0  63   255 255 255   255 255 255
+   255 255 255   127   0  63   255 255 255   255 255 255
+ 
+Grey:
+P3
+# generated from Bitmap.writeppmp3
+4 4
+254
+   254 254 254   254 254 254   254 254 254    93  93  93
+   254 254 254   254 254 254   254 254 254   254 254 254
+   254 254 254    31  31  31   254 254 254   254 254 254
+   254 254 254    31  31  31   254 254 254   254 254 254
+ 
+'''
+

@@ -1,0 +1,209 @@
+====RUBY=====
+class StdDevAccumulator
+  def initialize
+    @n, @sum, @sum2 = 0, 0.0, 0.0
+  end
+ 
+  def <<(num)
+    @n += 1
+    @sum += num
+    @sum2 += num**2
+    Math.sqrt (@sum2 * @n - @sum**2) / @n**2
+  end
+end
+ 
+sd = StdDevAccumulator.new
+i = 0
+[2,4,4,4,5,5,7,9].each { |n| puts "adding #{n}: stddev of #{i+=1} samples is #{sd << n}" }
+
+====RUBY=====
+def sdaccum
+  n, sum, sum2 = 0, 0.0, 0.0
+  ->(num : Int32) do
+    n += 1
+    sum += num
+    sum2 += num**2
+    Math.sqrt( (sum2 * n - sum**2) / n**2 )
+  end
+end
+ 
+sd = sdaccum
+[2,4,4,4,5,5,7,9].each {|n| print sd.call(n), ", "}
+
+====RUBY=====
+class StdDevAccumulator
+  def initialize
+    @n, @sum, @sumofsquares = 0, 0.0, 0.0
+  end
+ 
+  def <<(num)
+    # return self to make this possible:  sd << 1 << 2 << 3 # => 0.816496580927726
+    @n += 1
+    @sum += num
+    @sumofsquares += num**2
+    self
+  end
+ 
+  def stddev
+    Math.sqrt( (@sumofsquares / @n) - (@sum / @n)**2 )
+  end
+ 
+  def to_s
+    stddev.to_s
+  end
+end
+ 
+sd = StdDevAccumulator.new
+i = 0
+[2,4,4,4,5,5,7,9].each {|n| puts "adding #{n}: stddev of #{i+=1} samples is #{sd << n}" }
+
+====RUBY=====
+def sdaccum
+  n, sum, sum2 = 0, 0.0, 0.0
+  lambda do |num|
+    n += 1
+    sum += num
+    sum2 += num**2
+    Math.sqrt( (sum2 / n) - (sum / n)**2 )
+  end
+end
+ 
+sd = sdaccum
+[2,4,4,4,5,5,7,9].each {|n| print sd.call(n), ", "}
+
+====RUBY=====
+class StdDevAccumulator(n=0, sum=0, sumofsquares=0) {
+  method <<(num) {
+    n += 1
+    sum += num
+    sumofsquares += num**2
+    self
+  }
+ 
+  method stddev {
+    sqrt(sumofsquares/n - pow(sum/n, 2))
+  }
+ 
+  method to_s {
+    self.stddev.to_s
+  }
+}
+ 
+var i = 0
+var sd = StdDevAccumulator()
+[2,4,4,4,5,5,7,9].each {|n|
+    say "adding #{n}: stddev of #{i+=1} samples is #{sd << n}"
+}
+
+====RUBY=====
+func stddev(x) {
+    static(num=0, sum=0, sum2=0)
+    num++
+    sqrt(
+        (sum2 += x**2) / num -
+        (((sum += x) / num)**2)
+    )
+}
+ 
+%n(2 4 4 4 5 5 7 9).each { say stddev(_) }
+
+====PYTHON=====
+>>> from math import sqrt
+>>> def sd(x):
+    sd.sum  += x
+    sd.sum2 += x*x
+    sd.n    += 1.0
+    sum, sum2, n = sd.sum, sd.sum2, sd.n
+    return sqrt(sum2/n - sum*sum/n/n)
+ 
+>>> sd.sum = sd.sum2 = sd.n = 0
+>>> for value in (2,4,4,4,5,5,7,9):
+    print (value, sd(value))
+ 
+ 
+(2, 0.0)
+(4, 1.0)
+(4, 0.94280904158206258)
+(4, 0.8660254037844386)
+(5, 0.97979589711327075)
+(5, 1.0)
+(7, 1.3997084244475311)
+(9, 2.0)
+>>>
+
+====PYTHON=====
+>>> class SD(object): # Plain () for python 3.x
+	def __init__(self):
+		self.sum, self.sum2, self.n = (0,0,0)
+	def sd(self, x):
+		self.sum  += x
+		self.sum2 += x*x
+		self.n    += 1.0
+		sum, sum2, n = self.sum, self.sum2, self.n
+		return sqrt(sum2/n - sum*sum/n/n)
+ 
+>>> sd_inst = SD()
+>>> for value in (2,4,4,4,5,5,7,9):
+	print (value, sd_inst.sd(value))
+
+====PYTHON=====
+>>> from math import sqrt
+>>> def sdcreator():
+	sum = sum2 = n = 0
+	def sd(x):
+		nonlocal sum, sum2, n
+ 
+		sum  += x
+		sum2 += x*x
+		n    += 1.0
+		return sqrt(sum2/n - sum*sum/n/n)
+	return sd
+ 
+>>> sd = sdcreator()
+>>> for value in (2,4,4,4,5,5,7,9):
+	print (value, sd(value))
+ 
+ 
+2 0.0
+4 1.0
+4 0.942809041582
+4 0.866025403784
+5 0.979795897113
+5 1.0
+7 1.39970842445
+9 2.0
+
+====PYTHON=====
+>>> from math import sqrt
+>>> def sdcreator():
+	sum = sum2 = n = 0
+	while True:
+		x = yield sqrt(sum2/n - sum*sum/n/n) if n else None
+ 
+		sum  += x
+		sum2 += x*x
+		n    += 1.0
+ 
+>>> sd = sdcreator()
+>>> sd.send(None)
+>>> for value in (2,4,4,4,5,5,7,9):
+	print (value, sd.send(value))
+ 
+ 
+2 0.0
+4 1.0
+4 0.942809041582
+4 0.866025403784
+5 0.979795897113
+5 1.0
+7 1.39970842445
+9 2.0
+
+====PYTHON=====
+>>> myMean = lambda MyList : reduce(lambda x, y: x + y, MyList) / float(len(MyList))
+>>> myStd = lambda MyList : (reduce(lambda x,y : x + y , map(lambda x: (x-myMean(MyList))**2 , MyList)) / float(len(MyList)))**.5
+ 
+>>> print myStd([2,4,4,4,5,5,7,9])
+2.0
+ 
+

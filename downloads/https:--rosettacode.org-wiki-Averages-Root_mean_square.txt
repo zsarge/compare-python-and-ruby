@@ -1,0 +1,63 @@
+====RUBY=====
+def rms(seq)
+  Math.sqrt(seq.sum { |x| x*x } / seq.size)
+end
+ 
+puts rms (1..10).to_a
+
+====RUBY=====
+class Array
+  def quadratic_mean
+    Math.sqrt( self.inject(0.0) {|s, y| s + y*y} / self.length )
+  end
+end
+ 
+class Range
+  def quadratic_mean
+    self.to_a.quadratic_mean
+  end
+end
+ 
+(1..10).quadratic_mean  # => 6.2048368229954285
+
+====RUBY=====
+def rms(seq)
+  Math.sqrt(seq.sum{|x| x*x}.fdiv(seq.size) )
+end
+puts rms (1..10)   # => 6.2048368229954285
+
+====RUBY=====
+func rms(a) {
+    sqrt(a.map{.**2}.sum / a.len)
+}
+ 
+say rms(1..10)
+
+====RUBY=====
+func rms(a) { a »**» 2 «+» / a.len -> sqrt }
+
+====PYTHON=====
+sqrt(mean(x²))
+
+====PYTHON=====
+>>> from math import sqrt
+>>> def qmean(num):
+	return sqrt(sum(n*n for n in num)/len(num))
+ 
+>>> qmean(range(1,11))
+6.2048368229954285
+
+====PYTHON=====
+from functools import (reduce)
+from math import (sqrt)
+ 
+ 
+# rootMeanSquare :: [Num] -> Float
+def rootMeanSquare(xs):
+    return sqrt(reduce(lambda a, x: a + x * x, xs, 0) / len(xs))
+ 
+ 
+print(
+    rootMeanSquare([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+)
+

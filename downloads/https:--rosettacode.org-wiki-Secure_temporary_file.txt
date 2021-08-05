@@ -1,0 +1,37 @@
+====RUBY=====
+irb(main):001:0> require 'tempfile'
+=> true
+irb(main):002:0> f = Tempfile.new('foo')
+=> #<File:/tmp/foo20081226-307-10p746n-0>
+irb(main):003:0> f.path
+=> "/tmp/foo20081226-307-10p746n-0"
+irb(main):004:0> f.close
+=> nil
+irb(main):005:0> f.unlink
+=> #<Tempfile: (closed)>
+
+====RUBY=====
+var tmpfile = require('File::Temp');
+var fh = tmpfile.new(UNLINK => 0);
+say fh.filename;
+fh.print("Hello, World!\n");
+fh.close;
+
+====PYTHON=====
+>>> import tempfile
+>>> invisible = tempfile.TemporaryFile()
+>>> invisible.name
+'<fdopen>'
+>>> visible = tempfile.NamedTemporaryFile()
+>>> visible.name
+'/tmp/tmpZNfc_s'
+>>> visible.close()
+>>> invisible.close()
+
+====PYTHON=====
+fd, path = tempfile.mkstemp()
+try:
+    # use the path or the file descriptor
+finally:
+    os.close(fd)
+

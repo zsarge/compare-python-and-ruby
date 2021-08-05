@@ -1,0 +1,274 @@
+====RUBY=====
+require "prime"
+ 
+class Integer
+  def proper_divisors
+    return [] if self == 1
+    primes = prime_division.flat_map{|prime, freq| [prime] * freq}
+    (1...primes.size).each_with_object([1]) do |n, res|
+      primes.combination(n).map{|combi| res << combi.inject(:*)}
+    end.flatten.uniq
+  end
+end
+ 
+(1..10).map{|n| puts "#{n}: #{n.proper_divisors}"}
+ 
+size, select = (1..20_000).group_by{|n| n.proper_divisors.size}.max
+select.each do |n|
+  puts "#{n} has #{size} divisors"
+end
+
+====RUBY=====
+#Determine the integer within a range of integers that has the most proper divisors
+#Nigel Galloway: December 23rd., 2014
+require "prime"
+n, g = 0
+(1..20000).each{|i| e = i.prime_division.inject(1){|n,g| n * (g[1]+1)}
+                    n, g = e, i if e > n}
+puts "#{g} has #{n-1} proper divisors"
+
+====RUBY=====
+func propdiv (n) {
+    n.divisors.slice(0, -2)
+}
+ 
+{|i| printf("%2d: %s\n", i, propdiv(i)) } << 1..10
+ 
+var max = 0
+var candidates = []
+ 
+for i in (1..20_000) {
+    var divs = propdiv(i).len
+    if (divs > max) {
+        candidates = []
+        max = divs
+    }
+    candidates << i if (divs == max)
+}
+ 
+say "max = #{max}, candidates = #{candidates}"
+
+====PYTHON=====
+>>> def proper_divs2(n):
+...     return {x for x in range(1, (n + 1) // 2 + 1) if n % x == 0 and n != x}
+... 
+>>> [proper_divs2(n) for n in range(1, 11)]
+[set(), {1}, {1}, {1, 2}, {1}, {1, 2, 3}, {1}, {1, 2, 4}, {1, 3}, {1, 2, 5}]
+>>> 
+>>> n, length = max(((n, len(proper_divs2(n))) for n in range(1, 20001)), key=lambda pd: pd[1])
+>>> n
+15120
+>>> length
+79
+>>> 
+
+====PYTHON=====
+from math import sqrt
+from functools import lru_cache, reduce
+from collections import Counter
+from itertools import product
+ 
+ 
+MUL = int.__mul__
+ 
+ 
+def prime_factors(n):
+    'Map prime factors to their multiplicity for n'
+    d = _divs(n)
+    d = [] if d == [n] else (d[:-1] if d[-1] == d else d)
+    pf = Counter(d)
+    return dict(pf)
+ 
+@lru_cache(maxsize=None)
+def _divs(n):
+    'Memoized recursive function returning prime factors of n as a list'
+    for i in range(2, int(sqrt(n)+1)):
+        d, m  = divmod(n, i)
+        if not m:
+            return [i] + _divs(d)
+    return [n]
+ 
+ 
+def proper_divs(n):
+    '''Return the set of proper divisors of n.'''
+    pf = prime_factors(n)
+    pfactors, occurrences = pf.keys(), pf.values()
+    multiplicities = product(*(range(oc + 1) for oc in occurrences))
+    divs = {reduce(MUL, (pf**m for pf, m in zip(pfactors, multis)), 1)
+            for multis in multiplicities}
+    try:
+        divs.remove(n)
+    except KeyError:
+        pass
+    return divs or ({1} if n != 1 else set())
+ 
+ 
+if __name__ == '__main__':
+    rangemax = 20000
+ 
+    print([proper_divs(n) for n in range(1, 11)])
+    print(*max(((n, len(proper_divs(n))) for n in range(1, 20001)), key=lambda pd: pd[1]))
+
+====PYTHON=====
+'''Proper divisors'''
+ 
+from itertools import accumulate, chain, groupby, product
+from functools import reduce
+from math import floor, sqrt
+from operator import mul
+ 
+ 
+# properDivisors :: Int -> [Int]
+def properDivisors(n):
+    '''The ordered divisors of n, excluding n itself.
+    '''
+    def go(a, group):
+        return [x * y for x, y in product(
+            a,
+            accumulate(chain([1], group), mul)
+        )]
+    return sorted(
+        reduce(go, [
+            list(g) for _, g in groupby(primeFactors(n))
+        ], [1])
+    )[:-1] if 1 < n else []
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Tests'''
+ 
+    print(
+        fTable('Proper divisors of [1..10]:')(str)(str)(
+            properDivisors
+        )(range(1, 1 + 10))
+    )
+ 
+    print('\nExample of maximum divisor count in the range [1..20000]:')
+    print(
+        max(
+            [(n, len(properDivisors(n))) for n in range(1, 1 + 20000)],
+            key=snd
+        )
+    )
+ 
+ 
+# -------------------------DISPLAY-------------------------
+ 
+# fTable :: String -> (a -> String) ->
+# (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+       f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# -------------------------GENERIC-------------------------
+ 
+# primeFactors :: Int -> [Int]
+def primeFactors(n):
+    '''A list of the prime factors of n.
+    '''
+    def f(qr):
+        r = qr[1]
+        return step(r), 1 + r
+ 
+    def step(x):
+        return 1 + (x << 2) - ((x >> 1) << 1)
+ 
+    def go(x):
+        root = floor(sqrt(x))
+ 
+        def p(qr):
+            q = qr[0]
+            return root < q or 0 == (x % q)
+ 
+        q = until(p)(f)(
+            (2 if 0 == x % 2 else 3, 1)
+        )[0]
+        return [x] if q > root else [q] + go(x // q)
+ 
+    return go(n)
+ 
+ 
+# snd :: (a, b) -> b
+def snd(tpl):
+    '''Second member of a pair.'''
+    return tpl[1]
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.
+    '''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+import random
+propdiv = []
+num = random.randint(1,200)
+for n in range(1, num+1):
+	propdiv = []
+	for x in range(1,n+1):
+		n = int(n)
+		if n%x == 0:
+			propdiv.append(x)
+	propdiv.pop(len(propdiv)-1)
+print(str(propdiv) + " are the Proper Divisors of " + str(num))
+ 
+print("\n")
+ 
+Ften = 10
+propdten = []
+for toten in range(1,11):
+	for n1 in range(1, toten+1):
+		propdten = []
+		for x in range(1,n1+1):
+			n1 = int(n1)
+			if n1%x == 0:
+				propdten.append(x)
+		propdten.pop(len(propdten)-1)
+	print(str(propdten) + " are the Proper Divisors of " + str(toten))
+ 
+print("\n")
+ 
+findiv = 1
+normdiv = []
+greatestdiv = []
+twentykrng = 200
+for nnn in range(1, twentykrng+1):
+	if len(normdiv) > len(greatestdiv):
+		greatestdiv = []
+		greatestdiv = normdiv
+		findiv = nnn - 1
+	normdiv = []
+	for xx in range(1,nnn+1):
+		if nnn%xx == 0:
+			normdiv.append(xx)
+	normdiv.pop(len(normdiv)-1)
+ 
+print(findiv)
+print(len(greatestdiv))
+

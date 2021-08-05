@@ -1,0 +1,15 @@
+====RUBY=====
+require 'socket'
+host = Socket.gethostname
+
+====RUBY=====
+var sys = frequire('Sys::Hostname');
+var host = sys.hostname;
+
+====RUBY=====
+var host = `hostname`.chomp;
+
+====PYTHON=====
+import socket
+host = socket.gethostname()
+

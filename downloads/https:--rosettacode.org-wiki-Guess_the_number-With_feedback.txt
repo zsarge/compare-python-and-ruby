@@ -1,0 +1,82 @@
+====RUBY=====
+number = rand(1..10)
+ 
+puts "Guess the number between 1 and 10"
+ 
+loop do
+  begin
+    user_number = gets.to_s.to_i
+    if user_number == number
+      puts "You guessed it."
+      break
+    elsif user_number > number  
+      puts "Too high."
+    else
+      puts "Too low."
+    end
+  rescue ArgumentError
+    puts "Please enter an integer."
+  end
+end
+
+====RUBY=====
+number = rand(1..10)
+ 
+puts "Guess the number between 1 and 10"
+ 
+loop do
+  begin
+    user_number = Integer(gets)
+    if user_number == number
+      puts "You guessed it."
+      break
+    elsif user_number > number  
+      puts "Too high."
+    else
+      puts "Too low."
+    end
+  rescue ArgumentError
+    puts "Please enter an integer."
+  end
+end
+
+====RUBY=====
+var number = rand(1..10);
+say "Guess the number between 1 and 10";
+ 
+loop {
+    given(var n = Sys.scanln("> ").to_i) {
+        when (number)     { say "You guessed it."; break }
+        case (n < number) { say "Too low" }
+        default           { say "Too high" }
+    }
+}
+
+====PYTHON=====
+import random
+ 
+inclusive_range = (1, 100)
+ 
+print("Guess my target number that is between %i and %i (inclusive).\n"
+      % inclusive_range)
+target = random.randint(*inclusive_range)
+answer, i = None, 0
+while answer != target:
+    i += 1
+    txt = input("Your guess(%i): " % i)
+    try:
+        answer = int(txt)
+    except ValueError:
+        print("  I don't understand your input of '%s' ?" % txt)
+        continue
+    if answer < inclusive_range[0] or answer > inclusive_range[1]:
+        print("  Out of range!")
+        continue
+    if answer == target:
+        print("  Ye-Haw!!")
+        break
+    if answer < target: print("  Too low.")
+    if answer > target: print("  Too high.")
+ 
+print("\nThanks for playing.")
+

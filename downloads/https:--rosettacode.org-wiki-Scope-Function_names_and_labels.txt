@@ -1,0 +1,21 @@
+====RUBY=====
+ 
+def welcome(name)
+   puts "hello #{name}"
+end
+puts "What is your name?"
+$name = STDIN.gets
+welcome($name)
+return 
+
+====RUBY=====
+# Nested functions
+func outer {
+    func inner {};   # not visible outside
+}
+ 
+# Nested classes
+class Outer {
+    class Inner {};  # not visisble outside
+}
+

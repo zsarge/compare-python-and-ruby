@@ -1,0 +1,135 @@
+====RUBY=====
+def general_fizzbuzz(text)
+  num, *nword = text.split
+  num = num.to_i
+  dict = nword.each_slice(2).map{|n,word| [n.to_i,word]}
+  (1..num).each do |i|
+    str = dict.map{|n,word| word if i%n==0}.join
+    puts str.empty? ? i : str
+  end
+end
+ 
+text = <<EOS
+20
+3 Fizz
+5 Buzz
+7 Baxx
+EOS
+ 
+general_fizzbuzz(text)
+
+====RUBY=====
+class FizzBuzz(schema=Hash(<3 Fizz 5 Buzz>...)) {
+    method filter(this) {
+        var fb = ''
+        schema.sort_by {|k,_| k.to_i }.each { |pair|
+            fb += (pair[0].to_i `divides` this ? pair[1] : '')
+        }
+        fb.len > 0 ? fb : this
+    }
+}
+ 
+func GeneralFizzBuzz(upto, schema) {
+    var ping = FizzBuzz()
+    if (nil != schema) {
+        ping.schema = schema.to_hash
+    }
+    (1..upto).map {|i| ping.filter(i) }
+}
+ 
+GeneralFizzBuzz(20, <3 Fizz 5 Buzz 7 Baxx>).each { .say }
+
+====PYTHON=====
+def genfizzbuzz(factorwords, numbers):
+    factorwords.sort(key=lambda p: p[0])
+    lines = []
+    for num in numbers:
+        words = ''.join(wrd for fact, wrd in factorwords if (num % fact) == 0)
+        lines.append(words if words else str(num))
+    return '\n'.join(lines)
+ 
+if __name__ == '__main__':
+    print(genfizzbuzz([(5, 'Buzz'), (3, 'Fizz'), (7, 'Baxx')], range(1, 21)))
+
+====PYTHON=====
+def genfizzbuzz(numberlist, wordlist, *args):
+    nml = [[numberlist[i], wordlist[i]] for i in range(len(numberlist))]
+    for z in range(*args):
+        res = ""
+        for j in nml:
+            if z % j[0] == 0:
+                res += j[1]
+        print(res or z)
+ 
+ 
+genfizzbuzz([3, 5, 7], ['Fizz', 'Buzz', 'Baxx'], 1, 21)
+ 
+
+====PYTHON=====
+n = 20
+mappings = {3: "Fizz", 5: "Buzz", 7: "Baxx"}
+for i in range(1, n+1): print(''.join(word*(i%key==0) for  key, word in mappings.items()) or i) 
+
+====PYTHON=====
+from collections import defaultdict
+ 
+n = 100
+mods = {
+    3: "Fizz",
+    5: "Buzz",
+}
+ 
+def fizzbuzz(n=n, mods=mods):
+    factors = defaultdict(list)
+    for mod in mods:
+        factors[mod].append(mod)
+ 
+    for i in range(1,n+1):
+        res = ''
+        for mod in sorted(factors.pop(i)):
+            factors[i+mod].append(mod)
+            res += mods[mod]
+        yield res or str(i)
+ 
+if __name__ == '__main__':
+    n = int(input())
+    mods = { int(k): v for k,v in (input().split(maxsplit=1) for _ in range(3)) }
+    for line in fizzbuzz(n, mods):
+        print(line)
+ 
+
+====PYTHON=====
+from collections import defaultdict
+ 
+n = 100
+mods = [
+    (3, 'Fizz'),
+    (5, 'Buzz'),
+]
+ 
+def fizzbuzz(n=n, mods=mods):
+    res = defaultdict(str)
+ 
+    for num, name in mods:
+        for i in range(num, n+1, num):
+            res[i] += name
+ 
+    return '\n'.join(res[i] or str(i) for i in range(1, n+1))
+ 
+ 
+if __name__ == '__main__':
+    n = int(input())
+ 
+    mods = []
+    while len(mods) != 3:   # for reading until EOF change 3 to -1
+        try:
+            line = input()
+        except EOFError:
+            break
+        idx = line.find(' ')                        # preserves whitespace
+        num, name = int(line[:idx]), line[idx+1:]   #   after the first space
+        mods.append((num, name))    # preserves order and duplicate moduli
+ 
+    print(fizzbuzz(n, mods))
+ 
+

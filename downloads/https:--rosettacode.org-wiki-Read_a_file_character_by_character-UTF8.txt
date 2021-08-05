@@ -1,0 +1,68 @@
+====RUBY=====
+File.open("input.txt") do |file|
+  file.each_char { |c| p c }
+end
+
+====RUBY=====
+File.open("input.txt") do |file|
+  while c = file.read_char
+    p c
+  end
+end
+
+====RUBY=====
+File.open('input.txt', 'r:utf-8') do |f|
+  f.each_char{|c| p c}
+end
+
+====RUBY=====
+File.open('input.txt', 'r:utf-8') do |f|
+  while c = f.getc
+    p c
+  end
+end
+
+====RUBY=====
+var file = File('input.txt')        # the input file contains: "aă€⼥"
+var fh = file.open_r                # equivalent with: file.open('<:utf8')
+fh.each_char { |char|
+    printf("got character #{char} [U+%04x]\n", char.ord)
+}
+
+====PYTHON=====
+ 
+def get_next_character(f):
+  # note: assumes valid utf-8
+  c = f.read(1)
+  while c:
+    while True:
+      try:
+        yield c.decode('utf-8')
+      except UnicodeDecodeError:
+        # we've encountered a multibyte character
+        # read another byte and try again
+        c += f.read(1)
+      else:
+        # c was a valid char, and was yielded, continue
+        c = f.read(1)
+        break
+ 
+# Usage:
+with open("input.txt","rb") as f:
+    for c in get_next_character(f):
+        print(c)
+ 
+
+====PYTHON=====
+def get_next_character(f):
+    """Reads one character from the given textfile"""
+    c = f.read(1)
+    while c: 
+        yield c
+        c = f.read(1)
+ 
+# Usage: 
+with open("input.txt", encoding="utf-8") as f:
+    for c in get_next_character(f):
+        print(c, sep="", end="")
+

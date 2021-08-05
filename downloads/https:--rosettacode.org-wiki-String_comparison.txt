@@ -1,0 +1,52 @@
+====RUBY=====
+method_names = [:==,:!=, :>, :>=, :<, :<=, :<=>, :casecmp]
+[["YUP", "YUP"], ["YUP", "Yup"], ["bot","bat"], ["aaa", "zz"]].each do |str1, str2|
+  method_names.each{|m| puts "%s %s %s\t%s" % [str1, m, str2, str1.send(m, str2)]}
+  puts
+end
+
+====RUBY=====
+var methods = %w(== != > >= < <= <=>)
+for s1, s2 in [<YUP YUP>,<YUP Yup>,<bot bat>,<aaa zz>] {
+    methods.each{|m| "%s %s %s\t%s\n".printf(s1, m, s2, s1.(m)(s2))}
+    print "\n"
+}
+
+====PYTHON=====
+fun compare(a, b):
+    print("\n$a is of type ${typeof(a)} and $b is of type ${typeof(b)}")
+    if a < b: print("$a is strictly less than $b")
+    if a <= b: print("$a is less than or equal to $b")
+    if a >  b: print("$a is strictly greater than $b")
+    if a >= b: print("$a is greater than or equal to $b")
+    if a == b: print("$a is equal to $b")
+    if a != b: print("$a is not equal to $b")
+    if a is b: print("$a has object identity with $b")
+    if a is not b: print("$a has negated object identity with $b")
+ 
+compare("YUP", "YUP")
+compare('a', 'z')
+compare("24", "123")
+compare(24, 123)
+compare(5.0, 5)
+ 
+
+====PYTHON=====
+def compare(a, b):
+    print("\n%r is of type %r and %r is of type %r"
+          % (a, type(a), b, type(b)))
+    if a <  b:      print('%r is strictly less than  %r' % (a, b))
+    if a <= b:      print('%r is less than or equal to %r' % (a, b))
+    if a >  b:      print('%r is strictly greater than  %r' % (a, b))
+    if a >= b:      print('%r is greater than or equal to %r' % (a, b))
+    if a == b:      print('%r is equal to %r' % (a, b))
+    if a != b:      print('%r is not equal to %r' % (a, b))
+    if a is b:      print('%r has object identity with %r' % (a, b))
+    if a is not b:  print('%r has negated object identity with %r' % (a, b))
+ 
+compare('YUP', 'YUP')
+compare('BALL', 'BELL')
+compare('24', '123')
+compare(24, 123)
+compare(5.0, 5)
+

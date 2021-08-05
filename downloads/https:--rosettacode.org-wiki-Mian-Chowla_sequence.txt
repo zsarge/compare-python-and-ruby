@@ -1,0 +1,216 @@
+====RUBY=====
+require 'set'
+n, ts, mc, sums = 100, [], [1], Set.new
+sums << 2
+st = Time.now
+for i in (1 .. (n-1))
+   for j in mc[i-1]+1 .. Float::INFINITY
+      mc[i] = j
+      for k in (0 .. i)
+         if (sums.include?(sum = mc[k]+j))
+            ts.clear
+            break 
+         end
+         ts << sum
+      end
+      if (ts.length > 0)
+         sums = sums | ts
+         break
+      end
+   end
+end
+et = (Time.now - st) * 1000
+s = " of the Mian-Chowla sequence are:\n"
+puts "The first 30 terms#{s}#{mc.slice(0..29).join(' ')}\n\n"
+puts "Terms 91 to 100#{s}#{mc.slice(90..99).join(' ')}\n\n"
+puts "Computation time was #{et.round(1)}ms."
+
+====RUBY=====
+mian_chowla = Enumerator.new do |yielder|
+  mc, sums  = [1], {}
+  1.step do |n|
+    mc << n
+    if  mc.none?{|k| sums[k+n] } then
+      mc.each{|k| sums[k+n] = true }
+      yielder << n
+    else 
+      mc.pop # n didn't work, get rid of it.
+    end
+  end
+end
+ 
+res = mian_chowla.take(100).to_a
+ 
+s = " of the Mian-Chowla sequence are:\n"
+puts "The first 30 terms#{s}#{res[0,30].join(' ')}\n
+Terms 91 to 100#{s}#{res[90,10].join(' ')}"
+ 
+
+====RUBY=====
+var (n, sums, ts, mc) = (100, Set([2]), [], [1])
+var st = Time.micro_sec
+for i in (1 ..^ n) {
+   for j in (mc[i-1]+1 .. Inf) {
+      mc[i] = j
+      for k in (0 .. i) {
+         var sum = mc[k]+j
+         if (sums.exists(sum)) { 
+            ts.clear
+            break
+         }
+         ts << sum
+      }
+      if (ts.len > 0) {
+         sums = (sums|Set(ts...))
+         break
+      }
+   }
+}
+var et = (Time.micro_sec - st)
+var s = " of the Mian-Chowla sequence are:\n"
+say "The first 30 terms#{s}#{mc.ft(0, 29).join(' ')}\n"
+say "Terms 91 to 100#{s}#{mc.ft(90, 99).join(' ')}\n"
+say "Computation time was #{et} seconds."
+
+====PYTHON=====
+from itertools import count, islice, chain
+import time
+ 
+def mian_chowla():
+    mc = [1]
+    yield mc[-1]
+    psums = set([2])
+    newsums = set([])
+    for trial in count(2):
+        for n in chain(mc, [trial]):
+            sum = n + trial
+            if sum in psums:
+                newsums.clear()
+                break
+            newsums.add(sum)
+        else:
+            psums |= newsums
+            newsums.clear()
+            mc.append(trial)
+            yield trial
+ 
+def pretty(p, t, s, f):
+    print(p, t, " ".join(str(n) for n in (islice(mian_chowla(), s, f))))
+ 
+if __name__ == '__main__':
+    st = time.time()
+    ts = "of the Mian-Chowla sequence are:\n"
+    pretty("The first 30 terms", ts, 0, 30)
+    pretty("\nTerms 91 to 100", ts, 90, 100)
+    print("\nComputation time was", (time.time()-st) * 1000, "ms")
+
+====PYTHON=====
+'''Mian-Chowla series'''
+ 
+from itertools import (islice)
+from time import time
+ 
+ 
+# mianChowlas :: Gen [Int]
+def mianChowlas():
+    '''Mian-Chowla series - Generator constructor
+    '''
+    mcs = [1]
+    sumSet = set([2])
+    x = 1
+    while True:
+        yield x
+        (sumSet, mcs, x) = nextMC(sumSet, mcs, x)
+ 
+ 
+# nextMC :: (Set Int, [Int], Int) -> (Set Int, [Int], Int)
+def nextMC(setSums, mcs, n):
+    '''(Set of sums, series so far, current term) ->
+        (updated sum set, updated series, next term)
+    '''
+    def valid(x):
+        for m in mcs:
+            if x + m in setSums:
+                return False
+        return True
+ 
+    x = until(valid)(succ)(n)
+    setSums.update(
+        [x + y for y in mcs] + [2 * x]
+    )
+    return (setSums, mcs + [x], x)
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Tests'''
+ 
+    start = time()
+    genMianChowlas = mianChowlas()
+    print(
+        'First 30 terms of the Mian-Chowla series:\n',
+        take(30)(genMianChowlas)
+    )
+    drop(60)(genMianChowlas)
+    print(
+        '\n\nTerms 91 to 100 of the Mian-Chowla series:\n',
+        take(10)(genMianChowlas),
+        '\n'
+    )
+    print(
+        '(Computation time c. ' + str(round(
+            1000 * (time() - start)
+        )) + ' ms)'
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# drop :: Int -> [a] -> [a]
+# drop :: Int -> String -> String
+def drop(n):
+    '''The suffix of xs after the
+       first n elements, or [] if n > length xs'''
+    def go(xs):
+        if isinstance(xs, list):
+            return xs[n:]
+        else:
+            take(n)(xs)
+            return xs
+    return lambda xs: go(xs)
+ 
+ 
+# succ :: Int -> Int
+def succ(x):
+    '''The successor of a numeric value (1 +)'''
+    return 1 + x
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.'''
+    return lambda xs: (
+        xs[0:n]
+        if isinstance(xs, list)
+        else list(islice(xs, n))
+    )
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of applying f until p holds.
+       The initial seed value is x.'''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+if __name__ == '__main__':
+    main()
+

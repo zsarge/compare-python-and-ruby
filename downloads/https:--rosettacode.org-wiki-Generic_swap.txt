@@ -1,0 +1,46 @@
+====RUBY=====
+a, b = b, a
+
+====RUBY=====
+a, b = b, a
+
+====RUBY=====
+def swap(a, b)
+    return b, a
+end
+
+====RUBY=====
+x = 42
+y = "string"
+x, y = swap x, y
+puts x  # prints string
+puts y  # prints 42
+
+====RUBY=====
+func swap(Ref a, Ref b) {
+    var tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+====RUBY=====
+func swap(Ref a, Ref b) {
+    (*a, *b) = (*b, *a);
+}
+
+====RUBY=====
+func swap(Ref a, Ref b) {
+    [*a, *b] » (b, a);
+}
+
+====RUBY=====
+var (x, y) = (1, 2);
+swap(\x, \y);
+
+====PYTHON=====
+a, b = b, a
+
+====PYTHON=====
+def swap(a, b):
+    return b, a
+

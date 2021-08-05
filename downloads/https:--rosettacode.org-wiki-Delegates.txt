@@ -1,0 +1,109 @@
+====RUBY=====
+class Delegator
+   attr_accessor :delegate
+   def operation
+      if @delegate.respond_to?(:thing)
+         @delegate.thing
+      else
+         'default implementation'
+      end
+   end
+end
+ 
+class Delegate
+   def thing
+      'delegate implementation'
+   end
+end
+ 
+if __FILE__ == $PROGRAM_NAME
+ 
+   # No delegate
+   a = Delegator.new
+   puts a.operation # prints "default implementation"
+ 
+   # With a delegate that does not implement "thing"
+   a.delegate = 'A delegate may be any object'
+   puts a.operation # prints "default implementation"
+ 
+   # With delegate that implements "thing"
+   a.delegate = Delegate.new
+   puts a.operation # prints "delegate implementation"
+end
+
+====RUBY=====
+require 'forwardable'
+ 
+class Delegator; extend Forwardable
+  attr_accessor :delegate
+  def_delegator :@delegate, :thing, :delegated
+ 
+  def initialize
+    @delegate = Delegate.new()
+  end
+end
+ 
+class Delegate
+  def thing
+    'Delegate'
+  end
+end
+ 
+a = Delegator.new
+puts a.delegated # prints "Delegate"
+ 
+
+====RUBY=====
+class NonDelegate { }
+ 
+class Delegate {
+    method thing {
+        return "delegate implementation"
+    }
+}
+ 
+class Delegator (delegate = null) {
+    method operation {
+ 
+        if (delegate.respond_to(:thing)) {
+            return delegate.thing
+        }
+ 
+        return "default implementation"
+    }
+}
+ 
+var d = Delegator()
+say "empty: #{d.operation}"
+d.delegate = NonDelegate()
+say "NonDelegate: #{d.operation}"
+d.delegate = Delegate()
+say "Delegate: #{d.operation}"
+
+====PYTHON=====
+class Delegator:
+   def __init__(self):
+      self.delegate = None
+   def operation(self):
+       if hasattr(self.delegate, 'thing') and callable(self.delegate.thing):
+          return self.delegate.thing()
+       return 'default implementation'
+ 
+class Delegate:
+   def thing(self):
+      return 'delegate implementation'
+ 
+if __name__ == '__main__':
+ 
+   # No delegate
+   a = Delegator()
+   assert a.operation() == 'default implementation'
+ 
+   # With a delegate that does not implement "thing"
+   a.delegate = 'A delegate may be any object'
+   assert a.operation() == 'default implementation'
+ 
+   # With delegate that implements "thing"
+   a.delegate = Delegate()
+   assert a.operation() == 'delegate implementation'
+

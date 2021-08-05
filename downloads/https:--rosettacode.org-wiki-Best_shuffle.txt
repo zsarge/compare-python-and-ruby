@@ -1,0 +1,186 @@
+====RUBY=====
+def best_shuffle(s)
+  # Fill _pos_ with positions in the order
+  # that we want to fill them.
+  pos = [] of Int32
+  # g["a"] = [2, 4] implies that s[2] == s[4] == "a"
+  g = s.size.times.group_by { |i| s[i] }
+ 
+  # k sorts letters from low to high count
+  # k = g.sort_by { |k, v| v.length }.map { |k, v| k }        # in Ruby
+  # k = g.to_a.sort_by { |(k, v)| v.size }.map { |(k, v)| k } # Crystal direct
+  k = g.to_a.sort_by { |h| h[1].size }.map { |h| h[0] }       # Crystal shorter
+ 
+  until g.empty?
+    k.each do |letter|
+      g.has_key?(letter) || next          # next unless g.has_key? letter
+      pos << g[letter].pop
+      g[letter].empty? && g.delete letter # g.delete(letter) if g[letter].empty?
+    end
+  end
+ 
+  # Now fill in _new_ with _letters_ according to each position
+  # in _pos_, but skip ahead in _letters_ if we can avoid
+  # matching characters that way.
+  letters = s.dup
+  new = "?" * s.size
+ 
+  until letters.empty?
+    i, p = 0, pos.pop
+    while letters[i] == s[p] && i < (letters.size - 1); i += 1 end
+    # new[p] = letters.slice! i                            # in Ruby
+    new = new.sub(p, letters[i]); letters = letters.sub(i, "")
+  end
+  score = new.chars.zip(s.chars).count { |c, d| c == d }
+  {new, score}
+end
+ 
+%w(abracadabra seesaw elk grrrrrr up a).each do |word|
+  # puts "%s, %s, (%d)" % [word, *best_shuffle(word)]      # in Ruby
+  new, score = best_shuffle(word)
+  puts "%s, %s, (%d)" % [word, new, score]
+end
+
+====RUBY=====
+def best_shuffle(s)
+  # Fill _pos_ with positions in the order
+  # that we want to fill them.
+  pos = []
+  # g["a"] = [2, 4] implies that s[2] == s[4] == "a"
+  g = s.length.times.group_by { |i| s[i] }
+ 
+  # k sorts letters from low to high count
+  k = g.sort_by { |k, v| v.length }.map { |k, v| k }
+ 
+  until g.empty?
+    k.each do |letter|
+      g[letter] or next
+      pos.push(g[letter].pop)
+      g[letter].empty? and g.delete letter
+    end
+  end
+ 
+  # Now fill in _new_ with _letters_ according to each position
+  # in _pos_, but skip ahead in _letters_ if we can avoid
+  # matching characters that way.
+  letters = s.dup
+  new = "?" * s.length
+  until letters.empty?
+    i, p = 0, pos.pop
+    i += 1 while letters[i] == s[p] and i < (letters.length - 1)
+    new[p] = letters.slice! i
+  end
+ 
+  score = new.chars.zip(s.chars).count { |c, d| c == d }
+  [new, score]
+end
+ 
+%w(abracadabra seesaw elk grrrrrr up a).each do |word|
+  puts "%s, %s, (%d)" % [word, *best_shuffle(word)]
+end
+
+====RUBY=====
+func best_shuffle(String orig) -> (String, Number) {
+ 
+    var s = orig.chars
+    var t = s.shuffle
+ 
+    for i (^s) {
+        for j (^s) {
+            if (i!=j && t[i]!=s[j] && t[j]!=s[i]) {
+                t[i, j] = t[j, i]
+                break
+            }
+        }
+    }
+ 
+    (t.join, s ~Z== t -> count(true))
+}
+ 
+for word (<abracadabra seesaw elk grrrrrr up a>) {
+    var (sword, score) = best_shuffle(word)
+    "%-12s %12s: %d\n".printf(word, sword, score)
+}
+
+====PYTHON=====
+import random
+ 
+def count(w1,wnew):
+    return sum(c1==c2 for c1,c2 in zip(w1, wnew))
+ 
+def best_shuffle(w):
+    wnew = list(w)
+    n = len(w)
+    rangelists = (list(range(n)), list(range(n)))
+    for r in rangelists:
+        random.shuffle(r)
+    rangei, rangej = rangelists
+    for i in rangei:
+        for j in rangej:
+            if i != j and wnew[j] != wnew[i] and w[i] != wnew[j] and w[j] != wnew[i]:
+                wnew[j], wnew[i] = wnew[i], wnew[j]
+                break
+    wnew = ''.join(wnew)
+    return wnew, count(w, wnew)
+ 
+ 
+if __name__ == '__main__':
+    test_words = ('tree abracadabra seesaw elk grrrrrr up a ' 
+                  + 'antidisestablishmentarianism hounddogs').split()
+    test_words += ['aardvarks are ant eaters', 'immediately', 'abba']
+    for w in test_words:
+        wnew, c = best_shuffle(w)
+        print("%29s, %-29s ,(%i)" % (w, wnew, c))
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+def best_shuffle(s):
+    # Count the supply of characters.
+    from collections import defaultdict
+    count = defaultdict(int)
+    for c in s:
+        count[c] += 1
+ 
+    # Shuffle the characters.
+    r = []
+    for x in s:
+        # Find the best character to replace x.
+        best = None
+        rankb = -2
+        for c, rankc in count.items():
+            # Prefer characters with more supply.
+            # (Save characters with less supply.)
+            # Avoid identical characters.
+            if c == x: rankc = -1
+            if rankc > rankb:
+                best = c
+                rankb = rankc
+ 
+        # Add character to list. Remove it from supply.
+        r.append(best)
+        count[best] -= 1
+        if count[best] >= 0: del count[best]
+ 
+    # If the final letter became stuck (as "ababcd" became "bacabd",
+    # and the final "d" became stuck), then fix it.
+    i = len(s) - 1
+    if r[i] == s[i]:
+        for j in range(i):
+            if r[i] != s[j] and r[j] != s[i]:
+                r[i], r[j] = r[j], r[i]
+                break
+ 
+    # Convert list to string. PEP 8, "Style Guide for Python Code",
+    # suggests that ''.join() is faster than + when concatenating
+    # many strings. See http://www.python.org/dev/peps/pep-0008/
+    r = ''.join(r)
+ 
+    score = sum(x == y for x, y in zip(r, s))
+ 
+    return (r, score)
+ 
+for s in "abracadabra", "seesaw", "elk", "grrrrrr", "up", "a":
+    shuffled, score = best_shuffle(s)
+    print("%s, %s, (%d)" % (s, shuffled, score))
+

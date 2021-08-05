@@ -1,0 +1,125 @@
+====RUBY=====
+require 'digest/md5'
+ 
+def find_duplicate_files(dir)
+  puts "\nDirectory : #{dir}"
+  Dir.chdir(dir) do
+    file_size = Dir.foreach('.').select{|f| FileTest.file?(f)}.group_by{|f| File.size(f)}
+    file_size.each do |size, files|
+      next if files.size==1
+      files.group_by{|f| Digest::MD5.file(f).to_s}.each do |md5,fs|
+        next if fs.size==1
+        puts "  --------------------------------------------"
+        fs.each{|file| puts "  #{File.mtime(file)}  #{size}  #{file}"}
+      end
+    end
+  end
+end
+ 
+find_duplicate_files("/Windows/System32")
+
+====RUBY=====
+# usage: sidef fdf.sf [size] [dir1] [...]
+ 
+require('File::Find')
+ 
+func find_duplicate_files(Block code, size_min=0, *dirs) {
+    var files = Hash()
+    %S<File::Find>.find(
+        Hash(
+            no_chdir => true,
+            wanted   => func(arg) {
+                var file = File(arg)
+                file.is_file || return()
+                file.is_link && return()
+                var size = file.size
+                size >= size_min || return()
+                files{size} := [] << file
+            },
+        ) => dirs...
+    )
+ 
+    files.values.each { |set|
+        set.len > 1 || next
+        var dups = Hash()
+        for i in (^set.end) {
+            for (var j = set.end; j > i; --j) {
+                if (set[i].compare(set[j]) == 0) {
+                    dups{set[i]} := [] << set.pop_at(j++)
+                }
+            }
+        }
+        dups.each{ |k,v| code(k.to_file, v...) }
+    }
+ 
+    return()
+}
+ 
+var duplicates = Hash()
+func collect(*files) {
+    duplicates{files[0].size} := [] << files
+}
+ 
+find_duplicate_files(collect, Num(ARGV.shift), ARGV...)
+ 
+for k,v in (duplicates.sort_by { |k| -k.to_i }) {
+    say "=> Size: #{k}\n#{'~'*80}"
+    for files in v {
+        say "#{files.sort.join(%Q[\n])}\n#{'-'*80}"
+    }
+}
+
+====PYTHON=====
+from __future__ import print_function
+import os
+import hashlib
+import datetime
+ 
+def FindDuplicateFiles(pth, minSize = 0, hashName = "md5"):
+    knownFiles = {}
+ 
+    #Analyse files
+    for root, dirs, files in os.walk(pth):
+        for fina in files:
+            fullFina = os.path.join(root, fina)
+            isSymLink = os.path.islink(fullFina)
+            if isSymLink:
+                continue # Skip symlinks
+            si = os.path.getsize(fullFina)
+            if si < minSize:
+                continue
+            if si not in knownFiles:
+                knownFiles[si] = {}
+            h = hashlib.new(hashName)
+            h.update(open(fullFina, "rb").read())
+            hashed = h.digest()
+            if hashed in knownFiles[si]:
+                fileRec = knownFiles[si][hashed]
+                fileRec.append(fullFina)
+            else:
+                knownFiles[si][hashed] = [fullFina]
+ 
+    #Print result
+    sizeList = list(knownFiles.keys())
+    sizeList.sort(reverse=True)
+    for si in sizeList:
+        filesAtThisSize = knownFiles[si]
+        for hashVal in filesAtThisSize:
+            if len(filesAtThisSize[hashVal]) < 2:
+                continue
+            fullFinaLi = filesAtThisSize[hashVal]
+            print ("=======Duplicate=======")
+            for fullFina in fullFinaLi:
+                st = os.stat(fullFina)
+                isHardLink = st.st_nlink > 1 
+                infoStr = []
+                if isHardLink:
+                    infoStr.append("(Hard linked)")
+                fmtModTime = datetime.datetime.utcfromtimestamp(st.st_mtime).strftime('%Y-%m-%dT%H:%M:%SZ')
+                print (fmtModTime, si, os.path.relpath(fullFina, pth), " ".join(infoStr))
+ 
+if __name__=="__main__":
+ 
+    FindDuplicateFiles('/home/tim/Dropbox', 1024*1024)
+ 
+

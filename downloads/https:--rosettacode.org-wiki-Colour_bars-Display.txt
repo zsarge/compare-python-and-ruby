@@ -1,0 +1,66 @@
+====RUBY=====
+ 
+# Array of web colors black, red, green, blue, magenta, cyan, yellow, white
+PALETTE = %w[#000000 #ff0000 #00ff00 #0000ff #ff00ff #00ffff #ffffff].freeze
+ 
+def settings
+  full_screen
+end
+ 
+def setup
+  PALETTE.each_with_index do |col, idx|
+    fill color(col)
+    rect(idx * width / 8, 0, width / 8, height)
+  end
+end
+ 
+
+====RUBY=====
+require('GD');
+ 
+var colors = Hash.new(
+              white   => [255, 255, 255],
+              red     => [255, 0,   0],
+              green   => [0,   255, 0],
+              blue    => [0,   0,   255],
+              magenta => [255, 0,   255],
+              yellow  => [255, 255, 0],
+              cyan    => [0,   255, 255],
+              black   => [0,   0,   0],
+             );
+ 
+var barwidth = 160/8;
+var image    = %s'GD::Image'.new(160, 100);
+var start    = 0;
+ 
+colors.values.each { |rgb|
+    var paintcolor = image.colorAllocate(rgb...);
+    image.filledRectangle(start * barwidth, 0, start*barwidth + barwidth - 1, 99, paintcolor);
+    start++;
+};
+ 
+%f'colorbars.png'.open('>:raw').print(image.png);
+
+====PYTHON=====
+ 
+#!/usr/bin/env python
+#vertical coloured stripes in window in Python 2.7.1
+ 
+from livewires import *
+ 
+horiz=640; vert=480
+begin_graphics(width=horiz,height=vert,title="v_stripes",background=Colour.black)
+NameColors=["black","red","green","dark_blue","purple","blue","yellow","white"]
+stepik=horiz/len(NameColors)
+ 
+for index,each in enumerate(NameColors):
+	ExcStrng="set_colour(Colour."+each+")"
+	exec ExcStrng
+	box(index*stepik,0,(index+1)*stepik,vert,filled=1)
+ 
+while keys_pressed() != ['x']: # press x key to terminate program
+	pass
+ 
+end_graphics()
+ 
+

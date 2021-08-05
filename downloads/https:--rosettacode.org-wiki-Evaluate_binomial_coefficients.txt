@@ -1,0 +1,159 @@
+====RUBY=====
+class Integer
+  # binomial coefficient: n C k
+  def choose(k)
+    # n!/(n-k)!
+    pTop = (self-k+1 .. self).inject(1, &:*) 
+    # k!
+    pBottom = (2 .. k).inject(1, &:*)
+    pTop / pBottom
+  end
+end
+ 
+p 5.choose(3)
+p 60.choose(30)
+
+====RUBY=====
+ 
+def c n, r
+  (0...r).inject(1) do |m,i| (m * (n - i)) / (i + 1) end
+end
+ 
+
+====RUBY=====
+(1..60).to_a.combination(30).size  #=> 118264581564861424
+
+====RUBY=====
+func binomial(n,k) {
+    n! / ((n-k)! * k!)
+}
+ 
+say binomial(400, 200)
+
+====RUBY=====
+say 400.nok(200)
+
+====PYTHON=====
+def binomialCoeff(n, k):
+    result = 1
+    for i in range(1, k+1):
+        result = result * (n-i+1) / i
+    return result
+ 
+if __name__ == "__main__":
+    print(binomialCoeff(5, 3))
+
+====PYTHON=====
+from operator import mul
+from functools import reduce
+ 
+ 
+def comb(n,r):
+    ''' calculate nCr - the binomial coefficient
+    >>> comb(3,2)
+    3
+    >>> comb(9,4)
+    126
+    >>> comb(9,6)
+    84
+    >>> comb(20,14)
+    38760
+    '''
+ 
+    if r > n-r:
+        # r = n-r   for smaller intermediate values during computation
+        return ( reduce( mul, range((n - (n-r) + 1), n + 1), 1)
+                 // reduce( mul, range(1, (n-r) + 1), 1) )
+    else:
+        return ( reduce( mul, range((n - r + 1), n + 1), 1)
+                 // reduce( mul, range(1, r + 1), 1) )
+
+====PYTHON=====
+'''Evaluation of binomial coefficients'''
+ 
+from functools import reduce
+ 
+ 
+# binomialCoefficient :: Int -> Int -> Int
+def binomialCoefficient(n):
+    '''n choose k, expressed in terms of
+       product and factorial functions.
+    '''
+    return lambda k: product(
+        enumFromTo(1 + k)(n)
+    ) // factorial(n - k)
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO()
+def main():
+    '''Tests'''
+ 
+    print(
+        binomialCoefficient(5)(3)
+    )
+ 
+    # k=0 to k=5, where n=5
+    print(
+        list(map(
+            binomialCoefficient(5),
+            enumFromTo(0)(5)
+        ))
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+# factorial :: Int -> Int
+def factorial(x):
+    '''The factorial of x, where
+       x is a positive integer.
+    '''
+    return product(enumFromTo(1)(x))
+ 
+ 
+# product :: [Num] -> Num
+def product(xs):
+    '''The product of a list of
+       numeric values.
+    '''
+    return reduce(lambda a, b: a * b, xs, 1)
+ 
+ 
+# TESTS ---------------------------------------------------
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+from typing import (Callable, List, Any)
+from functools import reduce
+from operator import mul
+ 
+ 
+def binomialCoefficient(n: int) -> Callable[[int], int]:
+    return lambda k: product(enumFromTo(1 + k)(n)) // factorial(n - k)
+ 
+ 
+def enumFromTo(m: int) -> Callable[[int], List[Any]]:
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+def factorial(x: int) -> int:
+    return product(enumFromTo(1)(x))
+ 
+ 
+def product(xs: List[Any]) -> int:
+    return reduce(mul, xs, 1)
+ 
+ 
+if __name__ == '__main__':
+    print(binomialCoefficient(5)(3))
+    # k=0 to k=5, where n=5
+    print(list(map(binomialCoefficient(5), enumFromTo(0)(5))))
+

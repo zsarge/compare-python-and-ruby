@@ -1,0 +1,170 @@
+====RUBY=====
+# returns an 2-D array where each element is a Rational
+def reduced_row_echelon_form(ary)
+  lead = 0
+  rows = ary.size
+  cols = ary[0].size
+  rary = convert_to(ary, :to_r)  # use rational arithmetic
+  catch :done  do
+    rows.times do |r|
+      throw :done  if cols <= lead
+      i = r
+      while rary[i][lead] == 0
+        i += 1
+        if rows == i
+          i = r
+          lead += 1
+          throw :done  if cols == lead
+        end
+      end
+      # swap rows i and r 
+      rary[i], rary[r] = rary[r], rary[i]
+      # normalize row r
+      v = rary[r][lead]
+      rary[r].collect! {|x| x / v}
+      # reduce other rows
+      rows.times do |i|
+        next if i == r
+        v = rary[i][lead]
+        rary[i].each_index {|j| rary[i][j] -= v * rary[r][j]}
+      end
+      lead += 1
+    end
+  end
+  rary
+end
+ 
+# type should be one of :to_s, :to_i, :to_f, :to_r
+def convert_to(ary, type)
+  ary.each_with_object([]) do |row, new|
+    new << row.collect {|elem| elem.send(type)}
+  end
+end
+ 
+class Rational
+  alias _to_s to_s
+  def to_s
+    denominator==1 ? numerator.to_s : _to_s
+  end
+end
+ 
+def print_matrix(m)
+  max = m[0].collect {-1}
+  m.each {|row| row.each_index {|i| max[i] = [max[i], row[i].to_s.length].max}}
+  m.each {|row| row.each_index {|i| print "%#{max[i]}s " % row[i]}; puts}
+end
+ 
+mtx = [
+  [ 1, 2, -1, -4],
+  [ 2, 3, -1,-11],
+  [-2, 0, -3, 22]
+]
+print_matrix reduced_row_echelon_form(mtx)
+puts
+ 
+mtx = [
+  [ 1, 2, 3, 7],
+  [-4, 7,-2, 7],
+  [ 3, 3, 0, 7]
+]
+reduced = reduced_row_echelon_form(mtx)
+print_matrix reduced
+print_matrix convert_to(reduced, :to_f)
+
+====RUBY=====
+func rref (M) {
+    var (j, rows, cols) = (0, M.len, M[0].len)
+ 
+    for r in (^rows) {
+        j < cols || return M
+ 
+        var i = r
+        while (!M[i][j]) {
+            ++i == rows || next
+            i = r
+            ++j == cols && return M
+        }
+ 
+        M[i, r] = M[r, i] if (r != i)
+        M[r] = (M[r] »/» M[r][j])
+ 
+        for n in (^rows) {
+            next if (n == r)
+            M[n] = (M[n] »-« (M[r] »*» M[n][j]))
+        }
+        ++j
+    }
+ 
+    return M
+}
+ 
+func say_it (message, array) {
+    say "\n#{message}";
+    array.each { |row|
+        say row.map { |n| " %5s" % n.as_rat }.join
+    }
+}
+ 
+var M = [
+    [ # base test case
+      [  1,  2,  -1,  -4 ],
+      [  2,  3,  -1, -11 ],
+      [ -2,  0,  -3,  22 ],
+    ],
+    [ # mix of number styles
+      [  3,   0,  -3,    1 ],
+      [ .5, 3/2,  -3,   -2 ],
+      [ .2, 4/5,  -1.6, .3 ],
+    ],
+    [ # degenerate case
+      [ 1,  2,  3,  4,  3,  1],
+      [ 2,  4,  6,  2,  6,  2],
+      [ 3,  6, 18,  9,  9, -6],
+      [ 4,  8, 12, 10, 12,  4],
+      [ 5, 10, 24, 11, 15, -4],
+    ],
+];
+ 
+M.each { |matrix|
+    say_it('Original Matrix', matrix);
+    say_it('Reduced Row Echelon Form Matrix', rref(matrix));
+    say '';
+}
+
+====PYTHON=====
+def ToReducedRowEchelonForm( M):
+    if not M: return
+    lead = 0
+    rowCount = len(M)
+    columnCount = len(M[0])
+    for r in range(rowCount):
+        if lead >= columnCount:
+            return
+        i = r
+        while M[i][lead] == 0:
+            i += 1
+            if i == rowCount:
+                i = r
+                lead += 1
+                if columnCount == lead:
+                    return
+        M[i],M[r] = M[r],M[i]
+        lv = M[r][lead]
+        M[r] = [ mrx / float(lv) for mrx in M[r]]
+        for i in range(rowCount):
+            if i != r:
+                lv = M[i][lead]
+                M[i] = [ iv - lv*rv for rv,iv in zip(M[r],M[i])]
+        lead += 1
+ 
+ 
+mtx = [
+   [ 1, 2, -1, -4],
+   [ 2, 3, -1, -11],
+   [-2, 0, -3, 22],]
+ 
+ToReducedRowEchelonForm( mtx )
+ 
+for rw in mtx:
+  print ', '.join( (str(rv) for rv in rw) )
+

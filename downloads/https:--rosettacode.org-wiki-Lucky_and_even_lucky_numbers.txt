@@ -1,0 +1,178 @@
+====RUBY=====
+def generator(even=false, nmax=1000000)
+  start = even ? 2 : 1
+  Enumerator.new do |y|
+    n = 1
+    ary = [0] + (start..nmax).step(2).to_a      # adds [0] to revise the 0 beginnings.
+    y << ary[n]
+    while (m = ary[n+=1]) < ary.size
+      y << m
+      (m...ary.size).step(m){|i| ary[i]=nil}
+      ary.compact!                              # remove nil
+    end
+    # drain
+    ary[n..-1].each{|i| y << i}
+    raise StopIteration
+  end
+end
+ 
+def lucky(argv)
+  j, k = argv[0].to_i, argv[1].to_i
+  mode = /even/i=~argv[2] ? :'even lucky' : :lucky
+  seq = generator(mode == :'even lucky')
+  ord = ->(n){"#{n}#{(n%100).between?(11,19) ? 'th' : %w[th st nd rd th th th th th th][n%10]}"}
+  if k.zero?
+    puts "#{ord[j]} #{mode} number: #{seq.take(j).last}"
+  elsif 0 < k
+    puts "#{ord[j]} through #{ord[k]} (inclusive) #{mode} numbers",
+         "  #{seq.take(k)[j-1..-1]}"
+  else
+    k = -k
+    ary = []
+    loop do
+      case num=seq.next
+      when 1...j
+      when j..k  then ary << num
+      else break
+      end
+    end
+    puts "all #{mode} numbers in the range #{j}..#{k}",
+         "  #{ary}"
+  end
+end
+ 
+if __FILE__ == $0
+  lucky(ARGV)
+end
+
+====PYTHON=====
+from __future__ import print_function
+ 
+def lgen(even=False, nmax=1000000):
+    start = 2 if even else 1
+    n, lst = 1, list(range(start, nmax + 1, 2))
+    lenlst = len(lst)
+    yield lst[0]
+    while n < lenlst and lst[n] < lenlst:
+        yield lst[n]
+        n, lst = n + 1, [j for i,j in enumerate(lst, 1) if i % lst[n]]
+        lenlst = len(lst)
+    # drain
+    for i in lst[n:]:
+        yield i
+
+====PYTHON=====
+from itertools import islice
+import sys, re
+ 
+class ArgumentError(Exception):
+    pass
+def arghandler(argstring):
+    match_obj = re.match( r"""(?mx)
+    (?:
+      (?P<SINGLE>
+         (?: ^ (?P<SINGLEL> \d+ ) (?:  | \s , \s lucky ) \s* $ )
+        |(?: ^ (?P<SINGLEE> \d+ ) (?:  | \s , \s evenLucky ) \s* $ )
+      )
+     |(?P<KTH>
+         (?: ^ (?P<KTHL> \d+ \s \d+ ) (?:  | \s lucky ) \s* $ )
+        |(?: ^ (?P<KTHE> \d+ \s \d+ ) (?:  | \s evenLucky ) \s* $ )
+      )
+     |(?P<RANGE>
+         (?: ^ (?P<RANGEL> \d+ \s -\d+ ) (?:  | \s lucky ) \s* $ )
+        |(?: ^ (?P<RANGEE> \d+ \s -\d+ ) (?:  | \s evenLucky ) \s* $ )
+      )
+    )""", argstring)
+ 
+    if match_obj:
+        # Retrieve group(s) by name
+        SINGLEL = match_obj.group('SINGLEL')
+        SINGLEE = match_obj.group('SINGLEE')
+        KTHL = match_obj.group('KTHL')
+        KTHE = match_obj.group('KTHE')
+        RANGEL = match_obj.group('RANGEL')
+        RANGEE = match_obj.group('RANGEE')
+        if SINGLEL: 
+            j = int(SINGLEL)
+            assert 0 < j < 10001, "Argument out of range"
+            print("Single %i'th lucky number:" % j, end=' ')
+            print( list(islice(lgen(), j-1, j))[0] )
+        elif SINGLEE: 
+            j = int(SINGLEE)
+            assert 0 < j < 10001, "Argument out of range"
+            print("Single %i'th even lucky number:" % j, end=' ')
+            print( list(islice(lgen(even=True), j-1, j))[0] )
+        elif KTHL: 
+            j, k = [int(num) for num in KTHL.split()]
+            assert 0 < j < 10001, "first argument out of range"
+            assert 0 < k < 10001 and k > j, "second argument out of range"
+            print("List of %i ... %i lucky numbers:" % (j, k), end=' ')
+            for n, luck in enumerate(lgen(), 1):
+                if n > k: break
+                if n >=j: print(luck, end = ', ')
+            print('')
+        elif KTHE: 
+            j, k = [int(num) for num in KTHE.split()]
+            assert 0 < j < 10001, "first argument out of range"
+            assert 0 < k < 10001 and k > j, "second argument out of range"
+            print("List of %i ... %i even lucky numbers:" % (j, k), end=' ')
+            for n, luck in enumerate(lgen(even=True), 1):
+                if n > k: break
+                if n >=j: print(luck, end = ', ')
+            print('')
+        elif RANGEL: 
+            j, k = [int(num) for num in RANGEL.split()]
+            assert 0 < j < 10001, "first argument out of range"
+            assert 0 < -k < 10001 and -k > j, "second argument out of range"
+            k = -k
+            print("List of lucky numbers in the range %i ... %i :" % (j, k), end=' ')
+            for n in lgen():
+                if n > k: break
+                if n >=j: print(n, end = ', ')
+            print('')
+        elif RANGEE: 
+            j, k = [int(num) for num in RANGEE.split()]
+            assert 0 < j < 10001, "first argument out of range"
+            assert 0 < -k < 10001 and -k > j, "second argument out of range"
+            k = -k
+            print("List of even lucky numbers in the range %i ... %i :" % (j, k), end=' ')
+            for n in lgen(even=True):
+                if n > k: break
+                if n >=j: print(n, end = ', ')
+            print('')
+    else:
+        raise ArgumentError('''
+ 
+  Error Parsing Arguments!
+ 
+  Expected Arguments of the form (where j and k are integers):
+ 
+      j                #  Jth       lucky number
+      j  ,      lucky  #  Jth       lucky number
+      j  ,  evenLucky  #  Jth  even lucky number
+                       #
+      j  k             #  Jth  through  Kth (inclusive)       lucky numbers
+      j  k      lucky  #  Jth  through  Kth (inclusive)       lucky numbers
+      j  k  evenLucky  #  Jth  through  Kth (inclusive)  even lucky numbers
+                       #
+      j -k             #  all       lucky numbers in the range  j --? |k|
+      j -k      lucky  #  all       lucky numbers in the range  j --? |k|
+      j -k  evenLucky  #  all  even lucky numbers in the range  j --? |k|
+        ''')
+ 
+if __name__ == '__main__':
+    arghandler(' '.join(sys.argv[1:]))
+
+====PYTHON=====
+from itertools import count
+def lgen(even=False):
+    lucky = []
+    if not even:
+        yield 1
+    for k in count(1):
+        for l in reversed(lucky):
+            k = (k*l)//(l-1)
+        lucky.append(2*k+1 + even)
+        yield 2*k+1 + even
+ 
+

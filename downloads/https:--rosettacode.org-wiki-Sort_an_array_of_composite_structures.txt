@@ -1,0 +1,41 @@
+====RUBY=====
+Person = Struct.new(:name,:value) do
+  def to_s; "name:#{name}, value:#{value}" end
+end
+ 
+list = [Person.new("Joe",3),
+        Person.new("Bill",4),
+        Person.new("Alice",20),
+        Person.new("Harry",3)]
+puts list.sort_by{|x|x.name}
+puts
+puts list.sort_by(&:value)
+
+====RUBY=====
+# Declare an array of pairs
+var people = [['joe', 120], ['foo', 31], ['bar', 51]];
+ 
+# Sort the array in-place by name
+people.sort! {|a,b| a[0] <=> b[0] };
+ 
+# Alternatively, we can use the `.sort_by{}` method
+var sorted = people.sort_by { |item| item[0] };
+ 
+# Display the sorted array
+say people;
+
+====PYTHON=====
+people = [('joe', 120), ('foo', 31), ('bar', 51)]
+sorted(people)
+
+====PYTHON=====
+[('bar', 51), ('foo', 31), ('joe', 120)]
+
+====PYTHON=====
+from operator import itemgetter
+people = [(120, 'joe'), (31, 'foo'), (51, 'bar')]
+people.sort(key=itemgetter(1))
+
+====PYTHON=====
+[(51, 'bar'), (31, 'foo'), (120, 'joe')]
+

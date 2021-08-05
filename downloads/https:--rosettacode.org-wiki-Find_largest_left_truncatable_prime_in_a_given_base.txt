@@ -1,0 +1,161 @@
+====RUBY=====
+ 
+# Compute the largest left truncatable prime
+#
+#  Nigel_Galloway
+#  September 15th., 2012.
+#
+require 'prime'
+BASE = 3
+MAX = 500
+stems = Prime.each(BASE-1).to_a
+(1..MAX-1).each {|i|
+  print "#{stems.length} "
+  t = []
+  b = BASE ** i
+  stems.each {|z|
+    (1..BASE-1).each {|n|
+      c = n*b+z
+      t.push(c) if c.prime?
+  }}
+  break if t.empty?
+  stems = t
+}
+puts "The largest left truncatable prime #{"less than #{BASE ** MAX} " if MAX < 500}in base #{BASE} is #{stems.max}"
+ 
+
+====RUBY=====
+ 
+# Compute the largest left truncatable prime
+#
+#  Nigel_Galloway
+#  September 15th., 2012.
+#
+require 'prime'
+require 'java'
+BASE = 10
+MAX = 500
+stems = Prime.each(BASE-1).to_a
+(1..MAX-1).each {|i|
+  print "#{stems.length} "
+  t = []
+  b = BASE ** i
+  stems.each {|z|
+    (1..BASE-1).each {|n|
+      c = n*b+z
+      t.push(c) if java.math.BigInteger.new(c.to_s).isProbablePrime(100)
+  }}
+  break if t.empty?
+  stems = t
+}
+puts "\nThe largest left truncatable prime #{"less than #{BASE ** MAX} " if MAX < 500}in base #{BASE} is #{stems.max}"
+ 
+
+====RUBY=====
+func lltp(n) {
+    var b = 1
+    var best = nil
+    var v = (n-1 -> primes)
+ 
+    while (v) {
+        best = v.max
+        b *= n
+        v.map! { |vi|
+            {|i| i*b + vi }.map(1..^n).grep{.is_prime}...
+        }
+    }
+ 
+    return best
+}
+ 
+for i in (3..17) {
+    printf("%2d %s\n", i, lltp(i))
+}
+
+====RUBY=====
+func digits2num(digits, base) {
+    digits.map_kv {|k,v| base**k * v  }.sum
+}
+ 
+func generate_from_suffix(p, base) {
+ 
+    var seq = [p]
+ 
+    for n in (1 ..^ base) {
+        var t = [p..., n]
+        if (is_prime(digits2num(t, base))) {
+            seq << __FUNC__(t, base)...
+        }
+    }
+ 
+    return seq
+}
+ 
+func left_truncatable_primes(base) {
+ 
+    var prime_digits = (base-1 -> primes)
+ 
+    prime_digits.map  {|p| generate_from_suffix([p], base)... }\
+                .map  {|t| digits2num(t, base) }\
+                .sort
+}
+ 
+for n in (3..11) {
+    var ltp = left_truncatable_primes(n)
+    say ("There are #{'%4d' % ltp.len} left-truncatable primes in base #{'%2d' % n}, where largest is #{ltp.max}")
+}
+
+====PYTHON=====
+import random
+ 
+def is_probable_prime(n,k):
+    #this uses the miller-rabin primality test found from rosetta code
+    if n==0 or n==1:
+        return False
+    if n==2:
+        return True
+    if n % 2 == 0:
+        return False
+    s = 0
+    d = n-1
+ 
+    while True:
+        quotient, remainder = divmod(d, 2)
+        if remainder == 1:
+            break
+        s += 1
+        d = quotient
+ 
+    def try_composite(a):
+        if pow(a, d, n) == 1:
+            return False
+        for i in range(s):
+            if pow(a, 2**i * d, n) == n-1:
+                return False
+        return True # n is definitely composite
+ 
+    for i in range(k):
+        a = random.randrange(2, n)
+        if try_composite(a):
+            return False
+ 
+    return True # no base tested showed n as composite    
+ 
+ 
+def largest_left_truncatable_prime(base):    
+    radix = 0
+    candidates = [0]
+    while True:
+        new_candidates=[]
+        multiplier = base**radix
+        for i in range(1,base):
+            new_candidates += [x+i*multiplier for x in candidates if is_probable_prime(x+i*multiplier,30)]
+        if len(new_candidates)==0:
+            return max(candidates)
+        candidates = new_candidates
+        radix += 1
+ 
+for b in range(3,24):
+    print("%d:%d\n" % (b,largest_left_truncatable_prime(b)))
+ 
+

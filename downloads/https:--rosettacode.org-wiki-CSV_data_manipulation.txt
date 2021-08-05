@@ -1,0 +1,102 @@
+====RUBY=====
+require 'csv'
+# read:
+ar = CSV.table("test.csv").to_a #table method assumes headers and converts numbers if possible.
+ 
+# manipulate:
+ar.first << "SUM"
+ar[1..-1].each{|row| row << row.sum}
+ 
+# write:
+CSV.open("out.csv", 'w') do |csv|
+  ar.each{|line| csv << line}
+end
+
+====RUBY=====
+# Read
+var csvfile = %f'data.csv';
+var fh = csvfile.open_r;
+var header = fh.line.trim_end.split(',');
+var csv = fh.lines.map { .trim_end.split(',').map{.to_num} };
+fh.close;
+ 
+# Write
+var out = csvfile.open_w;
+out.say([header..., 'SUM'].join(','));
+csv.each { |row| out.say([row..., row.sum].join(',')) };
+out.close;
+
+====RUBY=====
+var csv = require('Text::CSV').new(
+    Hash(eol => "\n")
+);
+ 
+# Open
+var csvfile = %f'data.csv';
+var fh = csvfile.open_r;
+ 
+# Read
+var rows = [];
+var header = csv.getline(fh);
+while (var row = csv.getline(fh)) {
+    rows.append(row.map{.to_num});
+}
+ 
+# Process
+header.append('SUM');
+rows.each { |row| row.append(row.sum) };
+ 
+# Write
+var out = csvfile.open_w;
+[header, rows...].each { |row|
+    csv.print(out, row);
+};
+
+====PYTHON=====
+import fileinput
+ 
+changerow, changecolumn, changevalue = 2, 4, '"Spam"'
+ 
+with fileinput.input('csv_data_manipulation.csv', inplace=True) as f:
+    for line in f:
+        if fileinput.filelineno() == changerow:
+            fields = line.rstrip().split(',')
+            fields[changecolumn-1] = changevalue
+            line = ','.join(fields) + '\n'
+        print(line, end='')
+
+====PYTHON=====
+import csv
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+ 
+filepath = Path('data.csv')
+temp_file = NamedTemporaryFile('w',
+                               newline='',
+                               delete=False)
+ 
+with filepath.open() as csv_file, temp_file:
+    reader = csv.reader(csv_file)
+    writer = csv.writer(temp_file)
+ 
+    header = next(reader)
+    writer.writerow(header + ['SUM'])
+ 
+    for row in reader:
+        row_sum = sum(map(int, row))
+        writer.writerow(row + [row_sum])
+ 
+temp_file_path = Path(temp_file.name)
+temp_file_path.replace(filepath)
+ 
+
+====PYTHON=====
+import pandas as pd
+ 
+filepath = 'data.csv'
+ 
+df = pd.read_csv(filepath)
+rows_sums = df.sum(axis=1)
+df['SUM'] = rows_sums
+df.to_csv(filepath, index=False)
+

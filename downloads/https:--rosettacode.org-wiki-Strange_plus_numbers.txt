@@ -1,0 +1,117 @@
+====RUBY=====
+$p = [
+    false, false, true, true, false,
+    true, false, true, false, false,
+    false, true, false, true, false,
+    false, false, true, false
+]
+ 
+def isStrange(n)
+    if n < 10 then
+        return false
+    end
+ 
+    while n >= 10 do
+        if not $p[n % 10 + (n / 10).floor % 10] then
+            return false
+        end
+        n = (n / 10).floor
+    end
+ 
+    return true
+end
+ 
+def test(nMin, nMax)
+    k = 0
+    for n in nMin .. nMax
+        if isStrange(n) then
+            print n
+            k = k + 1
+            if k % 10 != 0 then
+                print ' '
+            else
+                print "\n"
+            end
+        end
+    end
+end
+ 
+test(101, 499)
+
+====RUBY=====
+100..500 -> map { .digits }.grep {|d|
+    is_prime(d[-1]+d[-2]) && is_prime(d[-2]+d[-3])
+}.map{ .digits2num }.slices(10).each { .join(' ').say }
+
+====PYTHON=====
+Python 3.8.5 (default, Sep  3 2020, 21:29:08) [MSC v.1916 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license()" for more information.
+>>> from sympy import isprime
+ 
+>>> [x for x in range(101,500) 
+ if isprime(sum(int(c) for c in str(x)[:2])) and
+    isprime(sum(int(c) for c in str(x)[1:]))]
+[111, 112, 114, 116, 120, 121, 123, 125, 129, 141, 143, 147, 149, 161, 165, 167, 202, 203, 205, 207, 211, 212, 214, 216, 230, 232, 234, 238, 250, 252, 256, 258, 292, 294, 298, 302, 303, 305, 307, 320, 321, 323, 325, 329, 341, 343, 347, 349, 383, 385, 389, 411, 412, 414, 416, 430, 432, 434, 438, 470, 474, 476, 492, 494, 498]
+>>> 
+
+====PYTHON=====
+'''Strange Plus Numbers'''
+ 
+ 
+# isStrangePlus :: Int -> Bool
+def isStrangePlus(n):
+    '''True all consecutive decimal digit
+       pairs in n have prime sums.
+    '''
+    def test(a, b):
+        return a + b in [2, 3, 5, 7, 11, 13, 17]
+ 
+    xs = digits(n)
+    return all(map(test, xs, xs[1:]))
+ 
+ 
+# ------------------- TEST AND DISPLAY -------------------
+# main :: IO ()
+def main():
+    '''List and count of Strange Plus Numbers'''
+ 
+    xs = [
+        n for n in range(100, 1 + 500)
+        if isStrangePlus(n)
+    ]
+    print('\n"Strange Plus" numbers in range [100..500]\n')
+    print('(Total: ' + str(len(xs)) + ')\n')
+    print(
+        '\n'.join(
+            ' '.join(
+                str(x) for x in row
+            ) for row in chunksOf(10)(xs)
+        )
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divible, the final list will be shorter than n.
+    '''
+    def go(xs):
+        return (
+            xs[i:n + i] for i in range(0, len(xs), n)
+        ) if 0 < n else None
+    return go
+ 
+ 
+# digits :: Int -> [Int]
+def digits(n):
+    '''Component digits of a decimal number.'''
+    return [int(c) for c in str(n)]
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

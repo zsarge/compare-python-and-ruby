@@ -1,0 +1,194 @@
+====RUBY=====
+def sum_3_5_multiples(n)
+  (0...n).select { |i| i % 3 == 0 || i % 5 == 0 }.sum
+end
+ 
+puts sum_3_5_multiples(1000)
+
+====RUBY=====
+require "big"
+ 
+def g(n1, n2, n3)
+   g1 = n1*n2; n3 -= 1
+   (1..g1).select{|x| x%n1==0 || x%n2==0}.map{|x| g2=(n3-x)//g1; (x+g1*g2+x)*(g2+1)}.sum // 2
+end
+ 
+puts g(3,5,999)
+puts g(3,5,1000)
+ 
+# For extra credit
+puts g(3,5,"100000000000000000000".to_big_i - 1)
+puts g(3,5,"100000000000000000000".to_big_i)
+
+====RUBY=====
+require "big"
+ 
+def sumMul(n, f)
+  n1 = (n.to_big_i - 1) // f  # number of multiples of f < n
+  f * n1 * (n1 + 1) // 2      # f * (sum of number of multiples)
+end
+ 
+def sum35(n)
+  sumMul(n, 3) + sumMul(n, 5) - sumMul(n, 15)
+end
+ 
+(1..20).each do |e| limit = 10.to_big_i ** e
+  puts "%2d:%22d %s" % [e, limit, sum35(limit)]
+end
+
+====RUBY=====
+def sum35(n)
+  (1...n).select{|i|i%3==0 or i%5==0}.sum
+end
+puts sum35(1000)      #=> 233168
+
+====RUBY=====
+# Given two integers n1,n2 return sum of multiples upto n3
+#
+#  Nigel_Galloway
+#  August 24th., 2013.
+def g(n1, n2, n3)
+   g1 = n1*n2
+   (1..g1).select{|x| x%n1==0 or x%n2==0}.collect{|x| g2=(n3-x)/g1; (x+g1*g2+x)*(g2+1)}.inject{|sum,x| sum+x}/2
+end
+ 
+puts g(3,5,999)
+ 
+# For extra credit
+puts g(3,5,100000000000000000000-1)
+
+====RUBY=====
+def sumMul(n, f)
+  n1 = (n - 1) / f
+  f * n1 * (n1 + 1) / 2
+end
+ 
+def sum35(n)
+  sumMul(n, 3) + sumMul(n, 5) - sumMul(n, 15)
+end
+ 
+for i in 1..20
+  puts "%2d:%22d %s" % [i, 10**i, sum35(10**i)]
+end
+
+====RUBY=====
+func sumMul(n, f) {
+    var m = int((n - 1) / f)
+    f * m * (m + 1) / 2
+}
+ 
+func sum35(n) {
+    sumMul(n, 3) + sumMul(n, 5) - sumMul(n, 15)
+}
+ 
+for i in (1..20) {
+    printf("%2s:%22s %s\n", i, 10**i, sum35(10**i))
+}
+
+====PYTHON=====
+def sum35a(n):
+    'Direct count'
+    # note: ranges go to n-1
+    return sum(x for x in range(n) if x%3==0 or x%5==0)
+ 
+def sum35b(n): 
+    "Count all the 3's; all the 5's; minus double-counted 3*5's"
+    # note: ranges go to n-1
+    return sum(range(3, n, 3)) + sum(range(5, n, 5)) - sum(range(15, n, 15))
+ 
+def sum35c(n):
+    'Sum the arithmetic progressions: sum3 + sum5 - sum15'
+    consts = (3, 5, 15)
+    # Note: stop at n-1
+    divs = [(n-1) // c for c in consts]
+    sums = [d*c*(1+d)/2 for d,c in zip(divs, consts)]
+    return sums[0] + sums[1] - sums[2]
+ 
+#test
+for n in range(1001):
+    sa, sb, sc = sum35a(n), sum35b(n), sum35c(n)
+    assert sa == sb == sc  # python tests aren't like those of c.
+ 
+print('For n = %7i -> %i\n' % (n, sc))
+ 
+# Pretty patterns
+for p in range(7):
+    print('For n = %7i -> %i' % (10**p, sum35c(10**p)))
+ 
+# Scalability 
+p = 20
+print('\nFor n = %20i -> %i' % (10**p, sum35c(10**p)))
+
+====PYTHON=====
+'''Summed multiples of 3 and 5 up to n'''
+ 
+ 
+# sum35 :: Int -> Int
+def sum35(n):
+    '''Sum of all positive multiples
+       of 3 or 5 below n.
+    '''
+    f = sumMults(n)
+    return f(3) + f(5) - f(15)
+ 
+ 
+# sumMults :: Int -> Int -> Int
+def sumMults(n):
+    '''Area under a straight line between
+       the first multiple and the last.
+    '''
+    def go(n, m):
+        n1 = (n - 1) // m
+        return (m * n1 * (n1 + 1)) // 2
+    return lambda x: go(n, x)
+ 
+ 
+# TEST ----------------------------------------------------
+def main():
+    '''Tests for [10^1 .. 10^5], and [10^8 .. 10^25]
+    '''
+    print(
+        fTable(__doc__ + ':\n')(lambda x: '10E' + str(x))(
+            str
+        )(compose(sum35)(lambda x: 10**x))(
+            enumFromTo(1)(5) + enumFromTo(18)(25)
+        )
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: list(range(m, 1 + n))
+ 
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) ->
+#        (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+          f -> value list -> tabular string.'''
+    def go(xShow, fxShow, f, xs):
+        w = max(map(compose(len)(xShow), xs))
+        return s + '\n' + '\n'.join([
+            xShow(x).rjust(w, ' ') + ' -> ' + fxShow(f(x)) for x in xs
+        ])
+    return lambda xShow: lambda fxShow: (
+        lambda f: lambda xs: go(
+            xShow, fxShow, f, xs
+        )
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,184 @@
+====RUBY=====
+require 'tk'
+str = TkVariable.new("no clicks yet")
+count = 0
+root = TkRoot.new
+TkLabel.new(root, "textvariable" => str).pack
+TkButton.new(root) do
+  text "click me"
+  command {str.value = count += 1}
+  pack
+end
+Tk.mainloop
+
+====RUBY=====
+Shoes.app do
+  stack do
+    @count = 0
+    @label = para "no clicks yet"
+    button "click me" do 
+      @count += 1
+      @label.text = "click: #@count"
+    end
+  end
+end
+
+====RUBY=====
+require('Gtk2') -> init
+ 
+# Window.
+var window = %s<Gtk2::Window>.new
+window.signal_connect('destroy' => { %s<Gtk2>.main_quit })
+ 
+# VBox.
+var vbox = %s<Gtk2::VBox>.new(0, 0)
+window.add(vbox)
+ 
+# Label.
+var label = %s<Gtk2::Label>.new('There have been no clicks yet.')
+vbox.add(label)
+ 
+# Button.
+var count = 0
+var button = %s<Gtk2::Button>.new(' Click Me ')
+vbox.add(button)
+button.signal_connect('clicked' => {
+    label.set_text(++count)
+})
+ 
+# Show.
+window.show_all
+ 
+# Main loop.
+%s<Gtk2>.main
+
+====PYTHON=====
+from functools import partial
+import tkinter as tk
+ 
+def on_click(label: tk.Label,
+             counter: tk.IntVar) -> None:
+    counter.set(counter.get() + 1)
+    label["text"] = f"Number of clicks: {counter.get()}"
+ 
+def main():
+    window = tk.Tk()
+    window.geometry("200x50+100+100")
+    label = tk.Label(master=window,
+                     text="There have been no clicks yet")
+    label.pack()
+    counter = tk.IntVar()
+    update_counter = partial(on_click,
+                             label=label,
+                             counter=counter)
+    button = tk.Button(master=window,
+                       text="click me",
+                       command=update_counter)
+    button.pack()
+    window.mainloop()
+ 
+if __name__ == '__main__':
+    main()
+ 
+
+====PYTHON=====
+import tkinter as tk
+ 
+class ClickCounter(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        tk.Pack.config(self)
+        self.label = tk.Label(self, text='There have been no clicks yet')
+        self.label.pack()
+        self.button = tk.Button(self,
+                                text='click me',
+                                command=self.click)
+        self.button.pack()
+        self.count = 0
+ 
+    def click(self):
+        self.count += 1
+        self.label['text'] = f'Number of clicks: {self.count}'
+ 
+ 
+if __name__ == "__main__":
+    ClickCounter().mainloop()
+ 
+
+====PYTHON=====
+from functools import partial
+from itertools import count
+ 
+from PyQt5.QtWidgets import (QApplication,
+                             QLabel,
+                             QPushButton,
+                             QWidget)
+from PyQt5.QtCore import QRect
+ 
+LABEL_GEOMETRY = QRect(0, 15, 200, 25)
+BUTTON_GEOMETRY = QRect(50, 50, 100, 25)
+ 
+ 
+def on_click(_, label, counter=count(1)):
+    label.setText(f"Number of clicks: {next(counter)}")
+ 
+ 
+def main():
+    application = QApplication([])
+    window = QWidget()
+    label = QLabel(text="There have been no clicks yet",
+                   parent=window)
+    label.setGeometry(LABEL_GEOMETRY)
+    button = QPushButton(text="click me",
+                         parent=window)
+    button.setGeometry(BUTTON_GEOMETRY)
+    update_counter = partial(on_click,
+                             label=label)
+    button.clicked.connect(update_counter)
+    window.show()
+    application.lastWindowClosed.connect(window.close)
+    application.exec_()
+ 
+ 
+if __name__ == '__main__':
+    main()
+ 
+
+====PYTHON=====
+import wx
+ 
+ 
+class ClickCounter(wx.Frame):
+    def __init__(self):
+        super().__init__(parent=None)
+        self.count = 0
+        self.button = wx.Button(parent=self,
+                                label="Click me!")
+        self.label = wx.StaticText(parent=self,
+                                   label="There have been no clicks yet")
+        self.Bind(event=wx.EVT_BUTTON,
+                  handler=self.click,
+                  source=self.button)
+ 
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(window=self.button,
+                       proportion=1,
+                       flag=wx.EXPAND)
+        self.sizer.Add(window=self.label,
+                       proportion=1,
+                       flag=wx.EXPAND)
+        self.SetSizer(self.sizer)
+        self.sizer.Fit(self)
+ 
+    def click(self, _):
+        self.count += 1
+        self.label.SetLabel(f"Count: {self.count}")
+ 
+ 
+if __name__ == '__main__':
+    app = wx.App()
+    frame = ClickCounter()
+    frame.Show()
+    app.MainLoop()
+ 
+

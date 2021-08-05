@@ -1,0 +1,52 @@
+====RUBY=====
+load 'raster_graphics.rb'
+ 
+class Pixmap
+  def self.xor_pattern(width, height, rgb1, rgb2)
+    # create colour table
+    size = 256
+    colours = Array.new(size) do |i|
+      RGBColour.new(
+        (rgb1.red + (rgb2.red - rgb1.red) * i / size), 
+        (rgb1.green + (rgb2.green - rgb1.green) * i / size), 
+        (rgb1.blue + (rgb2.blue - rgb1.blue) * i / size), 
+      )
+    end
+ 
+    # create the image
+    pixmap = new(width, height)
+    pixmap.each_pixel do |x, y|
+      pixmap[x,y] = colours[(x^y)%size]
+    end
+    pixmap
+  end
+end
+ 
+img = Pixmap.xor_pattern(384, 384, RGBColour::RED, RGBColour::YELLOW)
+img.save_as_png('xorpattern.png')
+
+====RUBY=====
+require('Imager')
+ 
+var img = %O<Imager>.new(xsize => 256, ysize => 256)
+ 
+for y=(^256), x=(^256) {
+    var rgb = [(255 - x - y).abs, (255-x)^y, x^(255-y)]
+    img.setpixel(x => x, y => y, color => rgb)
+}
+ 
+img.write(file => 'xor.png')
+
+====PYTHON=====
+import Image, ImageDraw
+ 
+image = Image.new("RGB", (256, 256))
+drawingTool = ImageDraw.Draw(image)
+ 
+for x in range(256):
+    for y in range(256):
+        drawingTool.point((x, y), (0, x^y, 0))
+ 
+del drawingTool
+image.save("xorpic.png", "PNG")
+

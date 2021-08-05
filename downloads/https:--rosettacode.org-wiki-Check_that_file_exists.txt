@@ -1,0 +1,45 @@
+====RUBY=====
+def check_file(filename : String)
+  if File.directory?(filename)
+    puts "#{filename} is a directory"
+  elsif File.exists?(filename)
+    puts "#{filename} is a file"
+  else
+    puts "#{filename} does not exist"
+  end
+end
+ 
+check_file("input.txt")
+check_file("docs")
+check_file("/input.txt")
+check_file("/docs")
+
+====RUBY=====
+File.file?("input.txt")
+File.file?("/input.txt")
+File.directory?("docs")
+File.directory?("/docs")
+
+====RUBY=====
+["input.txt", "/input.txt"].each { |f|
+  printf "%s is a regular file? %s\n", f, File.file?(f) }
+["docs", "/docs"].each { |d|
+  printf "%s is a directory? %s\n", d, File.directory?(d) }
+
+====RUBY=====
+# Here
+say (Dir.cwd  + %f'input.txt' -> is_file);
+say (Dir.cwd  + %d'docs'      -> is_dir);
+ 
+# Root
+say (Dir.root + %f'input.txt' -> is_file);
+say (Dir.root + %d'docs'      -> is_dir);
+
+====PYTHON=====
+import os
+ 
+os.path.isfile("input.txt")
+os.path.isfile("/input.txt")
+os.path.isdir("docs")
+os.path.isdir("/docs")
+

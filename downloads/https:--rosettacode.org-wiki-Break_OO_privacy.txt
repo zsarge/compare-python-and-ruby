@@ -1,0 +1,56 @@
+====RUBY=====
+ 
+class Example
+  def initialize
+     @private_data = "nothing" # instance variables are always private
+  end
+  private
+  def hidden_method
+     "secret"
+  end
+end
+example = Example.new
+p example.private_methods(false) # => [:hidden_method]
+#p example.hidden_method # => NoMethodError: private method `name' called for #<Example:0x101308408>
+p example.send(:hidden_method) # => "secret"
+p example.instance_variables # => [:@private_data]
+p example.instance_variable_get :@private_data # => "nothing"
+p example.instance_variable_set :@private_data, 42 # => 42
+p example.instance_variable_get :@private_data # => 42
+ 
+
+====RUBY=====
+class Example {
+    has public = "foo"
+    method init {
+        self{:private} = "secret"
+    }
+}
+ 
+var obj = Example();
+ 
+# Access public attributes
+say obj.public;                 #=> "foo"
+say obj{:public};               #=> "foo"
+ 
+# Access private attributes
+say obj{:private};              #=> "secret"
+
+====PYTHON=====
+>>> class MyClassName:
+	__private = 123
+	non_private = __private * 2
+ 
+ 
+>>> mine = MyClassName()
+>>> mine.non_private
+246
+>>> mine.__private
+Traceback (most recent call last):
+  File "<pyshell#23>", line 1, in <module>
+    mine.__private
+AttributeError: 'MyClassName' object has no attribute '__private'
+>>> mine._MyClassName__private
+123
+>>> 
+

@@ -1,0 +1,44 @@
+====RUBY=====
+succ = proc{|x| x+1}
+def to2(&f)
+  f[2]
+end
+ 
+to2(&succ) #=> 3
+to2{|x| x+1} #=> 3
+
+====RUBY=====
+def succ(n)
+  n+1
+end
+def to2(m)
+  m[2]
+end
+ 
+meth = method(:succ)
+to2(meth) #=> 3
+
+====RUBY=====
+func first(f) {
+  return f();
+}
+ 
+func second {
+  return "second";
+}
+ 
+say first(second);              # => "second"
+say first(func { "third" });    # => "third"
+
+====PYTHON=====
+def first(function):
+    return function()
+ 
+def second():
+    return "second"
+ 
+result = first(second)
+
+====PYTHON=====
+  result = first(lambda: "second")
+

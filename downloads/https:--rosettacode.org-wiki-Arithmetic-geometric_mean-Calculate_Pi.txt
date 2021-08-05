@@ -1,0 +1,62 @@
+====RUBY=====
+# Calculate Pi using the Arithmetic Geometric Mean of 1 and 1/sqrt(2)
+#
+#
+#  Nigel_Galloway
+#  March 8th., 2012.
+#
+require 'flt'
+Flt::BinNum.Context.precision = 8192
+a = n = 1
+g = 1 / Flt::BinNum(2).sqrt
+z = 0.25
+(0..17).each{
+  x = [(a + g) * 0.5, (a * g).sqrt]
+  var = x[0] - a
+  z -= var * var * n
+  n += n
+  a = x[0]
+  g = x[1]
+}
+puts a * a / z
+
+====RUBY=====
+func agm_pi(digits) {
+    var acc = (digits + 8);
+ 
+    local Num!PREC = 4*digits;
+ 
+    var an = 1;
+    var bn = sqrt(0.5);
+    var tn = 0.5**2;
+    var pn = 1;
+ 
+    while (pn < acc) {
+        var prev_an = an;
+        an = (bn+an / 2);
+        bn = sqrt(bn * prev_an);
+        prev_an -= an;
+        tn -= (pn * prev_an**2);
+        pn *= 2;
+    }
+ 
+    ((an+bn)**2 / 4*tn).to_s
+}
+ 
+say agm_pi(100);
+
+====PYTHON=====
+from decimal import *
+ 
+D = Decimal
+getcontext().prec = 100
+a = n = D(1)
+g, z, half = 1 / D(2).sqrt(), D(0.25), D(0.5)
+for i in range(18):
+    x = [(a + g) * half, (a * g).sqrt()]
+    var = x[0] - a
+    z -= var * var * n
+    n += n
+    a, g = x    
+print(a * a / z)
+

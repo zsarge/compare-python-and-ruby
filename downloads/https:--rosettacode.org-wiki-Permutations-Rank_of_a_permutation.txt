@@ -1,0 +1,256 @@
+====RUBY=====
+class Permutation
+  include Enumerable
+  attr_reader :num_elements, :size
+ 
+  def initialize(num_elements)
+    @num_elements = num_elements
+    @size = fact(num_elements)
+  end
+ 
+  def each
+    return self.to_enum unless block_given?
+    (0[email protected]).each{|i| yield unrank(i)}
+  end
+ 
+  def unrank(r)  # nonrecursive version of Myrvold Ruskey unrank2 algorithm.
+    pi = (0...num_elements).to_a
+    (@num_elements-1).downto(1) do |n|
+      s, r = r.divmod(fact(n))
+      pi[n], pi[s] = pi[s], pi[n]
+    end
+    pi
+  end
+ 
+  def rank(pi)  # nonrecursive version of Myrvold Ruskey rank2 algorithm.
+    pi = pi.dup
+    pi1 = pi.zip(0...pi.size).sort.map(&:last)
+    (pi.size-1).downto(0).inject(0) do |memo,i|
+      pi[i], pi[pi1[i]] = pi[pi1[i]], (s = pi[i])
+      pi1[s], pi1[i] = pi1[i], pi1[s]
+      memo += s * fact(i)
+    end
+  end
+ 
+  private
+  def fact(n)
+    n.zero? ? 1 : n.downto(1).inject(:*)
+  end
+end
+
+====RUBY=====
+puts "All permutations of 3 items from and back to rank."
+perm = Permutation.new(3)
+(0...perm.size).each{|num| puts "#{num} --> #{prm=perm.unrank(num)} --> #{perm.rank(prm)}"}
+ 
+puts "\n4 random samples of 12 items from and back to rank."
+perm = Permutation.new(12)
+4.times{ puts "%9d --> %s --> %9d" % [r=rand(perm.size), prm=perm.unrank(r), perm.rank(prm)]}
+ 
+puts "\n4 random uniq samples of 144 items:"
+perm, rands = Permutation.new(144), {}
+# generate 1_000_000 unique random numbers in the range (0...144!) (takes about 2.5 seconds)
+rands[rand(perm.size)] = true until rands.size == 1_000_000
+ 
+random_perms = rands.each_key.lazy{|k| perm.unrank(k)}
+# random_perms is lazy. Generate permutations one by one:
+4.times do
+  p r = random_perms.next
+  p prm = perm.unrank(r)
+  p perm.rank(prm) == r
+end
+
+====PYTHON=====
+from math import factorial as fact
+from random import randrange
+from textwrap import wrap
+ 
+def identity_perm(n): 
+    return list(range(n))
+ 
+def unranker1(n, r, pi):
+    while n > 0:
+        n1, (rdivn, rmodn) = n-1, divmod(r, n)
+        pi[n1], pi[rmodn] = pi[rmodn], pi[n1]
+        n = n1
+        r = rdivn
+    return pi
+ 
+def init_pi1(n, pi): 
+    pi1 = [-1] * n
+    for i in range(n): 
+        pi1[pi[i]] = i
+    return pi1
+ 
+def ranker1(n, pi, pi1):
+    if n == 1: 
+        return 0
+    n1 = n-1
+    s = pi[n1]
+    pi[n1], pi[pi1[n1]] = pi[pi1[n1]], pi[n1]
+    pi1[s], pi1[n1] = pi1[n1], pi1[s]
+    return s + n * ranker1(n1, pi, pi1)
+ 
+def unranker2(n, r, pi):
+    while n > 0:
+        n1 = n-1
+        s, rmodf = divmod(r, fact(n1))
+        pi[n1], pi[s] = pi[s], pi[n1]
+        n = n1
+        r = rmodf
+    return pi
+ 
+def ranker2(n, pi, pi1):
+    if n == 1: 
+        return 0
+    n1 = n-1
+    s = pi[n1]
+    pi[n1], pi[pi1[n1]] = pi[pi1[n1]], pi[n1]
+    pi1[s], pi1[n1] = pi1[n1], pi1[s]
+    return s * fact(n1) + ranker2(n1, pi, pi1)
+ 
+def get_random_ranks(permsize, samplesize):    
+    perms = fact(permsize)
+    ranks = set()
+    while len(ranks) < samplesize:
+        ranks |= set( randrange(perms) 
+                      for r in range(samplesize - len(ranks)) )
+    return ranks    
+ 
+def test1(comment, unranker, ranker):    
+    n, samplesize, n2 = 3, 4, 12
+    print(comment)
+    perms = []
+    for r in range(fact(n)):
+        pi = identity_perm(n)
+        perm = unranker(n, r, pi)
+        perms.append((r, perm))
+    for r, pi in perms:
+        pi1 = init_pi1(n, pi)
+        print('  From rank %2i to %r back to %2i' % (r, pi, ranker(n, pi[:], pi1)))
+    print('\n  %i random individual samples of %i items:' % (samplesize, n2))
+    for r in get_random_ranks(n2, samplesize):
+        pi = identity_perm(n2)
+        print('    ' + ' '.join('%2i' % i for i in unranker(n2, r, pi)))
+    print('')
+ 
+def test2(comment, unranker):    
+    samplesize, n2 = 4, 144
+    print(comment)
+    print('  %i random individual samples of %i items:' % (samplesize, n2))
+    for r in get_random_ranks(n2, samplesize):
+        pi = identity_perm(n2)
+        print('    ' + '\n      '.join(wrap(repr(unranker(n2, r, pi)))))
+    print('')
+ 
+if __name__ == '__main__':
+    test1('First ordering:', unranker1, ranker1)
+    test1('Second ordering:', unranker2, ranker2)
+    test2('First ordering, large number of perms:', unranker1)
+
+====PYTHON=====
+from random import randrange
+from typing import List
+ 
+Perm = List[int]
+ 
+_fact = [1]     # factorials cache
+ 
+ 
+def print_perm(T: Perm) -> None:
+    print(T)
+ 
+def tj_unrank(n: int, r: int) -> Perm:
+    "Returns the r-ranked Trotter-Johnson permutation of integers 0..n-1"
+    global _fact
+ 
+    for i in range(len(_fact), n+2):    # Extend factorial cache if necessary.
+        _fact.append(_fact[i - 1] * i)
+ 
+    pi: Perm = [0] * (n+2)
+    pi[1] = 1
+    r2 = 0
+    for j in range(2, n+1):
+        r1 = (r * _fact[j]) // _fact[n]
+        k = r1 - j*r2
+        if ((r2 % 2) == 0):
+            for i in range(j-1, j - k - 1, -1):
+                pi[i+1] = pi[i]
+            pi[j-k] = j
+        else:
+            for i in range(j - 1, k, -1):
+                pi[i+1] = pi[i]
+            pi[k + 1] = j
+        r2 = r1
+ 
+    return [i - 1 for i in pi[1:-1]]
+ 
+def tj_rank(p: Perm) -> int:
+    "Returns the ranking of the Trotter-Johnson permutation p, of integers 0..n-1"
+    n = len(p)
+    assert set(p) == set(range(n)), f"Perm {p} not a perm of 0..{n-1}."
+ 
+    pi = [0] + [i+1 for i in p] + [0]
+    r = 0
+    for j in range(2, n + 1):
+        i = k = 1
+        while pi[i] != j:
+            if (pi[i] < j):
+                k += 1
+            i += 1
+        if ((r % 2) == 0 ):
+            r = j*r+j-k
+        else:
+            r = j*r+k-1
+ 
+    return r
+ 
+def tj_parity(p: Perm) -> int:
+    "Returns the 0/1 parity of the Trotter-Johnson permutation p, of integers 0..n-1"
+    n = len(p)
+    assert set(p) == set(range(n)), f"Perm {p} not a perm of 0..{n-1}."
+ 
+    pi = [0] + [i+1 for i in p] + [0]
+    a, c = [0] * (n + 1), 0
+    for j in range(1, n+1):
+        if a[j] == 0:
+            c += 1
+            a[j] = 1
+            i = j
+            while ( pi[i] != j ):
+                i = pi[i]
+                a[i] = 1
+ 
+    return (n-c) % 2
+ 
+def get_random_ranks(permsize, samplesize, fact):
+    perms = fact[permsize]
+    ranks = set()
+    while len(ranks) < samplesize:
+        ranks |= set( randrange(perms)
+                      for r in range(samplesize - len(ranks)) )
+    return ranks
+ 
+if __name__ == '__main__':
+    n = 3
+ 
+    print(f"Testing rank/unrank n={n}.\n");
+ 
+    for i in range(len(_fact), n+2):    # Extend factorial cache if necessary.
+        _fact.append(_fact[i - 1] * i)
+    for r in range(_fact[n]):
+        p = tj_unrank(n, r)
+        rank = tj_rank(p)
+        parity = tj_parity(p)
+        print(f"  Rank: {r:4} to perm: {p}, parity: {parity} back to rank: {rank}")
+ 
+    for samplesize, n2 in [(4, 12), (3, 144)]:
+        print('\n  %i random individual samples of %i items:' % (samplesize, n2))
+        for i in range(len(_fact), max([n, n2])+2):    # Extend factorial cache if necessary.
+            _fact.append(_fact[i - 1] * i)
+        for r in get_random_ranks(n2, samplesize, _fact):
+            p = tj_unrank(n2, r)
+            rank = tj_rank(p)
+            parity = tj_parity(p)
+            print(f"  Rank: {r:10} to perm: {p}, parity: {parity} to rank: {rank:10}")
+

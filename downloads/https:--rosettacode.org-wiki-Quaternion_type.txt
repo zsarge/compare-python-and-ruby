@@ -1,0 +1,353 @@
+====RUBY=====
+class Quaternion
+  property a, b, c, d
+ 
+  def initialize(@a : Int64, @b : Int64, @c : Int64, @d : Int64) end
+ 
+  def norm; Math.sqrt(a**2 + b**2 + c**2 + d**2) end
+  def conj; Quaternion.new(a, -b, -c, -d)        end
+  def +(n)  Quaternion.new(a + n, b, c, d)       end
+  def -(n)  Quaternion.new(a - n, b, c, d)       end
+  def -()   Quaternion.new(-a, -b, -c, -d)       end
+  def *(n)  Quaternion.new(a * n, b * n, c * n, d * n) end
+  def ==(rhs : Quaternion) self.to_s == rhs.to_s end
+  def +(rhs : Quaternion)
+    Quaternion.new(a + rhs.a, b + rhs.b, c + rhs.c, d + rhs.d)
+  end
+ 
+  def -(rhs : Quaternion)
+    Quaternion.new(a - rhs.a, b - rhs.b, c - rhs.c, d - rhs.d)
+  end
+ 
+  def *(rhs : Quaternion)
+    Quaternion.new(
+      a * rhs.a - b * rhs.b - c * rhs.c - d * rhs.d,
+      a * rhs.b + b * rhs.a + c * rhs.d - d * rhs.c,
+      a * rhs.c - b * rhs.d + c * rhs.a + d * rhs.b,
+      a * rhs.d + b * rhs.c - c * rhs.b + d * rhs.a)
+  end
+ 
+  def to_s(io : IO) io << "(#{a} #{sgn(b)}i #{sgn(c)}j #{sgn(d)}k)\n" end
+  private def sgn(n)  n.sign|1 == 1 ? "+ #{n}" : "- #{n.abs}"  end
+end
+ 
+struct Number
+  def +(rhs : Quaternion)
+    Quaternion.new(rhs.a + self, rhs.b, rhs.c, rhs.d)
+  end
+ 
+  def -(rhs : Quaternion)
+    Quaternion.new(-rhs.a + self, -rhs.b, -rhs.c, -rhs.d)
+  end
+ 
+  def *(rhs : Quaternion)
+    Quaternion.new(rhs.a * self, rhs.b * self, rhs.c * self, rhs.d * self)
+  end
+end
+ 
+q0 = Quaternion.new(a: 1, b: 2, c: 3, d: 4)
+q1 = Quaternion.new(2, 3, 4, 5)
+q2 = Quaternion.new(3, 4, 5, 6)
+r  = 7
+ 
+puts "q0 = #{q0}"
+puts "q1 = #{q1}"
+puts "q2 = #{q2}"
+puts "r  = #{r}"
+puts
+puts "normal of q0 = #{q0.norm}"
+puts "-q0 = #{-q0}"
+puts "conjugate of q0 = #{q0.conj}"
+puts "q0 * (conjugate of q0) = #{q0 * q0.conj}"
+puts "(conjugate of q0) * q0 = #{q0.conj * q0}"
+puts
+puts "r + q0 = #{r + q0}"
+puts "q0 + r = #{q0 + r}"
+puts
+puts " q0 - r = #{q0 - r}"
+puts "-q0 - r = #{-q0 - r}"
+puts " r - q0 = #{r - q0}"
+puts "-q0 + r = #{-q0 + r}"
+puts
+puts "r * q0 = #{r * q0}"
+puts "q0 * r = #{q0 * r}"
+puts
+puts "q0 + q1 = #{q0 + q1}"
+puts "q0 - q1 = #{q2 - q1}"
+puts "q0 * q1 = #{q0 * q1}"
+puts
+puts " q0 + q1 * q2  = #{q0 + q1 * q2}"
+puts "(q0 + q1) * q2 = #{(q0 + q1) * q2}"
+puts
+puts " q0 *  q1  * q2 = #{q0 * q1 * q2}"
+puts "(q0 *  q1) * q2 = #{(q0 * q1) * q2}"
+puts " q0 * (q1 * q2) = #{q0 * (q1 * q2)}"
+puts
+puts "q1 * q2 = #{q1 * q2}"
+puts "q2 * q1 = #{q2 * q1}"
+puts
+puts "q1 * q2 != q2 * q1 => #{(q1 * q2) != (q2 * q1)}"
+puts "q1 * q2 == q2 * q1 => #{(q1 * q2) == (q2 * q1)}"
+
+====RUBY=====
+class Quaternion
+  def initialize(*parts)
+    raise ArgumentError, "wrong number of arguments (#{parts.size} for 4)" unless parts.size == 4
+    raise ArgumentError, "invalid value of quaternion parts #{parts}" unless parts.all? {|x| x.is_a?(Numeric)}
+    @parts = parts
+  end
+ 
+  def to_a;          @parts;                                       end
+  def to_s;          "Quaternion#{@parts.to_s}"                    end
+  alias inspect to_s
+  def complex_parts; [Complex(*to_a[0..1]), Complex(*to_a[2..3])]; end
+ 
+  def real;          @parts.first;                                 end
+  def imag;          @parts[1..3];                                 end
+  def conj;          Quaternion.new(real, *imag.map(&:-@));        end
+  def norm;          Math.sqrt(to_a.reduce(0){|sum,e| sum + e**2}) end # In Rails: Math.sqrt(to_a.sum { e**2 })
+ 
+  def ==(other)
+    case other
+    when Quaternion; to_a == other.to_a
+    when Numeric;    to_a == [other, 0, 0, 0]
+    else             false
+    end
+  end
+  def -@;            Quaternion.new(*to_a.map(&:-@));              end
+  def -(other);      self + -other;                                end
+ 
+  def +(other)
+    case other
+    when Numeric
+      Quaternion.new(real + other, *imag)
+    when Quaternion
+      Quaternion.new(*to_a.zip(other.to_a).map { |x,y| x + y }) # In Rails: zip(other).map(&:sum)
+    end
+  end
+ 
+  def *(other)
+    case other
+    when Numeric
+      Quaternion.new(*to_a.map { |x| x * other })
+    when Quaternion
+      # Multiplication of quaternions in C x C space. See "Cayley-Dickson construction".
+      a, b, c, d = *complex_parts, *other.complex_parts
+      x, y = a*c - d.conj*b, a*d + b*c.conj
+      Quaternion.new(x.real, x.imag, y.real, y.imag)
+    end
+  end
+ 
+  # Coerce is called by Ruby to return a compatible type/receiver when the called method/operation does not accept a Quaternion
+  def coerce(other)
+    case other
+    when Numeric then [Scalar.new(other), self]
+    else raise TypeError, "#{other.class} can't be coerced into #{self.class}"
+    end
+  end
+ 
+  class Scalar
+    def initialize(val); @val = val;                            end
+    def +(other);        other + @val;                          end
+    def *(other);        other * @val;                          end
+    def -(other);        Quaternion.new(@val, 0, 0, 0) - other; end
+  end
+end
+ 
+if __FILE__ == $0
+  q  = Quaternion.new(1,2,3,4)
+  q1 = Quaternion.new(2,3,4,5)
+  q2 = Quaternion.new(3,4,5,6)
+  r  = 7
+  expressions = ["q", "q1", "q2",
+                 "q.norm", "-q", "q.conj", "q + r", "r + q","q1 + q2", "q2 + q1",
+                 "q * r", "r * q", "q1 * q2", "q2 * q1", "(q1 * q2 != q2 * q1)",
+                 "q - r", "r - q"]
+  expressions.each do |exp|
+    puts "%20s = %s" % [exp, eval(exp)]
+  end
+end
+
+====RUBY=====
+class Quaternion(r, i, j, k) {
+ 
+    func qu(*r) { Quaternion(r...) }
+ 
+    method to_s  { "#{r} + #{i}i + #{j}j + #{k}k" }
+    method reals { [r, i, j, k] }
+    method conj  { qu(r, -i, -j, -k) }
+    method norm  { self.reals.map { _*_ }.sum.sqrt }
+ 
+    method ==(Quaternion b) { self.reals == b.reals }
+ 
+    method +(Number     b) { qu(b+r, i, j, k) }
+    method +(Quaternion b) { qu((self.reals ~Z+ b.reals)...) }
+ 
+    method neg { qu(self.reals.map{ .neg }...) }
+ 
+    method *(Number     b) { qu((self.reals»*»b)...) }
+    method *(Quaternion b) {
+        var (r,i,j,k) = b.reals...
+        qu(sum(self.reals ~Z* [r, -i, -j, -k]),
+           sum(self.reals ~Z* [i,  r,  k, -j]),
+           sum(self.reals ~Z* [j, -k,  r,  i]),
+           sum(self.reals ~Z* [k,  j, -i,  r]))
+    }
+}
+ 
+var q  = Quaternion(1, 2, 3, 4)
+var q1 = Quaternion(2, 3, 4, 5)
+var q2 = Quaternion(3, 4, 5, 6)
+var r  = 7
+ 
+say "1) q norm  = #{q.norm}"
+say "2) -q      = #{-q}"
+say "3) q conj  = #{q.conj}"
+say "4) q  + r  = #{q + r}"
+say "5) q1 + q2 = #{q1 + q2}"
+say "6) q  * r  = #{q  * r}"
+say "7) q1 * q2 = #{q1 * q2}"
+say "8) q1q2 #{ q1*q2 == q2*q1 ? '==' : '!=' } q2q1"
+
+====PYTHON=====
+from collections import namedtuple
+import math
+ 
+class Q(namedtuple('Quaternion', 'real, i, j, k')):
+    'Quaternion type: Q(real=0.0, i=0.0, j=0.0, k=0.0)' 
+ 
+    __slots__ = () 
+ 
+    def __new__(_cls, real=0.0, i=0.0, j=0.0, k=0.0):
+        'Defaults all parts of quaternion to zero'
+        return super().__new__(_cls, float(real), float(i), float(j), float(k))
+ 
+    def conjugate(self):
+        return Q(self.real, -self.i, -self.j, -self.k)
+ 
+    def _norm2(self):
+        return sum( x*x for x in self)
+ 
+    def norm(self):
+        return math.sqrt(self._norm2())
+ 
+    def reciprocal(self):
+        n2 = self._norm2()
+        return Q(*(x / n2 for x in self.conjugate())) 
+ 
+    def __str__(self):
+        'Shorter form of Quaternion as string'
+        return 'Q(%g, %g, %g, %g)' % self
+ 
+    def __neg__(self):
+        return Q(-self.real, -self.i, -self.j, -self.k)
+ 
+    def __add__(self, other):
+        if type(other) == Q:
+            return Q( *(s+o for s,o in zip(self, other)) )
+        try:
+            f = float(other)
+        except:
+            return NotImplemented
+        return Q(self.real + f, self.i, self.j, self.k)
+ 
+    def __radd__(self, other):
+        return Q.__add__(self, other)
+ 
+    def __mul__(self, other):
+        if type(other) == Q:
+            a1,b1,c1,d1 = self
+            a2,b2,c2,d2 = other
+            return Q(
+                 a1*a2 - b1*b2 - c1*c2 - d1*d2,
+                 a1*b2 + b1*a2 + c1*d2 - d1*c2,
+                 a1*c2 - b1*d2 + c1*a2 + d1*b2,
+                 a1*d2 + b1*c2 - c1*b2 + d1*a2 )
+        try:
+            f = float(other)
+        except:
+            return NotImplemented
+        return Q(self.real * f, self.i * f, self.j * f, self.k * f)
+ 
+    def __rmul__(self, other):
+        return Q.__mul__(self, other)
+ 
+    def __truediv__(self, other):
+        if type(other) == Q:
+            return self.__mul__(other.reciprocal())
+        try:
+            f = float(other)
+        except:
+            return NotImplemented
+        return Q(self.real / f, self.i / f, self.j / f, self.k / f)
+ 
+    def __rtruediv__(self, other):
+        return other * self.reciprocal()
+ 
+    __div__, __rdiv__ = __truediv__, __rtruediv__
+ 
+Quaternion = Q       
+ 
+q  = Q(1, 2, 3, 4)
+q1 = Q(2, 3, 4, 5)
+q2 = Q(3, 4, 5, 6)
+r  = 7
+
+====PYTHON=====
+>>> q
+Quaternion(real=1.0, i=2.0, j=3.0, k=4.0)
+>>> q1
+Quaternion(real=2.0, i=3.0, j=4.0, k=5.0)
+>>> q2
+Quaternion(real=3.0, i=4.0, j=5.0, k=6.0)
+>>> r
+7
+>>> q.norm()
+5.477225575051661
+>>> q1.norm()
+7.3484692283495345
+>>> q2.norm()
+9.273618495495704
+>>> -q
+Quaternion(real=-1.0, i=-2.0, j=-3.0, k=-4.0)
+>>> q.conjugate()
+Quaternion(real=1.0, i=-2.0, j=-3.0, k=-4.0)
+>>> r + q
+Quaternion(real=8.0, i=2.0, j=3.0, k=4.0)
+>>> q + r
+Quaternion(real=8.0, i=2.0, j=3.0, k=4.0)
+>>> q1 + q2
+Quaternion(real=5.0, i=7.0, j=9.0, k=11.0)
+>>> q2 + q1
+Quaternion(real=5.0, i=7.0, j=9.0, k=11.0)
+>>> q * r
+Quaternion(real=7.0, i=14.0, j=21.0, k=28.0)
+>>> r * q
+Quaternion(real=7.0, i=14.0, j=21.0, k=28.0)
+>>> q1 * q2
+Quaternion(real=-56.0, i=16.0, j=24.0, k=26.0)
+>>> q2 * q1
+Quaternion(real=-56.0, i=18.0, j=20.0, k=28.0)
+>>> assert q1 * q2 != q2 * q1
+>>> 
+>>> i, j, k = Q(0,1,0,0), Q(0,0,1,0), Q(0,0,0,1)
+>>> i*i
+Quaternion(real=-1.0, i=0.0, j=0.0, k=0.0)
+>>> j*j
+Quaternion(real=-1.0, i=0.0, j=0.0, k=0.0)
+>>> k*k
+Quaternion(real=-1.0, i=0.0, j=0.0, k=0.0)
+>>> i*j*k
+Quaternion(real=-1.0, i=0.0, j=0.0, k=0.0)
+>>> q1 / q2
+Quaternion(real=0.7906976744186047, i=0.023255813953488358, j=-2.7755575615628914e-17, k=0.046511627906976744)
+>>> q1 / q2 * q2
+Quaternion(real=2.0000000000000004, i=3.0000000000000004, j=4.000000000000001, k=5.000000000000001)
+>>> q2 * q1 / q2
+Quaternion(real=2.0, i=3.465116279069768, j=3.906976744186047, k=4.767441860465116)
+>>> q1.reciprocal() * q1
+Quaternion(real=0.9999999999999999, i=0.0, j=0.0, k=0.0)
+>>> q1 * q1.reciprocal()
+Quaternion(real=0.9999999999999999, i=0.0, j=0.0, k=0.0)
+>>> 
+

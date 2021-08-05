@@ -1,0 +1,130 @@
+====RUBY=====
+pieces = %i(♔ ♕ ♘ ♘ ♗ ♗ ♖ ♖)
+regexes = [/♗(..)*♗/, /♖.*♔.*♖/]
+row = pieces.shuffle.join until regexes.all?{|re| re.match(row)} 
+puts row
+
+====RUBY=====
+row = [:♖, :♔, :♖]
+[:♕, :♘, :♘].each{|piece| row.insert(rand(row.size+1), piece)}
+[[0, 2, 4, 6].sample, [1, 3, 5, 7].sample].sort.each{|pos| row.insert(pos, :♗)}
+ 
+puts row
+
+====RUBY=====
+KRN = %w(NNRKR NRNKR NRKNR NRKRN RNNKR RNKNR RNKRN RKNNR RKNRN RKRNN)
+ 
+def chess960(id=rand(960))
+  pos = Array.new(8)
+  q, r = id.divmod(4)
+  pos[r * 2 + 1] = "B"
+  q, r = q.divmod(4)
+  pos[r * 2] = "B"
+  q, r = q.divmod(6)
+  pos[pos.each_index.reject{|i| pos[i]}[r]] = "Q"
+  krn = KRN[q].each_char
+  pos.each_index {|i| pos[i] ||= krn.next}
+  pos.join
+end
+ 
+puts "Generate Start Position from id number"
+[0,518,959].each do |id|
+  puts "%3d : %s" % [id, chess960(id)]
+end
+ 
+puts "\nGenerate random Start Position"
+5.times {puts chess960}
+
+====RUBY=====
+func is_valid_960 (backrank) {
+    var king = backrank.index('♚')
+    var (rook1, rook2) = backrank.indices_of('♜')...
+    king.is_between(rook1, rook2) || return false
+    var (bishop1, bishop2) = backrank.indices_of('♝')...
+    bishop1+bishop2 -> is_odd
+}
+ 
+func random_960_position(pieces = <♛ ♚ ♜ ♜ ♝ ♝ ♞ ♞>) {
+    pieces.shuffle.permutations {|*a|
+        return a if is_valid_960(a)
+    }
+}
+ 
+say random_960_position().join(' ')
+
+====PYTHON=====
+>>> from itertools import permutations
+>>> pieces = 'KQRrBbNN'
+>>> starts = {''.join(p).upper() for p in permutations(pieces)
+                     if p.index('B') % 2 != p.index('b') % 2 		# Bishop constraint
+                     and ( p.index('r') < p.index('K') < p.index('R')	# King constraint	
+                           or p.index('R') < p.index('K') < p.index('r') ) }
+>>> len(starts)
+960
+>>> starts.pop()
+'QNBRNKRB'
+>>>
+
+====PYTHON=====
+>>> import re
+>>> pieces = 'KQRRBBNN'
+>>> bish = re.compile(r'B(|..|....|......)B').search
+>>> king = re.compile(r'R.*K.*R').search
+>>> starts3 = {p for p in (''.join(q) for q in permutations(pieces))
+            if bish(p) and king(p)}
+>>> len(starts3)
+960
+>>> starts3.pop()
+'QRNKBNRB'
+>>>
+
+====PYTHON=====
+from random import choice
+ 
+def random960():
+    start = ['R', 'K', 'R']         # Subsequent order unchanged by insertions.
+    #
+    for piece in ['Q', 'N', 'N']:
+        start.insert(choice(range(len(start)+1)), piece)
+    #
+    bishpos = choice(range(len(start)+1))
+    start.insert(bishpos, 'B')
+    start.insert(choice(range(bishpos + 1, len(start) + 1, 2)), 'B')
+    return start
+    return ''.join(start).upper()
+ 
+print(random960())
+
+====PYTHON=====
+from random import choice
+ 
+def generate960():
+    start = ('R', 'K', 'R')         # Subsequent order unchanged by insertions.
+ 
+    # Insert QNN in all combinations of places
+    starts = {start}
+    for piece in ['Q', 'N', 'N']:
+        starts2 = set()
+        for s in starts:
+            for pos in range(len(s)+1):
+                s2 = list(s)
+                s2.insert(pos, piece)
+                starts2.add(tuple(s2))
+        starts = starts2
+ 
+    # For each of the previous starting positions insert the bishops in their 16 positions
+    starts2 = set()
+    for s in starts:
+        for bishpos in range(len(s)+1):
+            s2 = list(s)
+            s2.insert(bishpos, 'B')
+            for bishpos2 in range(bishpos+1, len(s)+2, 2):
+                s3 = s2[::]
+                s3.insert(bishpos2, 'B')
+                starts2.add(tuple(s3))
+ 
+    return  list(starts2)
+ 
+gen = generate960()
+print(''.join(choice(gen)))
+

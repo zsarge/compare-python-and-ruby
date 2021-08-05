@@ -1,0 +1,38 @@
+====RUBY=====
+def w_prime?(i)
+  return false if i < 2
+  ((1..i-1).inject(&:*) + 1) % i == 0
+end
+ 
+p (1..100).select{|n| w_prime?(n) }
+ 
+
+====RUBY=====
+func is_wilson_prime_slow(n) {
+    n > 1 || return false
+    (n-1)! % n == n-1
+}
+ 
+func is_wilson_prime_fast(n) {
+    n > 1 || return false
+    factorialmod(n-1, n) == n-1
+}
+ 
+say 25.by(is_wilson_prime_slow)     #=> [2, 3, 5, ..., 83, 89, 97]
+say 25.by(is_wilson_prime_fast)     #=> [2, 3, 5, ..., 83, 89, 97]
+ 
+say is_wilson_prime_fast(2**43 - 1)   #=> false
+say is_wilson_prime_fast(2**61 - 1)   #=> true
+
+====PYTHON=====
+from math import factorial
+ 
+def is_wprime(n):
+    return n > 1 and bool(n == 2 or
+                          (n % 2 and (factorial(n - 1) + 1) % n == 0))
+ 
+if __name__ == '__main__':
+    c = 100
+    print(f"Primes under {c}:", end='\n  ')
+    print([n for n in range(c) if is_wprime(n)])
+

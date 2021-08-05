@@ -1,0 +1,19 @@
+====RUBY=====
+[Foo.new] * n         # here Foo.new can be any expression that returns a new object
+Array.new(n, Foo.new)
+
+====RUBY=====
+Array.new(n) { Foo.new }
+
+====RUBY=====
+[Foo.new] * n;      # incorrect (only one distinct object is created)
+
+====RUBY=====
+n.of {Foo.new};     # correct
+
+====PYTHON=====
+[Foo()] * n # here Foo() can be any expression that returns a new object
+
+====PYTHON=====
+[Foo() for i in range(n)]
+

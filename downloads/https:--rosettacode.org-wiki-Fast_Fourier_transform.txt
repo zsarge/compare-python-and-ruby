@@ -1,0 +1,67 @@
+====RUBY=====
+require "complex"
+ 
+def fft(x : Array(Int32 | Float64)) #: Array(Complex)
+  return [x[0].to_c] if x.size <= 1
+  even = fft(Array.new(x.size // 2) { |k| x[2 * k] })
+  odd  = fft(Array.new(x.size // 2) { |k| x[2 * k + 1] })
+  c = Array.new(x.size // 2) { |k| Math.exp((-2 * Math::PI * k / x.size).i) }
+  codd = Array.new(x.size // 2) { |k| c[k] * odd[k] }
+  return Array.new(x.size // 2) { |k| even[k] + codd[k] } + Array.new(x.size // 2) { |k| even[k] - codd[k] }
+end
+ 
+fft([1,1,1,1,0,0,0,0]).each{ |c| puts c }
+ 
+
+====RUBY=====
+def fft(vec)
+  return vec if vec.size <= 1
+  evens_odds = vec.partition.with_index{|_,i| i.even?}
+  evens, odds = evens_odds.map{|even_odd| fft(even_odd)*2} 
+  evens.zip(odds).map.with_index do |(even, odd),i|
+    even + odd * Math::E ** Complex(0, -2 * Math::PI * i / vec.size)
+  end
+end
+ 
+fft([1,1,1,1,0,0,0,0]).each{|c| puts "%9.6f %+9.6fi" % c.rect}
+
+====RUBY=====
+func fft(arr) {
+    arr.len == 1 && return arr
+ 
+    var evn = fft([arr[^arr -> grep { .is_even }]])
+    var odd = fft([arr[^arr -> grep { .is_odd  }]])
+    var twd = (Num.tau.i / arr.len)
+ 
+    ^odd -> map {|n| odd[n] *= ::exp(twd * n)}
+    (evn »+« odd) + (evn »-« odd)
+}
+ 
+var cycles = 3
+var sequence = 0..15
+var wave = sequence.map {|n| ::sin(n * Num.tau / sequence.len * cycles) }
+say "wave:#{wave.map{|w| '%6.3f' % w }.join(' ')}"
+say "fft: #{fft(wave).map { '%6.3f' % .abs }.join(' ')}"
+
+====PYTHON=====
+from cmath import exp, pi
+ 
+def fft(x):
+    N = len(x)
+    if N <= 1: return x
+    even = fft(x[0::2])
+    odd =  fft(x[1::2])
+    T= [exp(-2j*pi*k/N)*odd[k] for k in range(N//2)]
+    return [even[k] + T[k] for k in range(N//2)] + \
+           [even[k] - T[k] for k in range(N//2)]
+ 
+print( ' '.join("%5.3f" % abs(f) 
+                for f in fft([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])) )
+
+====PYTHON=====
+>>> from numpy.fft import fft
+>>> from numpy import array
+>>> a = array([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+>>> print( ' '.join("%5.3f" % abs(f) for f in fft(a)) )
+4.000 2.613 0.000 1.082 0.000 1.082 0.000 2.613
+

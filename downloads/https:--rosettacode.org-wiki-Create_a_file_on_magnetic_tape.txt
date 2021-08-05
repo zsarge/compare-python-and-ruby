@@ -1,0 +1,18 @@
+====RUBY=====
+filename = {% if flag?(:win32) %}
+    "TAPE.FILE"
+  {% else %}   
+    "/dev/tape"
+  {% end %}        
+File.write filename, "howdy, planet!"
+
+====RUBY=====
+File.open("tape.file", "w") do |fh|
+    fh.syswrite("This code should be able to write a file to magnetic tape.\n")
+end
+
+====PYTHON=====
+>>> with open('/dev/tape', 'w') as t: t.write('Hi Tape!\n')
+... 
+>>> 
+

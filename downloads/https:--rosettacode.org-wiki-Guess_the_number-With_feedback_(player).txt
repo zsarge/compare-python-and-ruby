@@ -1,0 +1,137 @@
+====RUBY=====
+def play(low, high, turns=1)
+  num = (low + high) / 2
+  print "guessing #{num}\t"
+  case is_it?(num)
+  when 1
+    puts "too high"
+    play(low, num - 1, turns + 1)
+  when -1
+    puts "too low"
+    play(num + 1, high, turns + 1)
+  else
+    puts "found the number in #{turns} turns."
+  end
+end
+ 
+def is_it?(num)
+  num <=> $number
+end
+ 
+low, high = 1, 100
+$number = rand(low .. high)
+ 
+puts "guess a number between #{low} and #{high}"
+play(low, high)
+
+====RUBY=====
+r = (1..100)
+secret = rand(r)
+turns = 0
+ 
+puts "Guess a number between #{r.min} and #{r.max}"
+r.bsearch do |guess|                # bsearch works on ranges
+  print "Guessing #{guess} \t"
+  turns += 1
+  low_high = secret <=> guess       # -1, 0, or 1
+  puts ["found the number in #{turns} turns", "too low", "too high"][low_high]
+  low_high
+end
+ 
+
+====RUBY=====
+var min = 1
+var max = 99
+var tries = 0
+var guess = pick(min..max)
+ 
+print <<"EOT".chomp
+\n=>> Think of a number between #{min} and #{max} and I'll guess it!\n
+Press <ENTER> when are you ready...
+EOT
+ 
+STDIN.readline
+ 
+loop {
+    print <<-EOT.chomp
+    \n=>> My guess is: #{guess} Is your number higher, lower, or equal? (h/l/e)
+    >#{' '}
+    EOT
+ 
+    ++tries
+    given (STDIN.readline) {
+        case (max <= min) {
+            say "\nI give up..."
+            break
+        }
+        when (/^h/i) {
+            min = guess+1
+        }
+        when (/^l/i) {
+            max = guess
+        }
+        when (/^e/i) {
+            say "\nI knew it! It took me only #{tries} tries."
+            break
+        }
+        default {
+            say "error: invalid score"
+            next
+        }
+    }
+ 
+    guess = ((min+max) // 2)
+}
+
+====PYTHON=====
+inclusive_range = mn, mx = (1, 10)
+ 
+print('''\
+Think of a number between %i and %i and wait for me to guess it.
+On every guess of mine you should state whether the guess was
+too high, too low, or equal to your number by typing h, l, or =
+''' % inclusive_range)
+ 
+i = 0
+while True:
+    i += 1
+    guess = (mn+mx)//2
+    txt = input("Guess %2i is: %2i. The score for which is (h,l,=): "
+                % (i, guess)).strip().lower()[0]
+    if txt not in 'hl=':
+        print("  I don't understand your input of '%s' ?" % txt)
+        continue
+    if txt == 'h':
+        mx = guess-1
+    if txt == 'l':
+        mn = guess+1
+    if txt == '=':
+        print("  Ye-Haw!!")
+        break
+    if (mn > mx) or (mn < inclusive_range[0]) or (mx > inclusive_range[1]):
+        print("Please check your scoring as I cannot find the value")
+        break
+ 
+print("\nThanks for keeping score.")
+
+====PYTHON=====
+import bisect
+try: input = raw_input
+except: pass
+ 
+class GuessNumberFakeList(object):
+    def __getitem__(self, i):
+        s = input("Is your number less than or equal to %d?" % i)
+        return 0 if s.lower().startswith('y') else -1
+ 
+LOWER, UPPER = 0, 100
+ 
+if __name__ == "__main__":
+    print("""Instructions:
+Think of integer number from %d (inclusive) to %d (exclusive) and
+I will guess it. After each guess, I will ask you if it is less than
+or equal to some number, and you will respond with "yes" or "no".
+""" % (LOWER, UPPER))
+    result = bisect.bisect_left(GuessNumberFakeList(), 0, LOWER, UPPER)
+    print("Your number is %d." % result)
+

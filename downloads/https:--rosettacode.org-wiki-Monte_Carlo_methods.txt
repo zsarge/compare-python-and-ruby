@@ -1,0 +1,78 @@
+====RUBY=====
+def approx_pi(throws)
+  times_inside = throws.times.count {Math.hypot(rand, rand) <= 1.0}
+  4.0 * times_inside / throws
+end
+ 
+[1000, 10_000, 100_000, 1_000_000, 10_000_000].each do |n| 
+   puts "%8d samples: PI = %s" % [n, approx_pi(n)]
+end
+
+====RUBY=====
+def approx_pi(throws)
+  times_inside = throws.times.count {Math.hypot(rand, rand) <= 1.0}
+  4.0 * times_inside / throws
+end
+ 
+[1000, 10_000, 100_000, 1_000_000, 10_000_000].each do |n| 
+   puts "%8d samples: PI = %s" % [n, approx_pi(n)]
+end
+
+====RUBY=====
+func monteCarloPi(nthrows) {
+    4 * (^nthrows -> count_by {
+        hypot(1.rand(2) - 1, 1.rand(2) - 1) < 1
+    }) / nthrows
+}
+ 
+for n in [1e2, 1e3, 1e4, 1e5, 1e6] {
+    printf("%9d: %07f\n", n, monteCarloPi(n))
+}
+
+====PYTHON=====
+>>> import random, math
+>>> throws = 1000
+>>> 4.0 * sum(math.hypot(*[random.random()*2-1
+	                 for q in [0,1]]) < 1
+              for p in xrange(throws)) / float(throws)
+3.1520000000000001
+>>> throws = 1000000
+>>> 4.0 * sum(math.hypot(*[random.random()*2-1
+	                 for q in [0,1]]) < 1
+              for p in xrange(throws)) / float(throws)
+3.1396359999999999
+>>> throws = 100000000
+>>> 4.0 * sum(math.hypot(*[random.random()*2-1
+	                 for q in [0,1]]) < 1
+              for p in xrange(throws)) / float(throws)
+3.1415666400000002
+
+====PYTHON=====
+ 
+from random import random
+from math import hypot
+try:
+    import psyco
+    psyco.full()
+except:
+    pass
+ 
+def pi(nthrows):
+    inside = 0
+    for i in xrange(nthrows):
+        if hypot(random(), random()) < 1:
+            inside += 1
+    return 4.0 * inside / nthrows
+ 
+for n in [10**4, 10**6, 10**7, 10**8]:
+    print "%9d: %07f" % (n, pi(n))
+ 
+
+====PYTHON=====
+ 
+import numpy as np
+ 
+n = input('Number of samples: ')
+print np.sum(np.random.rand(n)**2+np.random.rand(n)**2<1)/float(n)*4
+ 
+

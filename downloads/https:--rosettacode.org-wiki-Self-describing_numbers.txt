@@ -1,0 +1,169 @@
+====RUBY=====
+def self_describing?(n)
+  digits = n.to_s.chars.map(&.to_i)         # 12345 => [1, 2, 3, 4, 5]
+  digits.each_with_index.all? { |digit, idx| digits.count(idx) == digit }
+end
+ 
+t = Time.monotonic
+600_000_000.times { |n| (puts "#{n} in #{(Time.monotonic - t).total_seconds} secs";\
+                        t = Time.monotonic) if self_describing?(n) }
+
+====RUBY=====
+def selfDesc(n)
+  ns = n.to_s
+  nc = ns.size
+  count = Array.new(nc, 0)
+  sum = 0
+  while n > 0
+    d = n % 10
+    return false if d >= nc   # can't have a digit >= number of digits
+    sum += d
+    return false if sum > nc
+    count[d] += 1
+    n //= 10
+  end
+  # to be self-describing sum of digits must equal number of digits
+  return false if sum != nc
+  return ns == count.join()   # there must always be at least one zero
+end
+ 
+start = Time.monotonic
+print("The self-describing numbers are:")
+i  = 10i64  # self-describing number must end in 0
+pw = 10i64  # power of 10
+fd = 1i64   # first digit
+sd = 1i64   # second digit
+dg = 2i64   # number of digits
+mx = 11i64  # maximum for current batch
+lim = 9_100_000_001i64 # sum of digits can't be more than 10
+while i < lim
+  if selfDesc(i)
+    secs = (Time.monotonic - start).total_seconds
+    print("\n#{i} in #{secs} secs")
+  end
+  i += 10
+  if i > mx
+    fd += 1
+    sd -= 1
+    if sd >= 0
+      i = pw * fd
+    else
+      pw *= 10
+      dg += 1
+      i  = pw
+      fd = 1
+      sd = dg - 1
+    end
+    mx = i + sd * pw // 10
+  end
+end
+osecs = (Time.monotonic - start).total_seconds
+print("\nTook #{osecs} secs overall")
+
+====RUBY=====
+def self_describing?(n)
+  digits = n.digits.reverse
+  digits.each_with_index.all?{|digit, idx| digits.count(idx) == digit}
+end
+ 
+3_300_000.times {|n| puts n if self_describing?(n)}
+
+====RUBY=====
+def selfDesc(n)
+  ns = n.to_s
+  nc = ns.size
+  count = Array.new(nc, 0)
+  sum = 0
+  while n > 0
+    d = n % 10
+    return false if d >= nc   # can't have a digit >= number of digits
+    sum += d
+    return false if sum > nc
+    count[d] += 1
+    n /= 10
+  end
+  # to be self-describing sum of digits must equal number of digits
+  return false if sum != nc
+  return ns == count.join() # there must always be at least one zero
+end
+ 
+start = Time.now
+print("The self-describing numbers are:")
+i  = 10  # self-describing number must end in 0
+pw = 10  # power of 10
+fd = 1   # first digit
+sd = 1   # second digit
+dg = 2   # number of digits
+mx = 11  # maximum for current batch
+lim = 9_100_000_001 # sum of digits can't be more than 10
+while i < lim
+  if selfDesc(i)
+    secs = (Time.now - start) #.total_seconds
+    print("\n#{i} in #{secs} secs")
+  end
+  i += 10
+  if i > mx
+    fd += 1
+    sd -= 1
+    if sd >= 0
+      i = pw * fd
+    else
+      pw *= 10
+      dg += 1
+      i  = pw
+      fd = 1
+      sd = dg - 1
+    end
+    mx = i + sd * pw / 10
+  end
+end
+osecs = (Time.now - start)
+print("\nTook #{osecs} secs overall")
+
+====RUBY=====
+func sdn(Number n) {
+    var b = [0]*n.len
+    var a = n.digits.flip
+    a.each { |i| b[i] := 0 ++ }
+    a == b
+}
+ 
+var values = [1210, 2020, 21200, 3211000,
+42101000, 521001000, 6210001000, 27, 115508]
+ 
+values.each { |test|
+    say "#{test} is #{sdn(test) ? '' : 'NOT ' }a self describing number."
+}
+ 
+say "\nSelf-descriptive numbers less than 1e5 (in base 10):"
+^1e5 -> each { |i| say i if sdn(i) }
+
+====RUBY=====
+for b in (7 .. 36) {
+    var n = ((b-4) * b**(b-1) + 2*(b**(b-2)) + b**(b-3) + b**3 -> base(b))
+    say "base #{'%2d' % b}: #{n}"
+}
+
+====PYTHON=====
+>>> def isSelfDescribing(n):
+	s = str(n)
+	return all(s.count(str(i)) == int(ch) for i, ch in enumerate(s))
+ 
+>>> [x for x in range(4000000) if isSelfDescribing(x)]
+[1210, 2020, 21200, 3211000]
+>>> [(x, isSelfDescribing(x)) for x in (1210, 2020, 21200, 3211000, 42101000, 521001000, 6210001000)]
+[(1210, True), (2020, True), (21200, True), (3211000, True), (42101000, True), (521001000, True), (6210001000, True)]
+
+====PYTHON=====
+def impl(d, c, m):
+    if m < 0: return
+    if d == c[:len(d)]: print d
+    for i in range(c[len(d)],m+1):
+        dd = d+[i]
+        if i<len(dd) and c[i]==dd[i]: continue
+        impl(dd,c[:i]+[c[i]+1]+c[i+1:],m-i)
+ 
+def self(n): impl([], [0]*(n+1), n)
+ 
+self(10)
+

@@ -1,0 +1,137 @@
+====RUBY=====
+libm = LibC.dlopen("libm.so.6", LibC::RTLD_LAZY)
+sqrtptr = LibC.dlsym(libm, "sqrt") unless libm.null?
+ 
+if sqrtptr
+  sqrtproc = Proc(Float64, Float64).new sqrtptr, Pointer(Void).null
+  at_exit { LibC.dlclose(libm) }
+else
+  sqrtproc = ->Math.sqrt(Float64)
+end
+ 
+puts "the sqrt of 4 is #{sqrtproc.call(4.0)}"
+
+====RUBY=====
+require 'fiddle/import'
+ 
+module FakeImgLib
+  extend Fiddle::Importer
+  begin
+    dlload './fakeimglib.so'
+    extern 'int openimage(const char *)'
+  rescue Fiddle::DLError
+    # Either fakeimglib or openimage() is missing.
+    @@handle = -1
+    def openimage(path)
+      $stderr.puts "internal openimage opens #{path}\n"
+      @@handle += 1
+    end
+    module_function :openimage
+  end
+end
+ 
+handle = FakeImgLib.openimage("path/to/image")
+puts "opened with handle #{handle}"
+
+====RUBY=====
+# This script shows the width x height of some images.
+# Example:
+#   $ ruby imsize.rb dwarf-vs-elf.png swedish-chef.jpg
+#   dwarf-vs-elf.png: 242x176
+#   swedish-chef.jpg: 256x256
+ 
+begin
+  require 'rmagick'
+  lib = :rmagick
+rescue LoadError
+  # Missing rmagick.  Try ffi.
+  begin
+    require 'ffi'
+    module F
+      extend FFI::Library
+      ffi_lib 'MagickWand-6.Q16'
+      attach_function :DestroyMagickWand, [:pointer], :pointer
+      attach_function :MagickGetImageHeight, [:pointer], :size_t
+      attach_function :MagickGetImageWidth, [:pointer], :size_t
+      attach_function :MagickPingImage, [:pointer, :string], :bool
+      attach_function :MagickWandGenesis, [], :void
+      attach_function :NewMagickWand, [], :pointer
+    end
+    lib = :ffi
+  rescue LoadError
+    # Missing ffi, MagickWand lib, or function in lib.
+  end
+end
+ 
+case lib
+when :rmagick
+  # Returns [width, height] of an image file.
+  def size(path)
+    img = Magick::Image.ping(path).first
+    [img.columns, img.rows]
+  end
+when :ffi
+  F.MagickWandGenesis()
+  def size(path)
+    wand = F.NewMagickWand()
+    F.MagickPingImage(wand, path) or fail 'problem reading image'
+    [F.MagickGetImageWidth(wand), F.MagickGetImageHeight(wand)]
+  ensure
+    F.DestroyMagickWand(wand) if wand
+  end
+else
+  PngSignature = "\x89PNG\r\n\x1A\n".force_encoding('binary')
+  def size(path)
+    File.open(path, 'rb') do |file|
+      # Only works with PNG: https://www.w3.org/TR/PNG/
+      # Reads [width, height] from IDHR chunk.
+      # Checks height != nil, but doesn't check CRC of chunk.
+      sig, width, height = file.read(24).unpack('[email protected]')
+      sig == PngSignature and height or fail 'not a PNG image'
+      [width, height]
+    end
+  end
+end
+ 
+# Show the size of each image in ARGV.
+status = true
+ARGV.empty? and (warn "usage: $0 file..."; exit false)
+ARGV.each do |path|
+  begin
+    r, c = size(path)
+    puts "#{path}: #{r}x#{c}"
+  rescue
+    status = false
+    puts "#{path}: #$!"
+  end
+end
+exit status
+
+====PYTHON=====
+import ctypes
+ 
+user32_dll = ctypes.cdll.LoadLibrary('User32.dll')
+print user32_dll.GetDoubleClickTime()
+
+====PYTHON=====
+>>> import ctypes
+>>> # libc = ctypes.cdll.msvcrt # Windows
+>>> # libc = ctypes.CDLL('libc.dylib') # Mac
+>>> libc = ctypes.CDLL('libc.so') # Linux and most other *nix
+>>> libc.printf(b'hi there, %s\n', b'world')
+hi there, world.
+17
+
+====PYTHON=====
+ 
+>>> from cffi import FFI
+>>> ffi = FFI()
+>>> ffi.cdef("""
+...     int printf(const char *format, ...);   // copy-pasted from the man page
+... """)
+>>> C = ffi.dlopen(None)                     # loads the entire C namespace
+>>> arg = ffi.new("char[]", b"world")         # equivalent to C code: char arg[] = "world";
+>>> C.printf(b"hi there, %s.\n", arg)         # call printf
+hi there, world.
+17
+

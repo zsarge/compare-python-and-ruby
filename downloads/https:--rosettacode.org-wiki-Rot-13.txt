@@ -1,0 +1,92 @@
+====RUBY=====
+# Returns a copy of _s_ with rot13 encoding.
+def rot13(s)
+  s.tr('A-Za-z', 'N-ZA-Mn-za-m')
+end
+ 
+# Perform rot13 on files from command line, or standard input.
+while line = ARGF.gets
+  print rot13(line)
+end
+
+====RUBY=====
+# Returns a copy of 's' with rot13 encoding.
+func rot13(s) {
+    s.tr('A-Za-z', 'N-ZA-Mn-za-m');
+}
+ 
+# Perform rot13 on standard input.
+STDIN.each { |line| print rot13(line) }
+
+====PYTHON=====
+>>> u'foo'.encode('rot13')
+'sbb'
+>>> 'sbb'.decode('rot13')
+u'foo'
+
+====PYTHON=====
+>>> import codecs
+>>> codecs.encode("The quick brown fox jumps over the lazy dog", "rot13")
+'Gur dhvpx oebja sbk whzcf bire gur ynml qbt'
+>>> codecs.decode(_, "rot13")
+'The quick brown fox jumps over the lazy dog'
+
+====PYTHON=====
+#!/usr/bin/env python
+import string
+ 
+TRANSLATION_TABLE = str.maketrans(
+    string.ascii_uppercase + string.ascii_lowercase,
+    string.ascii_uppercase[13:] + string.ascii_uppercase[:13] +
+    string.ascii_lowercase[13:] + string.ascii_lowercase[:13]
+)
+ 
+ 
+def rot13(s):
+    """Return the rot-13 encoding of s."""
+    return s.translate(TRANSLATION_TABLE)
+ 
+ 
+if __name__ == "__main__":
+    """rot-13 encode the input files, or stdin if no files are provided."""
+    import fileinput
+    for line in fileinput.input():
+        print(rot13(line), end="")
+
+====PYTHON=====
+#!/usr/bin/env python
+from __future__ import print_function
+import string
+lets = string.ascii_lowercase
+key = {x:y for (x,y) in zip(lets[13:]+lets[:14], lets)}
+key.update({x.upper():key[x].upper() for x in key.keys()})
+encode = lambda x: ''.join((key.get(c,c) for c in x))
+if __name__ == '__main__':
+   """Peform line-by-line rot-13 encoding on any files listed on our
+      command line or act as a standard UNIX filter (if no arguments
+      specified).
+   """
+   import fileinput
+   for line in fileinput.input():
+      print(encode(line), end="")
+
+====PYTHON=====
+def (rot13 s)
+  (as string
+      (map rot13
+           (as list s)))
+ 
+Alphabet <- "abcdefghijklmnopqrstuvwxyz"
+def (rot13 c) :case (and string?.c len.c=1)
+  if ("a" <= c <= "z")
+       let idx (pos c Alphabet)
+         Alphabet (idx+13 % 26)
+     ("A" <= c <= "Z")
+       (downcase.c -> rot13 -> upcase)
+     :else
+       c
+
+====PYTHON=====
+(rot13 "Moron")
+=> "Zbeba"
+

@@ -1,0 +1,102 @@
+====RUBY=====
+def table_sort(table, ordering=:<=>, column=0, reverse=false)
+  # ...
+
+====RUBY=====
+def table_sort(table, ordering: :<=>, column: 0, reverse: false)
+  p = ordering.to_proc
+  if reverse
+    table.sort {|a, b| p.(b[column], a[column])}
+  else
+    table.sort {|a, b| p.(a[column], b[column])}
+  end
+end
+ 
+# Quick example:
+table = [
+  ["Ottowa", "Canada"],
+  ["Washington", "USA"],
+  ["Mexico City", "Mexico"],
+]
+p table_sort(table, column: 1)
+
+====RUBY=====
+def table_sort(table, opts = {})
+  defaults = {:ordering => :<=>, :column => 0, :reverse => false}
+  opts = defaults.merge(opts)
+ 
+  c = opts[:column]
+  p = opts[:ordering].to_proc
+  if opts[:reverse]
+    table.sort {|a, b| p.call(b[c], a[c])}
+  else
+    table.sort {|a, b| p.call(a[c], b[c])}
+  end
+end
+
+====RUBY=====
+func table_sort(table, ordering: '<=>', column: 0, reverse: false) {
+  if (reverse) {
+    table.sort {|a,b| b[column].$ordering(a[column])}
+  } else {
+    table.sort {|a,b| a[column].$ordering(b[column])}
+  }
+}
+ 
+# Quick example:
+var table = [
+  ["Ottowa", "Canada"],
+  ["Washington", "USA"],
+  ["Mexico City", "Mexico"],
+];
+ 
+say table_sort(table, column: 1);
+
+====RUBY=====
+class String {
+    method my_sort(arg) {
+           (self.len <=> arg.len) ->
+        || (self.lc <=> arg.lc)   ->
+        || (self <=> arg)
+    }
+}
+ 
+say table_sort(table, column: 1, ordering: 'my_sort');
+
+====PYTHON=====
+>>> def printtable(data):
+    for row in data:
+        print ' '.join('%-5s' % ('"%s"' % cell) for cell in row)
+ 
+ 
+>>> import operator
+>>> def sorttable(table, ordering=None, column=0, reverse=False):
+    return sorted(table, cmp=ordering, key=operator.itemgetter(column), reverse=reverse)
+ 
+>>> data = [["a", "b", "c"], ["", "q", "z"], ["zap", "zip", "Zot"]]
+>>> printtable(data)
+"a"   "b"   "c"  
+""    "q"   "z"  
+"zap" "zip" "Zot"
+>>> printtable( sorttable(data) )
+""    "q"   "z"  
+"a"   "b"   "c"  
+"zap" "zip" "Zot"
+>>> printtable( sorttable(data, column=2) )
+"zap" "zip" "Zot"
+"a"   "b"   "c"  
+""    "q"   "z"  
+>>> printtable( sorttable(data, column=1) )
+"a"   "b"   "c"  
+""    "q"   "z"  
+"zap" "zip" "Zot"
+>>> printtable( sorttable(data, column=1, reverse=True) )
+"zap" "zip" "Zot"
+""    "q"   "z"  
+"a"   "b"   "c"  
+>>> printtable( sorttable(data, ordering=lambda a,b: cmp(len(b),len(a))) )
+"zap" "zip" "Zot"
+"a"   "b"   "c"  
+""    "q"   "z"  
+>>>
+

@@ -1,0 +1,46 @@
+====RUBY=====
+def horner(coeffs, x)
+  coeffs.reverse.inject(0) {|acc, coeff| acc * x + coeff}
+end
+p horner([-19, 7, -4, 6], 3)  # ==> 128
+
+====RUBY=====
+func horner(coeff, x) {
+    coeff.reverse.reduce { |a,b| a*x + b };
+}
+ 
+say horner([-19, 7, -4, 6], 3);   # => 128
+
+====RUBY=====
+func horner(coeff, x) {
+    coeff.len > 0
+        && (coeff[0] + x*horner(coeff.ft(1), x));
+}
+ 
+say horner([-19, 7, -4, 6], 3);   # => 128
+
+====PYTHON=====
+>>> def horner(coeffs, x):
+	acc = 0
+	for c in reversed(coeffs):
+		acc = acc * x + c
+	return acc
+ 
+>>> horner( (-19, 7, -4, 6), 3)
+128
+
+====PYTHON=====
+>>> try: from functools import reduce
+except: pass
+ 
+>>> def horner(coeffs, x):
+	return reduce(lambda acc, c: acc * x + c, reversed(coeffs), 0)
+ 
+>>> horner( (-19, 7, -4, 6), 3)
+128
+
+====PYTHON=====
+>>> import numpy
+>>> numpy.polynomial.polynomial.polyval(3, (-19, 7, -4, 6))
+128.0
+

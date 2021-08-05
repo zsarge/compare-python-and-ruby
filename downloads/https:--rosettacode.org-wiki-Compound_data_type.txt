@@ -1,0 +1,87 @@
+====RUBY=====
+struct Point(T)
+  getter x : T
+  getter y : T
+  def initialize(@x, @y)
+  end 
+end
+ 
+puts Point(Int32).new 13, 12  #=> Point(Int32)(@x=13, @y=12)
+
+====RUBY=====
+Point = Struct.new(:x,:y)
+pt = Point.new(6,7)
+puts pt.x        #=> 6
+pt.y = 3
+puts pt          #=> #<struct Point x=6, y=3>
+ 
+# The other way of accessing
+pt = Point[2,3]
+puts pt[:x]      #=> 2
+pt['y'] = 5
+puts pt          #=> #<struct Point x=2, y=5>
+ 
+pt.each_pair{|member, value| puts "#{member} : #{value}"}
+                 #=> x : 2
+                 #=> y : 5
+
+====RUBY=====
+struct Point {x, y};
+var point = Point(1, 2);
+say point.y;                #=> 2
+
+====PYTHON=====
+X, Y = 0, 1
+p = (3, 4)
+p = [3, 4]
+ 
+print p[X]
+
+====PYTHON=====
+class Point:
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+ 
+p = Point()
+print p.x
+
+====PYTHON=====
+class MyObject(object): pass
+point = MyObject()
+point.x, point.y = 0, 1
+# objects directly instantiated from "object()"  cannot be "monkey patched"
+# however this can generally be done to it's subclasses
+
+====PYTHON=====
+pseudo_object = {'x': 1, 'y': 2}
+
+====PYTHON=====
+>>> from collections import namedtuple
+>>> help(namedtuple)
+Help on function namedtuple in module collections:
+ 
+namedtuple(typename, field_names, verbose=False)
+    Returns a new subclass of tuple with named fields.
+ 
+    >>> Point = namedtuple('Point', 'x y')
+    >>> Point.__doc__                   # docstring for the new class
+    'Point(x, y)'
+    >>> p = Point(11, y=22)             # instantiate with positional args or keywords
+    >>> p[0] + p[1]                     # indexable like a plain tuple
+    33
+    >>> x, y = p                        # unpack like a regular tuple
+    >>> x, y
+    (11, 22)
+    >>> p.x + p.y                       # fields also accessable by name
+    33
+    >>> d = p._asdict()                 # convert to a dictionary
+    >>> d['x']
+    11
+    >>> Point(**d)                      # convert from a dictionary
+    Point(x=11, y=22)
+    >>> p._replace(x=100)               # _replace() is like str.replace() but targets named fields
+    Point(x=100, y=22)
+ 
+>>>
+

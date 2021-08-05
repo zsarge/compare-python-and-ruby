@@ -1,0 +1,125 @@
+====RUBY=====
+require 'date'
+ 
+def easter_date(year)
+  # Anonymous Gregorian algorithm
+  # http://en.wikipedia.org/wiki/Computus#Algorithms 
+ 
+  a    = year % 19
+  b, c = year.divmod(100)
+  d, e = b.divmod(4)
+  f    = (b + 8) / 25
+  g    = (b - f + 1) / 3
+  h    = (19*a + b - d - g + 15) % 30
+  i, k = c.divmod(4)
+  l    = (32 + 2*e + 2*i - h - k) % 7
+  m    = (a + 11*h + 22*l) / 451
+  numerator = h + l - 7*m + 114
+  month = numerator / 31
+  day = (numerator % 31) + 1
+  Date.new(year, month, day)
+end
+ 
+OFFSETS = [
+  [:easter,     0],
+  [:ascension, 39],
+  [:pentecost, 49],
+  [:trinity,   56],
+  [:corpus,    60],
+]
+ 
+def emit_dates(year)
+  e = easter_date year
+  dates = OFFSETS.collect {|item, offset| (e + offset).strftime("  %e %b")}
+  puts "%4s: %s" % [year, dates.join(',  ')]
+end
+ 
+puts "year:" + OFFSETS.collect{|item, offset| "%9s" % item}.join(', ')
+400.step(2100, 100).each {|year| emit_dates year}
+puts
+(2010 .. 2020).each {|year| emit_dates year}
+
+====RUBY=====
+require('Date::Calc')
+ 
+var abbr = < Nil Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec >
+ 
+var holidays = [
+    [Easter    => 0],
+    [Ascension => 39],
+    [Pentecost => 49],
+    [Trinity   => 56],
+    [Corpus    => 60],
+]
+ 
+func easter(year) {
+    var ay = (year % 19)
+    var by = (year // 100)
+    var cy = (year % 100)
+    var dy = (by // 4)
+    var ey = (by % 4)
+    var fy = ((by + 8) // 25)
+    var gy = ((by - fy + 1) // 3)
+    var hy = ((19*ay + by - dy - gy + 15) % 30)
+    var iy = (cy // 4)
+    var ky = (cy % 4)
+    var ly = ((32 + 2*ey + 2*iy - hy - ky) % 7)
+    var md = (hy + ly - 7*((ay + 11*hy + 22*ly) // 451) + 114)
+    var month = (md // 31)
+    var day = (md % 31 + 1)
+    return(month, day)
+}
+ 
+func cholidays(year) {
+    var (emon, eday) = easter(year)
+    printf("%4s: ", year)
+    say gather {
+        holidays.each { |holiday|
+            var (_, mo, da) = %S<Date::Calc>.Add_Delta_Days(year, emon, eday, holiday[1])
+            take("#{holiday[0]}: #{'%02d' % da} #{abbr[mo]}")
+        }
+    }.join(', ')
+}
+ 
+for year in (400..2100 `by` 100, 2010..2020) {
+    cholidays(year)
+}
+
+====PYTHON=====
+from dateutil.easter import *
+import datetime, calendar
+ 
+class Holiday(object):
+    def __init__(self, date, offset=0):
+        self.holiday = date + datetime.timedelta(days=offset)
+ 
+    def __str__(self):
+        dayofweek = calendar.day_name[self.holiday.weekday()][0:3]
+        month = calendar.month_name[self.holiday.month][0:3]
+        return '{0} {1:2d} {2}'.format(dayofweek, self.holiday.day, month)
+ 
+def get_holiday_values(year):
+    holidays = {'year': year}
+    easterDate = easter(year)
+    holidays['easter'] = Holiday(easterDate) 
+    holidays['ascension'] = Holiday(easterDate, 39)
+    holidays['pentecost'] = Holiday(easterDate, 49)
+    holidays['trinity'] = Holiday(easterDate, 56)
+    holidays['corpus'] = Holiday(easterDate, 60)
+    return holidays
+ 
+def print_holidays(holidays):
+    print '{year:4d} Easter: {easter}, Ascension: {ascension}, Pentecost: {pentecost}, Trinity: {trinity}, Corpus: {corpus}'.format(**holidays)
+ 
+if __name__ == "__main__":
+    print "Christian holidays, related to Easter, for each centennial from 400 to 2100 CE:"
+    for year in range(400, 2200, 100):
+        print_holidays(get_holiday_values(year))
+ 
+    print ''
+    print "Christian holidays, related to Easter, for years from 2010 to 2020 CE:"
+    for year in range(2010, 2021):
+        print_holidays(get_holiday_values(year))
+ 
+ 
+

@@ -1,0 +1,70 @@
+====RUBY=====
+loop do
+  print "\ninput a boolean expression (e.g. 'a & b'): "
+  expr = gets.strip.downcase 
+  break if expr.empty?
+ 
+  vars = expr.scan(/\p{Alpha}+/)
+  if vars.empty?
+    puts "no variables detected in your boolean expression"
+    next
+  end
+ 
+  vars.each {|v| print "#{v}\t"}
+  puts "| #{expr}"
+ 
+  prefix = []
+  suffix = []
+  vars.each do |v|
+    prefix << "[false, true].each do |#{v}|"
+    suffix << "end"
+  end
+ 
+  body = vars.inject("puts ") {|str, v| str + "#{v}.to_s + '\t' + "} 
+  body += '"| " + eval(expr).to_s'
+ 
+  eval (prefix + [body] + suffix).join("\n")
+end
+
+====RUBY=====
+loop {
+  var expr = Sys.readln("\nBoolean expression (e.g. 'a & b'): ").strip.lc
+  break if expr.is_empty;
+ 
+  var vars = expr.scan(/[[:alpha:]]+/)
+  if (vars.is_empty) {
+    say "no variables detected in your boolean expression"
+    next
+  }
+ 
+  var prefix = [];
+  var suffix = [];
+ 
+  vars.each { |v|
+    print "#{v}\t"
+    prefix << "[false, true].each { |#{v}|"
+    suffix << "}"
+  }
+  say "| #{expr}"
+ 
+  var body = ("say (" + vars.map{|v| v+",'\t'," }.join + " '| ', #{expr})")
+  eval(prefix + [body] + suffix -> join("\n"))
+}
+
+====PYTHON=====
+from itertools import product
+ 
+while True:
+    bexp = input('\nBoolean expression: ')
+    bexp = bexp.strip()
+    if not bexp:
+        print("\nThank you")
+        break
+    code = compile(bexp, '<string>', 'eval')
+    names = code.co_names
+    print('\n' + ' '.join(names), ':', bexp)
+    for values in product(range(2), repeat=len(names)):
+        env = dict(zip(names, values))
+        print(' '.join(str(v) for v in values), ':', eval(code, env))
+ 
+

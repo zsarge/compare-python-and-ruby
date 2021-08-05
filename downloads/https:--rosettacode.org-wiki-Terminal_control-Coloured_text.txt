@@ -1,0 +1,70 @@
+====RUBY=====
+#!/usr/bin/ruby -w
+require 'rubygems'
+require 'colored'
+ 
+print 'Colors are'.bold
+print ' black'.black
+print ' blue'.blue
+print ' cyan'.cyan
+print ' green'.green
+print ' magenta'.magenta
+print ' red'.red
+print ' white '.white
+print 'and'.underline, ' yellow'.yellow, "\n"
+puts 'black on blue'.black_on_blue
+puts 'black on cyan'.black_on_cyan
+puts 'black on green'.black_on_green
+puts 'black on magenta'.black_on_magenta
+puts 'black on red'.black_on_red
+puts 'white on black'.white_on_black
+puts 'white on blue'.white_on_blue
+puts 'white on cyan'.white_on_cyan
+puts 'white on green'.white_on_green
+puts 'white on magenta'.white_on_magenta
+puts 'white on red'.white_on_red
+
+====RUBY=====
+var a = frequire('Term::ANSIColor');
+ 
+say a.colored('RED ON WHITE', 'bold red on_white');
+say a.colored('GREEN', 'bold green');
+say a.colored('BLUE ON YELLOW', 'bold blue on_yellow');
+say a.colored('MAGENTA', 'bold magenta');
+say a.colored('CYAN ON RED', 'bold cyan on_red');
+say a.colored('YELLOW', 'bold yellow');
+
+====PYTHON=====
+ 
+from colorama import init, Fore, Back, Style
+init(autoreset=True)
+ 
+print Fore.RED + "FATAL ERROR! Cannot write to /boot/vmlinuz-3.2.0-33-generic"
+print Back.BLUE + Fore.YELLOW + "What a cute console!"
+print "This is an %simportant%s word" % (Style.BRIGHT, Style.NORMAL)
+print Fore.YELLOW  + "Rosetta Code!"
+print Fore.CYAN    + "Rosetta Code!"
+print Fore.GREEN   + "Rosetta Code!"
+print Fore.MAGENTA + "Rosetta Code!"
+print Back.YELLOW + Fore.BLUE + Style.BRIGHT + " " * 40 + " == Good Bye!"
+ 
+
+====PYTHON=====
+ 
+from ctypes import *
+ 
+windll.Kernel32.GetStdHandle.restype = c_ulong
+h = windll.Kernel32.GetStdHandle(c_ulong(0xfffffff5))
+#Default CMD colour = 7
+def color(colour):
+    windll.Kernel32.SetConsoleTextAttribute(h, colour)
+ 
+for count in range (0, 16):
+    color(count)
+    print "This Colour Is #" + str(count)
+ 
+print ""
+color(7)
+raw_input("holding cmd")
+ 
+

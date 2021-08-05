@@ -1,0 +1,23 @@
+====RUBY=====
+def do_stuff(line)
+  puts line
+end
+ 
+n = gets.to_i
+n.times do
+  line = gets
+  do_stuff(line)
+end
+
+====PYTHON=====
+try: input = raw_input
+except: pass
+ 
+def do_stuff(words):
+	print(words)
+ 
+linecount = int(input())
+for x in range(linecount):
+	line = input()
+	do_stuff(line)
+

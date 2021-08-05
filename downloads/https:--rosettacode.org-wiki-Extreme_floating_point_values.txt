@@ -1,0 +1,103 @@
+====RUBY=====
+inf = 1.0 / 0.0    # or Float::INFINITY
+nan = 0.0 / 0.0               # or Float::NAN
+ 
+expression = [
+  "1.0 / 0.0", "-1.0 / 0.0", "0.0 / 0.0", "- 0.0",
+  "inf + 1", "5 - inf", "inf * 5", "inf / 5", "inf * 0",
+  "1.0 / inf", "-1.0 / inf", "inf + inf", "inf - inf",
+  "inf * inf", "inf / inf", "inf * 0.0", " 0 < inf", "inf == inf",
+  "nan + 1", "nan * 5", "nan - nan", "nan * inf", "- nan",
+  "nan == nan", "nan > 0", "nan < 0", "nan == 0", "nan <=> 0.0", "0.0 == -0.0",
+]
+ 
+expression.each do |exp|
+  puts "%15s => %p" % [exp, eval(exp)]
+end
+
+====RUBY=====
+var inf = 1/0    # same as: Inf
+var nan = 0/0    # same as: NaN
+ 
+var exprs = [
+  "1.0 / 0.0", "-1.0 / 0.0", "0.0 / 0.0", "- 0.0",
+  "inf + 1", "5 - inf", "inf * 5", "inf / 5", "inf * 0",
+  "1.0 / inf", "-1.0 / inf", "inf + inf", "inf - inf",
+  "inf * inf", "inf / inf", "inf * 0.0", " 0 < inf", "inf == inf",
+  "nan + 1", "nan * 5", "nan - nan", "nan * inf", "- nan",
+  "nan == nan", "nan > 0", "nan < 0", "nan == 0", "0.0 == -0.0",
+]
+ 
+exprs.each { |expr|
+  "%15s => %s\n".printf(expr, eval(expr))
+}
+ 
+say "-"*40
+say("NaN equality: ",        NaN ==  nan)
+say("Infinity equality: ",   Inf ==  inf)
+say("-Infinity equality: ", -Inf == -inf)
+ 
+say "-"*40
+say("sqrt(-1)   = ",   sqrt(-1))
+say("tanh(-Inf) = ", tanh(-inf))
+say("(-Inf)**2  = ",  (-inf)**2)
+say("(-Inf)**3  = ",  (-inf)**3)
+say("acos(Inf)  = ",  acos(inf))
+say("atan(Inf)  = ",  atan(inf))
+say("log(-1)    = ",    log(-1))
+say("atanh(Inf) = ", atanh(inf))
+
+====PYTHON=====
+>>> # Extreme values from expressions
+>>> inf = 1e234 * 1e234
+>>> _inf = 1e234 * -1e234
+>>> _zero = 1 / _inf
+>>> nan = inf + _inf
+>>> inf, _inf, _zero, nan
+(inf, -inf, -0.0, nan)
+>>> # Print
+>>> for value in (inf, _inf, _zero, nan): print (value)
+ 
+inf
+-inf
+-0.0
+nan
+>>> # Extreme values from other means
+>>> float('nan')
+nan
+>>> float('inf')
+inf
+>>> float('-inf')
+-inf
+>>> -0.
+-0.0
+>>> # Some arithmetic
+>>> nan == nan
+False
+>>> nan is nan
+True
+>>> 0. == -0.
+True
+>>> 0. is -0.
+False
+>>> inf + _inf
+nan
+>>> 0.0 * nan
+nan
+>>> nan * 0.0
+nan
+>>> 0.0 * inf
+nan
+>>> inf * 0.0
+nan
+
+====PYTHON=====
+>>> # But note!
+>>> 1 / -0.0
+ 
+Traceback (most recent call last):
+  File "<pyshell#106>", line 1, in <module>
+    1 / -0.0
+ZeroDivisionError: float division by zero
+>>> # (Not minus infinity)
+

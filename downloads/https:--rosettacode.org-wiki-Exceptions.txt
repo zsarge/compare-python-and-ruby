@@ -1,0 +1,112 @@
+====RUBY=====
+# define an exception
+class SillyError < Exception
+end
+
+====RUBY=====
+class MyInvalidArgument < ArgumentError
+end
+
+====RUBY=====
+ 
+# raise (throw) an exception
+def spam
+  raise SillyError, 'egg'
+end
+ 
+# rescue (catch) an exception
+begin
+  spam
+rescue SillyError => se
+  puts se  # writes 'egg' to stdout
+end
+
+====RUBY=====
+begin
+  foo
+rescue ArgumentError => e
+  # rescues a MyInvalidArgument or any other ArgumentError
+  bar
+rescue => e
+  # rescues a StandardError
+  quack
+else
+  # runs if no exception occurred
+  quux
+ensure
+  # always runs
+  baz
+end
+
+====RUBY=====
+# short way to rescue any StandardError
+quotient = 1 / 0 rescue "sorry"
+
+====RUBY=====
+def foo
+    throw :done
+end
+ 
+catch :done do
+    foo
+end
+
+====RUBY=====
+try  {
+    die "I'm dead!";        # throws an exception of type 'error'
+}
+catch { |type, msg|
+    say "type: #{type}";    # type: error
+    say "msg: #{msg}";      # msg: I'm dead! at test.sf line 2.
+};
+ 
+say "I'm alive...";
+die "Now I'm dead!";        # this line terminates the program
+say "Or am I?";             # Yes, you are!
+
+====PYTHON=====
+import exceptions
+class SillyError(exceptions.Exception):
+    def __init__(self,args=None):
+         self.args=args
+
+====PYTHON=====
+class MyInvalidArgument(ValueError):
+   pass
+
+====PYTHON=====
+def spam():
+    raise SillyError # equivalent to raise SillyError()
+
+====PYTHON=====
+def spam():
+    raise SillyError, 'egg' # equivalent to raise SillyError('egg')
+
+====PYTHON=====
+def spam():
+    raise SillyError('egg')
+
+====PYTHON=====
+try:
+   foo()
+except SillyError, se:
+   print se.args
+   bar()
+else:
+   # no exception occurred
+   quux()
+finally:
+   baz()
+
+====PYTHON=====
+try:
+   foo()
+except SillyError as se:
+   print(se.args)
+   bar()
+else:
+   # no exception occurred
+   quux()
+finally:
+   baz()
+

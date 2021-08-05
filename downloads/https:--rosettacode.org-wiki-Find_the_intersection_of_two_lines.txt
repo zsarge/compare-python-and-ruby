@@ -1,0 +1,235 @@
+====RUBY=====
+Point = Struct.new(:x, :y)
+ 
+class Line
+  attr_reader :a, :b
+ 
+  def initialize(point1, point2)
+    @a = (point1.y - point2.y).fdiv(point1.x - point2.x)
+    @b = point1.y - @a*point1.x
+  end
+ 
+  def intersect(other)
+    return nil if @a == other.a
+    x = (other.b - @b).fdiv(@a - other.a)
+    y = @a*x + @b
+    Point.new(x,y)
+  end
+ 
+  def to_s
+    "y = #{@a}x + #{@b}"
+  end
+ 
+end
+ 
+l1 = Line.new(Point.new(4, 0), Point.new(6, 10))
+l2 = Line.new(Point.new(0, 3), Point.new(10, 7))
+ 
+puts "Line #{l1} intersects line #{l2} at #{l1.intersect(l2)}."
+ 
+
+====RUBY=====
+func det(a, b, c, d) { a*d - b*c }
+ 
+func intersection(ax, ay, bx, by,
+                  cx, cy, dx, dy) {
+ 
+    var detAB = det(ax,ay, bx,by)
+    var detCD = det(cx,cy, dx,dy)
+ 
+    var ΔxAB = (ax - bx)
+    var ΔyAB = (ay - by)
+    var ΔxCD = (cx - dx)
+    var ΔyCD = (cy - dy)
+ 
+    var x_numerator = det(detAB, ΔxAB, detCD, ΔxCD)
+    var y_numerator = det(detAB, ΔyAB, detCD, ΔyCD)
+    var denominator = det( ΔxAB, ΔyAB,  ΔxCD, ΔyCD)
+ 
+    denominator == 0 && return 'lines are parallel'
+    [x_numerator / denominator, y_numerator / denominator]
+}
+ 
+say ('Intersection point: ', intersection(4,0, 6,10, 0,3, 10,7))
+say ('Intersection point: ', intersection(4,0, 6,10, 0,3, 10,7.1))
+say ('Intersection point: ', intersection(0,0, 1,1, 1,2, 4,5))
+
+====PYTHON=====
+from __future__ import division
+ 
+def setup():
+    """ test line_intersect() with visual and textual output """
+    (a, b), (c, d) = (4, 0), (6, 10)  # try (4, 0), (6, 4)
+    (e, f), (g, h) = (0, 3), (10, 7)  # for non intersecting test
+    pt = line_instersect(a, b, c, d, e, f, g, h)
+    scale(9)
+    line(a, b, c, d)
+    line(e, f, g, h)
+    if pt:
+        x, y = pt
+        stroke(255)
+        point(x, y)
+    println(pt)  # prints x, y coordinates or 'None'
+ 
+def line_instersect(Ax1, Ay1, Ax2, Ay2, Bx1, By1, Bx2, By2):
+    """ returns a (x, y) tuple or None if there is no intersection """
+    d = (By2 - By1) * (Ax2 - Ax1) - (Bx2 - Bx1) * (Ay2 - Ay1)
+    if d:
+        uA = ((Bx2 - Bx1) * (Ay1 - By1) - (By2 - By1) * (Ax1 - Bx1)) / d
+        uB = ((Ax2 - Ax1) * (Ay1 - By1) - (Ay2 - Ay1) * (Ax1 - Bx1)) / d
+    else:
+        return
+    if not(0 <= uA <= 1 and 0 <= uB <= 1):
+        return
+    x = Ax1 + uA * (Ax2 - Ax1)
+    y = Ay1 + uA * (Ay2 - Ay1)
+    return x, y
+
+====PYTHON=====
+def line_intersect(Ax1, Ay1, Ax2, Ay2, Bx1, By1, Bx2, By2):
+    """ returns a (x, y) tuple or None if there is no intersection """
+    d = (By2 - By1) * (Ax2 - Ax1) - (Bx2 - Bx1) * (Ay2 - Ay1)
+    if d:
+        uA = ((Bx2 - Bx1) * (Ay1 - By1) - (By2 - By1) * (Ax1 - Bx1)) / d
+        uB = ((Ax2 - Ax1) * (Ay1 - By1) - (Ay2 - Ay1) * (Ax1 - Bx1)) / d
+    else:
+        return
+    if not(0 <= uA <= 1 and 0 <= uB <= 1):
+        return
+    x = Ax1 + uA * (Ax2 - Ax1)
+    y = Ay1 + uA * (Ay2 - Ay1)
+ 
+    return x, y
+ 
+if __name__ == '__main__':
+    (a, b), (c, d) = (4, 0), (6, 10)  # try (4, 0), (6, 4)
+    (e, f), (g, h) = (0, 3), (10, 7)  # for non intersecting test
+    pt = line_intersect(a, b, c, d, e, f, g, h)
+    print(pt)
+
+====PYTHON=====
+'''The intersection of two lines.'''
+ 
+from itertools import product
+ 
+ 
+# intersection :: Line -> Line -> Either String Point
+def intersection(ab):
+    '''Either the point at which the lines ab and pq
+       intersect, or a message string indicating that
+       they are parallel and have no intersection.'''
+    def delta(f):
+        return lambda x: f(fst(x)) - f(snd(x))
+ 
+    def prodDiff(abcd):
+        [a, b, c, d] = abcd
+        return (a * d) - (b * c)
+ 
+    def go(pq):
+        [abDX, pqDX, abDY, pqDY] = apList(
+            [delta(fst), delta(snd)]
+        )([ab, pq])
+        determinant = prodDiff([abDX, abDY, pqDX, pqDY])
+ 
+        def point():
+            [abD, pqD] = map(
+                lambda xy: prodDiff(
+                    apList([fst, snd])([fst(xy), snd(xy)])
+                ), [ab, pq]
+            )
+            return apList(
+                [lambda abpq: prodDiff(
+                    [abD, fst(abpq), pqD, snd(abpq)]) / determinant]
+            )(
+                [(abDX, pqDX), (abDY, pqDY)]
+            )
+        return Right(point()) if 0 != determinant else Left(
+            '( Parallel lines - no intersection )'
+        )
+ 
+    return lambda pq: bindLR(go(pq))(
+        lambda xs: Right((fst(xs), snd(xs)))
+    )
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO()
+def main():
+    '''Test'''
+ 
+    # Left(message - no intersection) or Right(point)
+    # lrPoint :: Either String Point
+    lrPoint = intersection(
+        ((4.0, 0.0), (6.0, 10.0))
+    )(
+        ((0.0, 3.0), (10.0, 7.0))
+    )
+    print(
+        lrPoint['Left'] or lrPoint['Right']
+    )
+ 
+ 
+# --------------------GENERIC FUNCTIONS--------------------
+ 
+# Left :: a -> Either a b
+def Left(x):
+    '''Constructor for an empty Either (option type) value
+       with an associated string.'''
+    return {'type': 'Either', 'Right': None, 'Left': x}
+ 
+ 
+# Right :: b -> Either a b
+def Right(x):
+    '''Constructor for a populated Either (option type) value'''
+    return {'type': 'Either', 'Left': None, 'Right': x}
+ 
+ 
+# apList (<*>) :: [(a -> b)] -> [a] -> [b]
+def apList(fs):
+    '''The application of each of a list of functions,
+       to each of a list of values.
+    '''
+    def go(fx):
+        f, x = fx
+        return f(x)
+    return lambda xs: [
+        go(x) for x
+        in product(fs, xs)
+    ]
+ 
+ 
+# bindLR (>>=) :: Either a -> (a -> Either b) -> Either b
+def bindLR(m):
+    '''Either monad injection operator.
+       Two computations sequentially composed,
+       with any value produced by the first
+       passed as an argument to the second.'''
+    return lambda mf: (
+        mf(m.get('Right')) if None is m.get('Left') else m
+    )
+ 
+ 
+# fst :: (a, b) -> a
+def fst(tpl):
+    '''First member of a pair.'''
+    return tpl[0]
+ 
+ 
+# snd :: (a, b) -> b
+def snd(tpl):
+    '''Second member of a pair.'''
+    return tpl[1]
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+from shapely.geometry import LineString
+ 
+if __name__ == "__main__":
+    line1 = LineString([(4, 0), (6, 10)])
+    line2 = LineString([(0, 3), (10, 7)])
+    print(line1.intersection(line2))
+

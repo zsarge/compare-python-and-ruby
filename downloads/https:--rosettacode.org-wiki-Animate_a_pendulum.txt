@@ -1,0 +1,469 @@
+====RUBY=====
+require 'tk'
+ 
+$root = TkRoot.new("title" => "Pendulum Animation")
+$canvas = TkCanvas.new($root) do
+  width 320
+  height 200
+  create TkcLine, 0,25,320,25,   'tags' => 'plate', 'width' => 2, 'fill' => 'grey50'
+  create TkcOval, 155,20,165,30, 'tags' => 'pivot', 'outline' => "", 'fill' => 'grey50'
+  create TkcLine, 1,1,1,1, 'tags' => 'rod', 'width' => 3, 'fill' => 'black'
+  create TkcOval, 1,1,2,2, 'tags' => 'bob', 'outline' => 'black', 'fill' => 'yellow'
+end
+$canvas.raise('pivot')
+$canvas.pack('fill' => 'both', 'expand' => true)
+ 
+$Theta = 45.0
+$dTheta = 0.0
+$length = 150
+$homeX = 160
+$homeY = 25
+ 
+def show_pendulum
+  angle = $Theta * Math::PI / 180
+  x = $homeX + $length * Math.sin(angle)
+  y = $homeY + $length * Math.cos(angle)
+  $canvas.coords('rod', $homeX, $homeY, x, y)
+  $canvas.coords('bob', x-15, y-15, x+15, y+15)
+end
+ 
+def recompute_angle
+  scaling = 3000.0 / ($length ** 2)
+  # first estimate
+  firstDDTheta = -Math.sin($Theta * Math::PI / 180) * scaling
+  midDTheta = $dTheta + firstDDTheta
+  midTheta = $Theta + ($dTheta + midDTheta)/2
+  # second estimate
+  midDDTheta = -Math.sin(midTheta * Math::PI / 180) * scaling
+  midDTheta = $dTheta + (firstDDTheta + midDDTheta)/2
+  midTheta = $Theta + ($dTheta + midDTheta)/2
+  # again, first
+  midDDTheta = -Math.sin(midTheta * Math::PI / 180) * scaling
+  lastDTheta = midDTheta + midDDTheta
+  lastTheta = midTheta + (midDTheta + lastDTheta)/2
+  # again, second
+  lastDDTheta = -Math.sin(lastTheta * Math::PI/180) * scaling
+  lastDTheta = midDTheta + (midDDTheta + lastDDTheta)/2
+  lastTheta = midTheta + (midDTheta + lastDTheta)/2
+  # Now put the values back in our globals
+  $dTheta  = lastDTheta
+  $Theta = lastTheta
+end
+ 
+def animate
+  recompute_angle
+  show_pendulum
+  $after_id = $root.after(15) {animate}
+end
+ 
+show_pendulum
+$after_id = $root.after(500) {animate}
+ 
+$canvas.bind('<Destroy>') {$root.after_cancel($after_id)}
+ 
+Tk.mainloop
+
+====RUBY=====
+Shoes.app(:width => 320, :height => 200) do
+  @centerX = 160
+  @centerY = 25
+  @length = 150
+  @diameter = 15
+ 
+  @Theta = 45.0
+  @dTheta = 0.0
+ 
+  stroke gray
+  strokewidth 3
+  line 0,25,320,25
+  oval 155,20,10
+ 
+  stroke black
+  @rod = line(@centerX, @centerY, @centerX, @centerY + @length)
+  @bob = oval(@centerX - @diameter, @centerY + @length - @diameter, 2*@diameter)
+ 
+  animate(24) do |i|
+    recompute_angle
+    show_pendulum
+  end
+ 
+  def show_pendulum
+    angle = (90 + @Theta) * Math::PI / 180
+    x = @centerX + (Math.cos(angle) * @length).to_i
+    y = @centerY + (Math.sin(angle) * @length).to_i
+ 
+    @rod.remove
+    strokewidth 3
+    @rod = line(@centerX, @centerY, x, y)
+    @bob.move(x-@diameter, y-@diameter)
+  end
+ 
+  def recompute_angle
+    scaling = 3000.0 / (@length **2)
+    # first estimate
+    firstDDTheta = -Math.sin(@Theta * Math::PI / 180) * scaling
+    midDTheta = @dTheta + firstDDTheta
+    midTheta = @Theta + (@dTheta + midDTheta)/2
+    # second estimate
+    midDDTheta = -Math.sin(midTheta * Math::PI / 180) * scaling
+    midDTheta = @dTheta + (firstDDTheta + midDDTheta)/2
+    midTheta = @Theta + (@dTheta + midDTheta)/2
+    # again, first
+    midDDTheta = -Math.sin(midTheta * Math::PI / 180) * scaling
+    lastDTheta = midDTheta + midDDTheta
+    lastTheta = midTheta + (midDTheta + lastDTheta)/2
+    # again, second
+    lastDDTheta = -Math.sin(lastTheta * Math::PI/180) * scaling
+    lastDTheta = midDTheta + (midDDTheta + lastDDTheta)/2
+    lastTheta = midTheta + (midDTheta + lastDTheta)/2
+    # Now put the values back in our globals
+    @dTheta  = lastDTheta
+    @Theta = lastTheta
+  end
+end
+
+====RUBY=====
+#!/bin/ruby
+ 
+begin; require 'rubygems'; rescue; end
+ 
+require 'gosu'
+include Gosu
+ 
+# Screen size
+W = 640
+H = 480
+ 
+# Full-screen mode
+FS = false
+ 
+# Screen update rate (Hz)
+FPS = 60
+ 
+class Pendulum
+ 
+  attr_accessor :theta, :friction
+ 
+  def initialize( win, x, y, length, radius, bob = true, friction = false)
+    @win = win
+    @centerX = x
+    @centerY = y
+    @length = length
+    @radius = radius
+    @bob = bob
+    @friction = friction
+ 
+    @theta = 60.0
+    @omega = 0.0
+    @scale = 2.0 / FPS
+  end
+ 
+  def draw
+    @win.translate(@centerX, @centerY) {
+      @win.rotate(@theta) {
+        @win.draw_quad(-1, 0, 0x3F_FF_FF_FF, 1, 0, 0x3F_FF_FF_00, 1, @length, 0x3F_FF_FF_00, -1, @length, 0x3F_FF_FF_FF )
+        if @bob
+          @win.translate(0, @length) {
+            @win.draw_quad(0, -@radius, Color::RED, @radius, 0, Color::BLUE, 0, @radius, Color::WHITE, -@radius, 0, Color::BLUE )
+          }
+        end
+      }
+    }
+  end
+ 
+  def update
+    # Thanks to Hugo Elias for the formula (and explanation thereof)
+    @theta += @omega
+    @omega = @omega - (Math.sin(@theta * Math::PI / 180) / (@length * @scale))
+    @theta *= 0.999 if @friction
+  end
+ 
+end # Pendulum class
+ 
+class GfxWindow < Window
+ 
+  def initialize
+    # Initialize the base class
+    super W, H, FS, 1.0 / FPS * 1000
+    # self.caption = "You're getting sleeeeepy..."
+    self.caption = "Ruby/Gosu Pendulum Simulator (Space toggles friction)"
+ 
+    @n = 1  # Try changing this number!
+    @pendulums = []
+    (1[email protected]).each do |i|
+      @pendulums.push Pendulum.new( self, W / 2, H / 10, H * 0.75 * (i / @n.to_f), H / 60 )
+    end
+ 
+  end
+ 
+  def draw
+    @pendulums.each { |pen| pen.draw }
+  end
+ 
+  def update
+    @pendulums.each { |pen| pen.update }
+  end
+ 
+  def button_up(id)
+    if id == KbSpace
+      @pendulums.each { |pen|
+        pen.friction = !pen.friction
+        pen.theta = (pen.theta <=> 0) * 45.0 unless pen.friction
+      }
+    else
+      close
+    end
+  end
+ 
+  def needs_cursor?()
+    true
+  end
+ 
+end # GfxWindow class
+ 
+begin
+  GfxWindow.new.show
+rescue Exception => e
+  puts e.message, e.backtrace
+  gets
+end
+
+====RUBY=====
+require('Tk')
+ 
+var root = %s<MainWindow>.new('-title' => 'Pendulum Animation')
+var canvas = root.Canvas('-width' => 320, '-height' => 200)
+ 
+canvas.createLine(  0,  25, 320,  25, '-tags' => <plate>,     '-width' => 2, '-fill' => :grey50)
+canvas.createOval(155,  20, 165,  30, '-tags' => <pivot outline>,            '-fill' => :grey50)
+canvas.createLine(  1,   1,    1,  1, '-tags' => <rod width>, '-width' => 3, '-fill' => :black)
+canvas.createOval(  1,   1,    2,  2, '-tags' => <bob outline>,              '-fill' => :yellow)
+ 
+canvas.raise(:pivot)
+canvas.pack('-fill' => :both, '-expand' => 1)
+var(θ = 45, Δθ = 0, length = 150, homeX = 160, homeY = 25)
+ 
+func show_pendulum() {
+    var angle = θ.deg2rad
+    var x = (homeX + length*sin(angle))
+    var y = (homeY + length*cos(angle))
+    canvas.coords(:rod, homeX,  homeY,  x,      y)
+    canvas.coords(:bob, x - 15, y - 15, x + 15, y + 15)
+}
+ 
+func recompute_angle() {
+    var scaling = 3000/(length**2)
+ 
+    # first estimate
+    var firstΔΔθ = (-sin(θ.deg2rad) * scaling)
+    var midΔθ    = (Δθ + firstΔΔθ)
+    var midθ     = ((Δθ + midΔθ)/2 + θ)
+ 
+    # second estimate
+    var midΔΔθ = (-sin(midθ.deg2rad) * scaling)
+    midΔθ      = ((firstΔΔθ + midΔΔθ)/2 + Δθ)
+    midθ       = ((Δθ + midΔθ)/2 + θ)
+ 
+    # again, first
+    midΔΔθ     = (-sin(midθ.deg2rad) * scaling)
+    var lastΔθ = (midΔθ + midΔΔθ)
+    var lastθ  = ((midΔθ + lastΔθ)/2 + midθ)
+ 
+    # again, second
+    var lastΔΔθ = (-sin(lastθ.deg2rad) * scaling)
+    lastΔθ      = ((midΔΔθ + lastΔΔθ)/2 + midΔθ)
+    lastθ       = ((midΔθ + lastΔθ)/2 + midθ)
+ 
+    # Now put the values back in our globals
+    Δθ = lastΔθ
+    θ  = lastθ
+}
+ 
+func animate(Ref id) {
+    recompute_angle()
+    show_pendulum()
+    *id = root.after(15 => { animate(id) })
+}
+ 
+show_pendulum()
+var after_id = root.after(500 => { animate(\after_id) })
+ 
+canvas.bind('<Destroy>' => { after_id.cancel })
+%S<Tk>.MainLoop()
+
+====PYTHON=====
+import pygame, sys
+from pygame.locals import *
+from math import sin, cos, radians
+ 
+pygame.init()
+ 
+WINDOWSIZE = 250
+TIMETICK = 100
+BOBSIZE = 15
+ 
+window = pygame.display.set_mode((WINDOWSIZE, WINDOWSIZE))
+pygame.display.set_caption("Pendulum")
+ 
+screen = pygame.display.get_surface()
+screen.fill((255,255,255))
+ 
+PIVOT = (WINDOWSIZE/2, WINDOWSIZE/10)
+SWINGLENGTH = PIVOT[1]*4
+ 
+class BobMass(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.theta = 45
+        self.dtheta = 0
+        self.rect = pygame.Rect(PIVOT[0]-SWINGLENGTH*cos(radians(self.theta)),
+                                PIVOT[1]+SWINGLENGTH*sin(radians(self.theta)),
+                                1,1)
+        self.draw()
+ 
+    def recomputeAngle(self):
+        scaling = 3000.0/(SWINGLENGTH**2)
+ 
+        firstDDtheta = -sin(radians(self.theta))*scaling
+        midDtheta = self.dtheta + firstDDtheta
+        midtheta = self.theta + (self.dtheta + midDtheta)/2.0
+ 
+        midDDtheta = -sin(radians(midtheta))*scaling
+        midDtheta = self.dtheta + (firstDDtheta + midDDtheta)/2
+        midtheta = self.theta + (self.dtheta + midDtheta)/2
+ 
+        midDDtheta = -sin(radians(midtheta)) * scaling
+        lastDtheta = midDtheta + midDDtheta
+        lasttheta = midtheta + (midDtheta + lastDtheta)/2.0
+ 
+        lastDDtheta = -sin(radians(lasttheta)) * scaling
+        lastDtheta = midDtheta + (midDDtheta + lastDDtheta)/2.0
+        lasttheta = midtheta + (midDtheta + lastDtheta)/2.0
+ 
+        self.dtheta = lastDtheta
+        self.theta = lasttheta
+        self.rect = pygame.Rect(PIVOT[0]-
+                                SWINGLENGTH*sin(radians(self.theta)), 
+                                PIVOT[1]+
+                                SWINGLENGTH*cos(radians(self.theta)),1,1)
+ 
+ 
+    def draw(self):
+        pygame.draw.circle(screen, (0,0,0), PIVOT, 5, 0)
+        pygame.draw.circle(screen, (0,0,0), self.rect.center, BOBSIZE, 0)
+        pygame.draw.aaline(screen, (0,0,0), PIVOT, self.rect.center)
+        pygame.draw.line(screen, (0,0,0), (0, PIVOT[1]), (WINDOWSIZE, PIVOT[1]))
+ 
+    def update(self):
+        self.recomputeAngle()
+        screen.fill((255,255,255))
+        self.draw()
+ 
+bob = BobMass()
+ 
+TICK = USEREVENT + 2
+pygame.time.set_timer(TICK, TIMETICK)
+ 
+def input(events):
+    for event in events:
+        if event.type == QUIT:
+            sys.exit(0)
+        elif event.type == TICK:
+            bob.update()
+ 
+while True:
+    input(pygame.event.get())
+    pygame.display.flip()
+
+====PYTHON=====
+ 
+''' Python 3.6.5 code using Tkinter graphical user interface.''' 
+ 
+from tkinter import *
+import math
+ 
+class Animation:
+    def __init__(self, gw):
+        self.window = gw
+        self.xoff, self.yoff = 300, 100
+        self.angle = 0
+        self.sina = math.sin(self.angle)
+        self.cosa = math.cos(self.angle)
+        self.rodhyp = 170
+        self.bobr = 30
+        self.bobhyp = self.rodhyp + self.bobr
+        self.rodx0, self.rody0 = self.xoff, self.yoff
+        self.ra = self.rodx0
+        self.rb = self.rody0
+        self.rc = self.xoff + self.rodhyp*self.sina
+        self.rd = self.yoff + self.rodhyp*self.cosa
+        self.ba = self.xoff - self.bobr + self.bobhyp*self.sina
+        self.bb = self.yoff - self.bobr + self.bobhyp*self.cosa
+        self.bc = self.xoff + self.bobr + self.bobhyp*self.sina
+        self.bd = self.yoff + self.bobr + self.bobhyp*self.cosa
+        self.da = math.pi / 360
+ 
+        # create / fill canvas:
+        self.cnv = Canvas(gw, bg='lemon chiffon')
+        self.cnv.pack(fill=BOTH, expand=True)
+ 
+        self.cnv.create_line(0, 100, 600, 100,
+                             fill='dodger blue',
+                             width=3)
+        radius = 8
+        self.cnv.create_oval(300-radius, 100-radius,
+                             300+radius, 100+radius,
+                             fill='navy')    
+ 
+        self.bob = self.cnv.create_oval(self.ba,
+                                        self.bb,
+                                        self.bc,
+                                        self.bd,
+                                        fill='red',
+                                        width=2)
+ 
+        self.rod = self.cnv.create_line(self.ra,
+                                        self.rb,
+                                        self.rc,
+                                        self.rd,
+                                        fill='dodger blue',
+                                        width=6)
+ 
+        self.animate()
+ 
+    def animate(self):
+        if abs(self.angle) > math.pi / 2:
+            self.da = - self.da
+        self.angle += self.da
+        self.sina = math.sin(self.angle)
+        self.cosa = math.cos(self.angle)
+        self.ra = self.rodx0
+        self.rb = self.rody0
+        self.rc = self.xoff + self.rodhyp*self.sina
+        self.rd = self.yoff + self.rodhyp*self.cosa
+        self.ba = self.xoff - self.bobr + self.bobhyp*self.sina
+        self.bb = self.yoff - self.bobr + self.bobhyp*self.cosa
+        self.bc = self.xoff + self.bobr + self.bobhyp*self.sina
+        self.bd = self.yoff + self.bobr + self.bobhyp*self.cosa
+ 
+        self.cnv.coords(self.rod,
+                        self.ra,
+                        self.rb,
+                        self.rc,
+                        self.rd)
+        self.cnv.coords(self.bob,
+                        self.ba,
+                        self.bb,
+                        self.bc,
+                        self.bd)
+        self.window.update()
+        self.cnv.after(5, self.animate)
+ 
+root = Tk()
+root.title('Pendulum')
+root.geometry('600x400+100+50')
+root.resizable(False, False)
+a = Animation(root)
+root.mainloop()
+ 
+

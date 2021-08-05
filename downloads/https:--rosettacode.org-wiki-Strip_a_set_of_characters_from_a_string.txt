@@ -1,0 +1,47 @@
+====RUBY=====
+"She was a soul stripper. She took my heart!".delete("aei")  # => "Sh ws  soul strppr. Sh took my hrt!"
+
+====RUBY=====
+func stripchars(str, char_list) {
+    str.tr(char_list, "", "d");
+}
+
+====RUBY=====
+func stripchars(str, char_list) {
+    str.chars.grep {|c| !char_list.contains(c)}.join;
+}
+
+====RUBY=====
+say stripchars("She was a soul stripper. She took my heart!", "aei");
+
+====PYTHON=====
+>>> def stripchars(s, chars):
+...     return s.translate(None, chars)
+... 
+>>> stripchars("She was a soul stripper. She took my heart!", "aei")
+'Sh ws  soul strppr. Sh took my hrt!'
+
+====PYTHON=====
+>>> import string
+>>> def stripchars(s, chars):
+...     return s.translate(string.maketrans("", ""), chars)
+... 
+>>> stripchars("She was a soul stripper. She took my heart!", "aei")
+'Sh ws  soul strppr. Sh took my hrt!'
+
+====PYTHON=====
+>>> def stripchars(s, chars):
+...     return "".join(c for c in s if c not in chars)
+... 
+>>> stripchars("She was a soul stripper. She took my heart!", "aei")
+'Sh ws  soul strppr. Sh took my hrt!'
+
+====PYTHON=====
+>>> import re
+>>> def stripchars(s, chars):
+	return re.sub('[%s]+' % re.escape(chars), '', s)
+ 
+>>> stripchars("She was a soul stripper. She took my heart!", "aei")
+'Sh ws  soul strppr. Sh took my hrt!'
+>>> 
+

@@ -1,0 +1,66 @@
+====RUBY=====
+cities = [
+    {name: "Lagos", population: 21}, 
+    {name: "Cairo", population: 15.2}, 
+    {name: "Kinshasa-Brazzaville", population: 11.3}, 
+    {name: "Greater Johannesburg", population: 7.55}, 
+    {name: "Mogadishu", population: 5.85}, 
+    {name: "Khartoum-Omdurman", population: 4.98}, 
+    {name: "Dar Es Salaam", population: 4.7}, 
+    {name: "Alexandria", population: 4.58}, 
+    {name: "Abidjan", population: 4.4}, 
+    {name: "Casablanca", population: 3.98},
+]
+ 
+puts cities.index{|city| city[:name] == "Dar Es Salaam"}      # => 6
+puts cities.find {|city| city[:population] < 5.0}[:name]      # => Khartoum-Omdurman
+puts cities.find {|city| city[:name][0] == "A"}[:population]  # => 4.58
+ 
+
+====RUBY=====
+struct City {
+    String name,
+    Number population,
+}
+ 
+var cities = [
+    City("Lagos", 21),
+    City("Cairo", 15.2),
+    City("Kinshasa-Brazzaville", 11.3),
+    City("Greater Johannesburg", 7.55),
+    City("Mogadishu", 5.85),
+    City("Khartoum-Omdurman", 4.98),
+    City("Dar Es Salaam", 4.7),
+    City("Alexandria", 4.58),
+    City("Abidjan", 4.4),
+    City("Casablanca", 3.98),
+]
+ 
+say cities.index{|city| city.name == "Dar Es Salaam"}
+say cities.first{|city| city.population < 5.0}.name
+say cities.first{|city| city.name.begins_with("A")}.population
+
+====PYTHON=====
+cities = [
+    { "name": "Lagos",                "population": 21.0  },
+    { "name": "Cairo",                "population": 15.2  },
+    { "name": "Kinshasa-Brazzaville", "population": 11.3  },
+    { "name": "Greater Johannesburg", "population":  7.55 },
+    { "name": "Mogadishu",            "population":  5.85 },
+    { "name": "Khartoum-Omdurman",    "population":  4.98 },
+    { "name": "Dar Es Salaam",        "population":  4.7  },
+    { "name": "Alexandria",           "population":  4.58 },
+    { "name": "Abidjan",              "population":  4.4  },
+    { "name": "Casablanca",           "population":  3.98 }
+]
+ 
+def first(query):
+    return next(query, None)
+ 
+print(
+    first(index for index, city in enumerate(cities)
+        if city['name'] == "Dar Es Salaam"),
+    first(city['name'] for city in cities if city['population'] < 5),
+    first(city['population'] for city in cities if city['name'][0] == 'A'),
+    sep='\n')
+

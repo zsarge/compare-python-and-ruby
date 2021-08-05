@@ -1,0 +1,146 @@
+====RUBY=====
+digits = ("1".."9").to_a
+ 
+ar = ["+", "-", ""].repeated_permutation(digits.size).filter_map do |op_perm|
+  str = op_perm.zip(digits).join
+  str unless str.start_with?("+")
+end
+res = ar.group_by{|str| eval(str)}
+ 
+puts res[100] , ""
+ 
+sum, solutions = res.max_by{|k,v| v.size}
+puts "#{sum} has #{solutions.size} solutions.", ""
+ 
+no_solution = (1..).find{|n| res[n] == nil}
+puts "#{no_solution} is the lowest positive number without a solution.", ""
+ 
+puts res.max(10).map{|pair| pair.join(": ")}
+ 
+
+====RUBY=====
+func gen_expr() is cached {
+    var x = ['-', '']
+    var y = ['+', '-', '']
+ 
+    gather {
+        cartesian([x,y,y,y,y,y,y,y,y], {|a,b,c,d,e,f,g,h,i|
+            take("#{a}1#{b}2#{c}3#{d}4#{e}5#{f}6#{g}7#{h}8#{i}9")
+        })
+    }
+}
+ 
+func eval_expr(expr) is cached {
+    expr.scan(/([-+]?\d+)/).sum_by { Num(_) }
+}
+ 
+func sum_to(val) {
+    gen_expr().grep { eval_expr(_) == val }
+}
+ 
+func max_solve() {
+    gen_expr().grep     { eval_expr(_) >= 0 } \
+              .group_by { eval_expr(_)      } \
+              .max_by   {|_,v| v.len        }
+}
+ 
+func min_solve() {
+    var h = gen_expr().group_by { eval_expr(_) }
+    for i in (0..Inf) { h.exists(i) || return i }
+}
+ 
+func highest_sums(n=10) {
+    gen_expr().map { eval_expr(_) }.uniq.sort.reverse.first(n)
+}
+ 
+sum_to(100).each { say "100 = #{_}" }
+ 
+var (n, solutions) = max_solve()...
+say "Sum of #{n} has the maximum number of solutions: #{solutions.len}"
+say "Lowest positive sum that can't be expressed : #{min_solve()}"
+say "Highest sums: #{highest_sums()}"
+
+====PYTHON=====
+from itertools import product, islice
+ 
+ 
+def expr(p):
+    return "{}1{}2{}3{}4{}5{}6{}7{}8{}9".format(*p)
+ 
+ 
+def gen_expr():
+    op = ['+', '-', '']
+    return [expr(p) for p in product(op, repeat=9) if p[0] != '+']
+ 
+ 
+def all_exprs():
+    values = {}
+    for expr in gen_expr():
+        val = eval(expr)
+        if val not in values:
+            values[val] = 1
+        else:
+            values[val] += 1
+    return values
+ 
+ 
+def sum_to(val):
+    for s in filter(lambda x: x[0] == val, map(lambda x: (eval(x), x), gen_expr())):
+        print(s)
+ 
+ 
+def max_solve():
+    print("Sum {} has the maximum number of solutions: {}".
+          format(*max(all_exprs().items(), key=lambda x: x[1])))
+ 
+ 
+def min_solve():
+    values = all_exprs()
+    for i in range(123456789):
+        if i not in values:
+            print("Lowest positive sum that can't be expressed: {}".format(i))
+            return
+ 
+ 
+def highest_sums(n=10):
+    sums = map(lambda x: x[0],
+               islice(sorted(all_exprs().items(), key=lambda x: x[0], reverse=True), n))
+    print("Highest Sums: {}".format(list(sums)))
+ 
+ 
+sum_to(100)
+max_solve()
+min_solve()
+highest_sums()
+
+====PYTHON=====
+import itertools
+from collections import defaultdict, Counter
+ 
+s = "123456789"
+h = defaultdict(list)
+for v in itertools.product(["+", "-", ""], repeat=9):
+    if v[0] != "+":
+        e = "".join("".join(u) for u in zip(v, s))
+        h[eval(e)].append(e)
+ 
+print("Solutions for 100")
+for e in h[100]:
+    print(e)
+ 
+c = Counter({k: len(v) for k, v in h.items() if k >= 0})
+ 
+k, m = c.most_common(1)[0]
+print("Maximum number of solutions for %d (%d solutions)" % (k, m))
+ 
+v = sorted(c.keys())
+ 
+for i in range(v[-1]):
+    if i not in c:
+        print("Lowest impossible sum: %d" % i)
+        break
+ 
+print("Ten highest sums")
+for k in reversed(v[-10:]):
+    print(k)
+

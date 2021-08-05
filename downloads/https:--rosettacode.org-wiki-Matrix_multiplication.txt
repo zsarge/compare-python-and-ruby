@@ -1,0 +1,106 @@
+====RUBY=====
+require 'matrix'
+ 
+Matrix[[1, 2],
+       [3, 4]] * Matrix[[-3, -8, 3],
+                        [-2,  1, 4]]
+
+====RUBY=====
+def matrix_mult(a, b)
+  a.map do |ar|
+    b.transpose.map { |bc| ar.zip(bc).map{ |x| x.inject(&:*) }.sum }
+  end
+end
+
+====RUBY=====
+func matrix_multi(a, b) {
+    var m = [[]]
+    for r in ^a {
+        for c in ^b[0] {
+            for i in ^b {
+                m[r][c] := 0 += (a[r][i] * b[i][c])
+            }
+        }
+    }
+    return m
+}
+ 
+var a = [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8]
+        ]
+ 
+var b = [
+          [1, 2, 3],
+          [4, 5, 6]
+        ]
+ 
+for line in matrix_multi(a, b) {
+    say line.map{|i|'%3d' % i }.join(', ')
+}
+
+====PYTHON=====
+a=((1,  1,  1,   1), # matrix A #
+     (2,  4,  8,  16),
+     (3,  9, 27,  81),
+     (4, 16, 64, 256))
+ 
+b=((  4  , -3  ,  4/3.,  -1/4. ), # matrix B #
+     (-13/3., 19/4., -7/3.,  11/24.),
+     (  3/2., -2.  ,  7/6.,  -1/4. ),
+     ( -1/6.,  1/4., -1/6.,   1/24.))
+ 
+ 
+ 
+def MatrixMul( mtx_a, mtx_b):
+    tpos_b = zip( *mtx_b)
+    rtn = [[ sum( ea*eb for ea,eb in zip(a,b)) for b in tpos_b] for a in mtx_a]
+    return rtn
+ 
+ 
+v = MatrixMul( a, b )
+ 
+print 'v = ('
+for r in v:
+    print '[', 
+    for val in r:
+        print '%8.2f '%val, 
+    print ']'
+print ')'
+ 
+ 
+u = MatrixMul(b,a)
+ 
+print 'u = '
+for r in u:
+    print '[', 
+    for val in r:
+        print '%8.2f '%val, 
+    print ']'
+print ')'
+
+====PYTHON=====
+from operator import mul
+ 
+def matrixMul(m1, m2):
+  return map(
+    lambda row:
+      map(
+        lambda *column:
+          sum(map(mul, row, column)),
+        *m2),
+    m1)
+
+====PYTHON=====
+def mm(A, B):
+    return [[sum(x * B[i][col] for i,x in enumerate(row)) for col in range(len(B[0]))] for row in A]
+
+====PYTHON=====
+ 
+import numpy as np
+np.dot(a,b)
+#or if a is an array
+a.dot(b)
+

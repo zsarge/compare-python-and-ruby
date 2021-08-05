@@ -1,0 +1,40 @@
+====RUBY=====
+require 'prime'
+ 
+def primorial_number(n)
+  pgen = Prime.each
+  (1..n).inject(1){|p,_| p*pgen.next}
+end
+ 
+puts "First ten primorials: #{(0..9).map{|n| primorial_number(n)}}"
+ 
+(1..5).each do |n|
+  puts "primorial(10**#{n}) has #{primorial_number(10**n).to_s.size} digits"
+end
+
+====RUBY=====
+say (
+    'First ten primorials: ',
+    {|i| pn_primorial(i) }.map(^10).join(', ')
+)
+ 
+{ |i|
+    say ("primorial(10^#{i}) has " + pn_primorial(10**i).len + ' digits')
+} << 1..6
+
+====PYTHON=====
+from pyprimes import nprimes
+from functools import reduce
+ 
+ 
+primelist = list(nprimes(1000001))    # [2, 3, 5, ...]
+ 
+def primorial(n):
+    return reduce(int.__mul__, primelist[:n], 1)
+ 
+if __name__ == '__main__':
+    print('First ten primorals:', [primorial(n) for n in range(10)])
+    for e in range(7):
+        n = 10**e
+        print('primorial(%i) has %i digits' % (n, len(str(primorial(n)))))
+

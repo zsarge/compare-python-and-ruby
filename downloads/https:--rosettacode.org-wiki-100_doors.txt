@@ -1,0 +1,177 @@
+====RUBY=====
+doors = Array.new(100, false)
+ 
+1.upto(100) do |i|
+  i.step(by: i, to: 100) do |j|
+    doors[j - 1] = !doors[j - 1]
+  end
+end
+ 
+doors.each_with_index do |open, i|
+  puts "Door #{i + 1} is #{open ? "open" : "closed"}"
+end
+
+====RUBY=====
+doors = Array.new(101,0)
+print "Open doors "
+(1..100).step(){ |i|
+(i..100).step(i) { |d|
+    doors[d] = doors[d]^= 1
+    if i == d and doors[d] == 1 then
+      print "#{i} "
+    end
+  }
+}
+
+====RUBY=====
+class Door
+  attr_reader :state
+ 
+  def initialize
+    @state = :closed
+  end
+ 
+  def close
+    @state = :closed
+  end
+ 
+  def open
+    @state = :open
+  end
+ 
+  def closed?
+    @state == :closed
+  end
+ 
+  def open?
+    @state == :open
+  end
+ 
+  def toggle
+    if closed? then open else close end
+  end
+ 
+  def to_s
+    @state.to_s
+  end
+end
+ 
+doors = Array.new(100) { Door.new }
+1.upto(100) do |multiplier|
+  doors.each_with_index do |door, i|
+    door.toggle if (i + 1) % multiplier == 0
+  end
+end
+ 
+doors.each_with_index { |door, i| puts "Door #{i+1} is #{door}." }
+
+====RUBY=====
+n = 100
+Open = "open"
+Closed = "closed"
+def Open.toggle
+  Closed
+end
+def Closed.toggle
+  Open
+end
+doors = [Closed] * (n + 1)
+for mul in 1..n
+  for x in (mul..n).step(mul)
+    doors[x] = doors[x].toggle
+  end
+end
+doors.each_with_index do |b, i|
+  puts "Door #{i} is #{b}" if i > 0
+end
+
+====RUBY=====
+n = 100
+(1..n).each do |i| 
+  puts "Door #{i} is #{i**0.5 == (i**0.5).round ? "open" : "closed"}"
+end
+
+====RUBY=====
+doors = [false] * 100
+100.times do |i|
+  (i ... doors.length).step(i + 1) do |j|
+    doors[j] = !doors[j]
+  end
+end
+puts doors.map.with_index(1){|d,i| "Door #{i} is #{d ? 'open' : 'closed'}."}
+
+====RUBY=====
+var doors = []
+ 
+{ |pass|
+    { |i|
+        if (pass `divides` i) {
+            doors[i] := false -> not!
+        }
+    } << 1..100
+} << 1..100
+ 
+{ |i|
+    say ("Door %3d is %s" % (i, doors[i] ? 'open' : 'closed'))
+} << 1..100
+
+====RUBY=====
+{ |i|
+    "Door %3d is %s\n".printf(i, <closed open>[i.is_sqr])
+} << 1..100
+
+====PYTHON=====
+var doors = falses(100)
+ 
+for a in 1..100: for b in a..a..100:
+    doors[b] = not doors[b]
+ 
+for a in 1..100:
+    print "Door $a is ${(doors[a]) ? 'open.': 'closed.'}"
+ 
+
+====PYTHON=====
+ 
+doors = [False] * 100
+for i in range(100):
+   for j in range(i, 100, i+1):
+       doors[j] = not doors[j]
+   print("Door %d:" % (i+1), 'open' if doors[i] else 'close')
+ 
+
+====PYTHON=====
+for i in xrange(1, 101):
+    root = i ** 0.5
+    print "Door %d:" % i, 'open' if root == int(root) else 'close'
+
+====PYTHON=====
+print '\n'.join(['Door %s is %s' % (i, ('closed', 'open')[(i**0.5).is_integer()]) for i in xrange(1, 101)])
+
+====PYTHON=====
+print '\n'.join('Door %s is %s' % (i, 'closed' if i**0.5 % 1 else 'open') for i in range(1, 101))
+
+====PYTHON=====
+ 
+for i in range(1, 101):
+    if i**0.5 % 1:
+        state='closed'
+    else:
+        state='open'
+    print("Door {}:{}".format(i, state))
+ 
+
+====PYTHON=====
+for i in range(1,11): print("Door %s is open" % i**2)
+
+====PYTHON=====
+def (doors n)
+  let door (table)
+    for step 1 (step <= n) ++step
+      for j 0 (j < n) (j <- j+step)
+        zap! not door.j
+ 
+    for j 0 (j < n) ++j
+      when door.j
+        pr j
+        pr " "
+

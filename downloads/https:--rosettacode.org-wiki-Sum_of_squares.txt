@@ -1,0 +1,70 @@
+====RUBY=====
+ 
+def sum_squares(a)
+    a.map{|e| e*e}.sum()
+end
+ 
+puts sum_squares([1, 2, 3])
+# => 14
+ 
+
+====RUBY=====
+[3,1,4,1,5,9].reduce(0){|sum,x| sum + x*x}
+
+====RUBY=====
+[3,1,4,1,5,9].sum(0){|x| x*x}
+
+====RUBY=====
+func sum_of_squares(vector) {
+    var sum = 0;
+    vector.each { |n| sum += n**2 };
+    return sum;
+}
+ 
+say sum_of_squares([]);         # 0
+say sum_of_squares([1,2,3]);    # 14
+
+====PYTHON=====
+sum([1, 2, 3, 4]²)
+
+====PYTHON=====
+sum(x * x for x in [1, 2, 3, 4, 5])
+# or
+sum(x ** 2 for x in [1, 2, 3, 4, 5])
+# or
+sum(pow(x, 2) for x in [1, 2, 3, 4, 5])
+
+====PYTHON=====
+# using lambda and map:
+sum(map(lambda x: x * x, [1, 2, 3, 4, 5]))
+# or 
+sum(map(lambda x: x ** 2, [1, 2, 3, 4, 5]))
+# or 
+sum(map(lambda x: pow(x, 2), [1, 2, 3, 4, 5]))
+ 
+# using pow and repeat
+from itertools import repeat
+sum(map(pow, [1, 2, 3, 4, 5], repeat(2)))
+ 
+# using starmap and mul
+from itertools import starmap
+from operator import mul
+a = [1, 2, 3, 4, 5]
+sum(starmap(mul, zip(a, a)))
+ 
+# using reduce
+from functools import reduce
+powers_of_two = (x * x for x in [1, 2, 3, 4, 5])
+reduce(lambda x, y : x + y, powers_of_two)
+# or
+from operator import add
+powers_of_two = (x * x for x in [1, 2, 3, 4, 5])
+reduce(add, powers_of_two)
+# or using a bit more complex lambda
+reduce(lambda a, x: a + x*x, [1, 2, 3, 4, 5])
+
+====PYTHON=====
+import numpy as np
+a = np.array([1, 2, 3, 4, 5])
+np.sum(a ** 2)
+

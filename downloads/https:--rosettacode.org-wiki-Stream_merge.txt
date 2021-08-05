@@ -1,0 +1,52 @@
+====RUBY=====
+def stream_merge(*files)
+  fio = files.map{|fname| open(fname)}
+  merge(fio.map{|io| [io, io.gets]})
+end
+ 
+def merge(fdata)
+  until fdata.empty?
+    io, min = fdata.min_by{|_,data| data}
+    puts min
+    if (next_data = io.gets).nil?
+      io.close
+      fdata.delete([io, min])
+    else
+      i = fdata.index{|x,_| x == io}
+      fdata[i] = [io, next_data]
+    end
+  end
+end
+ 
+files = %w(temp1.dat temp2.dat temp3.dat)
+files.each do |fname|
+  data = IO.read(fname).gsub("\n", " ")
+  puts "#{fname}: #{data}"
+end
+stream_merge(*files)
+
+====RUBY=====
+func merge_streams(streams) {
+    var s = streams.map { |stream|
+        Pair(stream, stream.readline)
+    }.grep {|p| defined(p.value) }
+ 
+    gather {
+        while (s) {
+            var p = s.min_by { .value }
+            take(p.value)
+            p.value = (p.key.readline \\ s.delete_if { _ == p })
+        }
+    }
+}
+ 
+say merge_streams(ARGV.map {|f| File(f).open_r }).join("\n")
+
+====PYTHON=====
+import heapq
+import sys
+ 
+sources = sys.argv[1:]
+for item in heapq.merge(open(source) for source in sources):
+    print(item)
+

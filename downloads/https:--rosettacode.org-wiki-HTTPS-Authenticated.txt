@@ -1,0 +1,64 @@
+====RUBY=====
+require 'uri'
+require 'net/http'
+ 
+uri = URI.parse('https://www.example.com')
+response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+  request = Net::HTTP::Get.new uri
+  request.basic_auth('username', 'password')
+  http.request request
+end
+
+====RUBY=====
+require('WWW::Mechanize')
+ 
+var mech = %s'WWW::Mechanize'.new(
+    cookie_jar => Hash.new,
+    agent => 'Mozilla/5.0',
+)
+ 
+mech.get('https://login.yahoo.com/')
+mech.submit_form(
+    form_id => 'mbr-login-form',   # form id
+    fields => Hash.new(
+        'login'  => 'XXXXXX',
+        'passwd' => 'YYYYYY',
+))
+
+====PYTHON=====
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+ 
+from mechanize import Browser
+ 
+USER_AGENT = "Mozilla/5.0 (X11; U; Linux i686; tr-TR; rv:1.8.1.9) Gecko/20071102 Pardus/2007 Firefox/2.0.0.9"
+ 
+br = Browser()
+br.addheaders = [("User-agent", USER_AGENT)]
+ 
+# remove comment if you get debug output
+# br.set_debug_redirects(True)
+# br.set_debug_responses(True)
+# br.set_debug_http(True)
+ 
+br.open("https://www.facebook.com")
+ 
+br.select_form("loginform")
+br['email'] = "[email protected]"
+br['pass'] = "xxxxxxxxx"
+br['persistent'] = ["1"]
+ 
+response = br.submit()
+print response.read()
+
+====PYTHON=====
+import requests
+ 
+username = "user"
+password = "pass"
+url = "https://www.example.com"
+ 
+response = requests.get(url, auth=(username, password)
+ 
+print(response.text)
+

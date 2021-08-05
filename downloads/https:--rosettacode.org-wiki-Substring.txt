@@ -1,0 +1,68 @@
+====RUBY=====
+str = 'abcdefgh'
+n = 2
+m = 3
+puts str[n, m]                  #=> cde
+puts str[n..m]                  #=> cd
+puts str[n..-1]                 #=> cdefgh
+puts str[0..-2]                 #=> abcdefg
+puts str[str.index('d'), m]     #=> def
+puts str[str.index('de'), m]    #=> def
+puts str[/a.*d/]                #=> abcd
+
+====RUBY=====
+var str = 'abcdefgh';
+var n = 2;
+var m = 3;
+say str.substr(n, m);                   #=> cde
+say str.substr(n);                      #=> cdefgh
+say str.substr(0, -1);                  #=> abcdefg
+say str.substr(str.index('d'), m);      #=> def
+say str.substr(str.index('de'), m);     #=> def
+
+====PYTHON=====
+>>> s = 'abcdefgh'
+>>> n, m, char, chars = 2, 3, 'd', 'cd'
+>>> # starting from n=2 characters in and m=3 in length;
+>>> s[n-1:n+m-1]
+'bcd'
+>>> # starting from n characters in, up to the end of the string;
+>>> s[n-1:]
+'bcdefgh'
+>>> # whole string minus last character;
+>>> s[:-1]
+'abcdefg'
+>>> # starting from a known character char="d" within the string and of m length;
+>>> indx = s.index(char)
+>>> s[indx:indx+m]
+'def'
+>>> # starting from a known substring chars="cd" within the string and of m length. 
+>>> indx = s.index(chars)
+>>> s[indx:indx+m]
+'cde'
+>>>
+
+====PYTHON=====
+s <- "abcdefgh"
+s.0
+=> "a"
+ 
+# starting from n characters in and of m length;
+def (substr s start len)
+  (s start start+len)
+(substr s 3 2)
+=> "de"
+ 
+# starting from n characters in, up to the end of the string
+(s 3 nil)
+=> "defgh"
+ 
+# whole string minus last character;
+(s 3 -1)
+=> "defg"
+ 
+# starting from a known character within the string and of <tt>m</tt> length;
+# starting from a known substring within the string and of <tt>m</tt> length.
+let start (pos s pat)
+  (s start start+m)
+

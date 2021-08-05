@@ -1,0 +1,100 @@
+====RUBY=====
+def rank(arr)
+  arr.join('a').to_i(11)
+end
+ 
+def unrank(n)
+  n.to_s(11).split('a').collect{|x| x.to_i}
+end
+ 
+l = [1, 2, 3, 10, 100, 987654321]
+p l
+n = rank(l)
+p n
+l = unrank(n)
+p l
+
+====RUBY=====
+def unrank(n)
+  return [0] if n==1
+  n.to_s(2)[1..-1].split('0',-1).map(&:size)
+end
+ 
+def rank(x)
+  return 0 if x.empty?
+  ('1' + x.map{ |a| '1'*a }.join('0')).to_i(2)
+end
+ 
+for x in 0..10
+  puts "%3d : %-18s: %d" % [x, a=unrank(x), rank(a)]
+end
+ 
+puts
+x = [1, 2, 3, 5, 8]
+puts "#{x} => #{rank(x)} => #{unrank(rank(x))}"
+
+====RUBY=====
+func rank(Array arr) {
+    Number(arr.join('a'), 11)
+}
+ 
+func unrank(Number n) {
+    n.base(11).split('a').map { Num(_) }
+}
+ 
+var l = [1, 2, 3, 10, 100, 987654321]
+say l
+var n = rank(l)
+say n
+var l = unrank(n)
+say l
+
+====RUBY=====
+func unrank(Number n) {
+    n == 1 ? [0]
+           : n.base(2).substr(1).split('0', -1).map{.len}
+}
+ 
+func rank(Array x) {
+    x.is_empty ? 0
+               : Number('1' + x.map { '1' * _ }.join('0'), 2)
+}
+ 
+for x in (0..10) {
+    printf("%3d : %-18s: %d\n", x, unrank(x), rank(unrank(x)))
+}
+ 
+say ''
+var x = [1, 2, 3, 5, 8]
+say "#{x} => #{rank(x)} => #{unrank(rank(x))}"
+
+====PYTHON=====
+def rank(x): return int('a'.join(map(str, [1] + x)), 11)
+ 
+def unrank(n):
+	s = ''
+	while n: s,n = "0123456789a"[n%11] + s, n//11
+	return map(int, s.split('a'))[1:]
+ 
+l = [1, 2, 3, 10, 100, 987654321]
+print l
+n = rank(l)
+print n
+l = unrank(n)
+print l
+
+====PYTHON=====
+def unrank(n):
+        return map(len, bin(n)[3:].split("0")) if n else []
+ 
+def rank(x):
+        return int('1' + '0'.join('1'*a for a in x), 2) if x else 0
+ 
+for x in range(11):
+        print x, unrank(x), rank(unrank(x))
+ 
+print
+x = [1, 2, 3, 5, 8];
+print x, rank(x), unrank(rank(x))
+ 
+

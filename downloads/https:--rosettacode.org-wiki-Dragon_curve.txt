@@ -1,0 +1,241 @@
+====RUBY=====
+Point = Struct.new(:x, :y)
+Line = Struct.new(:start, :stop)
+ 
+Shoes.app(:width => 800, :height => 600, :resizable => false) do
+ 
+  def split_segments(n)
+    dir = 1
+    @segments = @segments.inject([]) do |new, l|
+      a, b, c, d = l.start.x, l.start.y, l.stop.x, l.stop.y
+ 
+      mid_x = a + (c-a)/2.0 - (d-b)/2.0*dir
+      mid_y = b + (d-b)/2.0 + (c-a)/2.0*dir
+      mid_p = Point.new(mid_x, mid_y)
+ 
+      dir *= -1
+      new << Line.new(l.start, mid_p)
+      new << Line.new(mid_p, l.stop)
+    end
+  end
+ 
+  @segments = [Line.new(Point.new(200,200), Point.new(600,200))]
+  15.times do |n|
+    info "calculating frame #{n}"
+    split_segments(n)
+  end
+ 
+  stack do
+    @segments.each do |l|
+      line l.start.x, l.start.y, l.stop.x, l.stop.y
+    end
+  end
+end
+
+====RUBY=====
+LEN = 3
+GEN = 14
+attr_reader :angle
+ 
+def setup
+  sketch_title 'Heighway Dragon'
+  background(0, 0, 255)
+  translate(170, 170)
+  stroke(255)
+  @angle = 90.radians
+  turn_left(GEN)
+end
+ 
+def draw_line
+  line(0, 0, 0, -LEN)
+  translate(0, -LEN)
+end
+ 
+def turn_right(gen)
+  return draw_line if gen.zero?
+ 
+  turn_left(gen - 1)
+  rotate(angle)
+  turn_right(gen - 1)
+end
+ 
+def turn_left(gen)
+  return draw_line if gen.zero?
+ 
+  turn_left(gen - 1)
+  rotate(-angle)
+  turn_right(gen - 1)
+end
+ 
+def settings
+  size(700, 600)
+end
+ 
+
+====RUBY=====
+require 'cf3'
+ 
+INV_SQRT = 1 / Math.sqrt(2)
+ 
+def setup_the_dragon
+  @dragon = ContextFree.define do
+    shape :start do
+      dragon alpha: 1
+    end
+ 
+    shape :dragon do
+      square hue: 0, brightness: 0, saturation: 1, alpha: 0.02
+      split do
+        dragon size: INV_SQRT, rotation: -45, x: 0.25, y: 0.25
+        rewind
+        dragon size: INV_SQRT, rotation: 135, x: 0.25, y: 0.25
+        rewind
+      end
+    end
+  end
+end
+ 
+def settings
+  size 800, 500
+end
+ 
+def setup
+  sketch_title 'Heighway Dragon'
+  setup_the_dragon
+  draw_it
+end
+ 
+def draw_it
+  background 255
+  @dragon.render :start, size: width * 0.8, stop_size: 2,
+                         start_x: width / 3, start_y: height / 3.5
+end
+ 
+
+====RUBY=====
+var rules = Hash(
+    x => 'x+yF+',
+    y => '-Fx-y',
+)
+ 
+var lsys = LSystem(
+    width:  600,
+    height: 600,
+ 
+    xoff: -430,
+    yoff: -380,
+ 
+    len:   8,
+    angle: 90,
+    color: 'dark green',
+)
+ 
+lsys.execute('Fx', 11, "dragon_curve.png", rules)
+
+====PYTHON=====
+l = 3
+ints = 13
+ 
+def setup():
+  size(700, 600)
+  background(0, 0, 255)
+  translate(150, 100)
+  stroke(255)
+  turn_left(l, ints)
+  turn_right(l, ints)
+ 
+def turn_right(l, ints):
+    if ints == 0:
+        line(0, 0, 0, -l)
+        translate(0, -l)
+    else:
+        turn_left(l, ints - 1)
+        rotate(radians(90))
+        turn_right(l, ints - 1)
+ 
+def turn_left(l, ints):
+    if ints == 0:
+        line(0, 0, 0, -l)
+        translate(0, -l)
+    else:
+        turn_left(l, ints - 1)
+        rotate(radians(-90))
+        turn_right(l, ints - 1)
+
+====PYTHON=====
+from turtle import *
+ 
+def dragon(step, length):
+    dcr(step, length)
+ 
+def dcr(step, length):
+    step -= 1
+    length /= 1.41421
+    if step > 0:
+        right(45)
+        dcr(step, length)
+        left(90)
+        dcl(step, length)
+        right(45)
+    else:
+        right(45)
+        forward(length)
+        left(90)
+        forward(length)
+        right(45)
+ 
+def dcl(step, length):
+    step -= 1
+    length /= 1.41421
+ 
+    if step > 0:
+        left(45)
+        dcr(step, length)
+        right(90)
+        dcl(step, length)
+        left(45)
+    else:
+        left(45)
+        forward(length)
+        right(90)
+        forward(length)
+        left(45)
+
+====PYTHON=====
+from turtle import right, left, forward, speed, exitonclick, hideturtle
+ 
+def dragon(level=4, size=200, zig=right, zag=left):
+    if level <= 0:
+        forward(size)
+        return
+ 
+    size /= 1.41421
+    zig(45)
+    dragon(level-1, size, right, left)
+    zag(90)
+    dragon(level-1, size, left, right)
+    zig(45)
+ 
+speed(0)
+hideturtle()
+dragon(6)
+exitonclick() # click to exit
+
+====PYTHON=====
+from turtle import right, left, forward, speed, exitonclick, hideturtle
+ 
+def dragon(level=4, size=200, direction=45):
+    if level:
+        right(direction)
+        dragon(level-1, size/1.41421356237, 45)
+        left(direction * 2)
+        dragon(level-1, size/1.41421356237, -45)
+        right(direction)
+    else:
+        forward(size)
+ 
+speed(0)
+hideturtle()
+dragon(6)
+exitonclick() # click to exit
+

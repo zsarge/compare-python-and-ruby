@@ -1,0 +1,70 @@
+====RUBY=====
+strings = ["",
+        '"If I were two-faced, would I be wearing this one?" --- Abraham Lincoln ',
+        "..1111111111111111111111111111111111111111111111111111111111111117777888",
+        "I never give 'em hell, I just tell the truth, and they think it's hell. ",
+        "                                                   ---  Harry S Truman  ",
+        "😍😀🙌💃😍😍😍🙌",]
+squeeze_these = ["", "-", "7", ".", " -r", "😍"]
+ 
+strings.zip(squeeze_these).each do |str, st|
+  puts "original:     «««#{str}»»» (size #{str.size})"
+  st.chars.each do |c|
+    ssq = str.squeeze(c)
+    puts "#{c.inspect}-squeezed: «««#{ssq}»»» (size #{ssq.size})" 
+  end
+  puts
+end
+ 
+
+====RUBY=====
+func squeeze(str, c) {
+    str.gsub(Regex("(" + c.escape + ")" + '\1+'), {|s1| s1 })
+}
+ 
+var strings = ["",
+        '"If I were two-faced, would I be wearing this one?" --- Abraham Lincoln ',
+        "..1111111111111111111111111111111111111111111111111111111111111117777888",
+        "I never give 'em hell, I just tell the truth, and they think it's hell. ",
+        "                                                   ---  Harry S Truman  ",
+        "😍😀🙌💃😍😍😍🙌"]
+ 
+var squeeze_these = ["", "-", "7", ".", " -r", "😍"]
+ 
+[strings, squeeze_these].zip {|str,st|
+    say "    original: «««#{str}»»» (length: #{str.len})"
+    st.each {|c|
+        var ssq = squeeze(str, c)
+        say "'#{c}'-squeezed: «««#{ssq}»»» (length: #{ssq.len})"
+    }
+    say ''
+}
+
+====PYTHON=====
+from itertools import groupby
+ 
+def squeezer(s, txt):
+    return ''.join(item if item == s else ''.join(grp)
+                   for item, grp in groupby(txt))
+ 
+if __name__ == '__main__':
+    strings = [
+            "",
+            '"If I were two-faced, would I be wearing this one?" --- Abraham Lincoln ',
+            "..1111111111111111111111111111111111111111111111111111111111111117777888",
+            "I never give 'em hell, I just tell the truth, and they think it's hell. ",
+            "                                                   ---  Harry S Truman  ",
+            "The better the 4-wheel drive, the further you'll be from help when ya get stuck!",
+            "headmistressship",
+            "aardvark",
+            "😍😀🙌💃😍😍😍🙌",
+            ]
+    squeezers = ' ,-,7,., -r,e,s,a,😍'.split(',')
+    for txt, chars in zip(strings, squeezers):
+        this = "Original"
+        print(f"\n{this:14} Size: {len(txt)} «««{txt}»»»" )
+        for ch in chars:
+            this = f"Squeezer '{ch}'"
+            sqz = squeezer(ch, txt)
+            print(f"{this:>14} Size: {len(sqz)} «««{sqz}»»»" )
+

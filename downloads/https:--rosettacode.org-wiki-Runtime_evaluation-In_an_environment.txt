@@ -1,0 +1,38 @@
+====RUBY=====
+def bind_x_to_value(x)
+  binding
+end
+ 
+def eval_with_x(code, a, b)
+  eval(code, bind_x_to_value(b)) - eval(code, bind_x_to_value(a))
+end
+ 
+puts eval_with_x('2 ** x', 3, 5) # Prints "24"
+
+====RUBY=====
+func eval_with_x(code, x, y) {
+    var f = eval(code);
+    x = y;
+    eval(code) - f;
+}
+ 
+say eval_with_x(x: 3, y: 5, code: '2 ** x');   # => 24
+
+====PYTHON=====
+>>> def eval_with_x(code, a, b):
+	return eval(code, {'x':b}) - eval(code, {'x':a})
+ 
+>>> eval_with_x('2 ** x', 3, 5)
+24
+
+====PYTHON=====
+>>> def eval_with_args(code, **kwordargs):
+	return eval(code, kwordargs)
+ 
+>>> code = '2 ** x'
+>>> eval_with_args(code, x=5) - eval_with_args(code, x=3)
+24
+>>> code = '3 * x + y'
+>>> eval_with_args(code, x=5, y=2) - eval_with_args(code, x=3, y=1)
+7
+

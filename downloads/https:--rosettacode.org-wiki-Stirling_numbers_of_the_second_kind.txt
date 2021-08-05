@@ -1,0 +1,99 @@
+====RUBY=====
+@memo = {}
+ 
+def sterling2(n, k)
+  key = [n,k]
+  return @memo[key] if @memo.key?(key)
+  return 1 if n.zero? and k.zero?
+  return 0 if n.zero? or  k.zero?
+  return 1 if n == k
+  return 0 if k > n
+  res = k * sterling2(n-1, k) + sterling2(n - 1, k-1)
+  @memo[key] = res
+end
+ 
+r = (0..12)
+puts "Sterling2 numbers:"
+puts "n/k #{r.map{|n| "%11d" % n}.join}"
+ 
+r.each do |row|
+  print "%-4s" % row
+  puts "#{(0..row).map{|col| "%11d" % sterling2(row, col)}.join}"
+end
+ 
+puts "\nMaximum value from the sterling2(100, k)";
+puts (1..100).map{|a| sterling2(100,a)}.max
+ 
+
+====RUBY=====
+func S2(n, k) {     # Stirling numbers of the second kind
+    stirling2(n, k)
+}
+ 
+const r = (0..12)
+ 
+var triangle = r.map {|n| 0..n -> map {|k| S2(n, k) } }
+var widths   = r.map {|n| r.map {|k| (triangle[k][n] \\ 0).len }.max }
+ 
+say ('n\k ', r.map {|n| "%*s" % (widths[n], n) }.join(' '))
+ 
+r.each {|n|
+    var str = ('%-3s ' % n)
+    str += triangle[n].map_kv {|k,v| "%*s" % (widths[k], v) }.join(' ')
+    say str
+}
+ 
+with (100) {|n|
+    say "\nMaximum value from the S2(#{n}, *) row:"
+    say { S2(n, _) }.map(^n).max
+}
+
+====RUBY=====
+func S2((0), (0)) { 1 }
+func S2(_, (0))   { 0 }
+func S2((0), _)   { 0 }
+func S2(n, k) is cached { S2(n-1, k)*k + S2(n-1, k-1) }
+
+====PYTHON=====
+ 
+computed = {}
+ 
+def sterling2(n, k):
+	key = str(n) + "," + str(k)
+ 
+	if key in computed.keys():
+		return computed[key]
+	if n == k == 0:
+		return 1
+	if (n > 0 and k == 0) or (n == 0 and k > 0):
+		return 0
+	if n == k:
+		return 1
+	if k > n:
+		return 0
+	result = k * sterling2(n - 1, k) + sterling2(n - 1, k - 1)
+	computed[key] = result
+	return result
+ 
+print("Stirling numbers of the second kind:")
+MAX = 12
+print("n/k".ljust(10), end="")
+for n in range(MAX + 1):
+	print(str(n).rjust(10), end="")
+print()
+for n in range(MAX + 1):
+	print(str(n).ljust(10), end="")
+	for k in range(n + 1):
+		print(str(sterling2(n, k)).rjust(10), end="")
+	print()
+print("The maximum value of S2(100, k) = ")
+previous = 0
+for k in range(1, 100 + 1):
+	current = sterling2(100, k)
+	if current > previous:
+		previous = current
+	else:
+		print("{0}\n({1} digits, k = {2})\n".format(previous, len(str(previous)), k - 1))
+		break
+ 
+

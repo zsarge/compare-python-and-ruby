@@ -1,0 +1,16 @@
+====RUBY=====
+print "Goodbye, World!"
+
+====RUBY=====
+print "Goodbye, World!";
+
+====RUBY=====
+"%s".printf("Goodbye, World!");
+
+====PYTHON=====
+import sys
+sys.stdout.write("Goodbye, World!")
+
+====PYTHON=====
+print("Goodbye, World!", end="")
+

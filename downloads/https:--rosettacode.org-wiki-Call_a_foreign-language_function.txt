@@ -1,0 +1,112 @@
+====RUBY=====
+@[Link("c")] # name of library that is passed to linker. Not needed as libc is linked by stdlib.
+lib LibC
+  fun free(ptr : Void*) : Void 
+  fun strdup(ptr : Char*) : Char*
+end
+ 
+s1 = "Hello World!"
+p = LibC.strdup(s1) # returns Char* allocated by LibC
+s2 = String.new(p)
+LibC.free p # pointer can be freed as String.new(Char*) makes a copy of data 
+ 
+puts s2
+
+====RUBY=====
+# extconf.rb
+require 'mkmf'
+create_makefile('rc_strdup')
+
+====RUBY=====
+# demo.rb
+require 'rc_strdup'
+puts RosettaCode.strdup('This string gets duplicated.')
+
+====RUBY=====
+ 
+require 'ffi'
+ 
+module LibC
+  extend FFI::Library
+  ffi_lib FFI::Platform::LIBC
+ 
+  attach_function :strdup, [:string], :pointer
+  attach_function :free, [:pointer], :void
+end
+ 
+string = "Hello, World!"
+duplicate = LibC.strdup(string)
+puts duplicate.get_string(0)
+LibC.free(duplicate)
+ 
+
+====RUBY=====
+require 'fiddle'
+ 
+# Find strdup().  It takes a pointer and returns a pointer.
+strdup = Fiddle::Function
+           .new(Fiddle::Handle['strdup'],
+                [Fiddle::TYPE_VOIDP], Fiddle::TYPE_VOIDP)
+ 
+# Call strdup().
+#   - It converts our Ruby string to a C string.
+#   - It returns a Fiddle::Pointer.
+duplicate = strdup.call("This is a string!")
+puts duplicate.to_s     # Convert the C string to a Ruby string.
+Fiddle.free duplicate   # free() the memory that strdup() allocated.
+
+====RUBY=====
+require 'fiddle'
+require 'fiddle/import'
+ 
+module C
+  extend Fiddle::Importer
+  dlload Fiddle::Handle::DEFAULT
+  extern 'char *strdup(char *)'
+end
+ 
+duplicate = C.strdup("This is a string!")
+puts duplicate.to_s
+Fiddle.free duplicate
+
+====RUBY=====
+require 'rubygems'
+require 'inline'
+ 
+class InlineTester
+  def factorial_ruby(n)
+    (1..n).inject(1, :*)
+  end
+ 
+  inline do |builder|
+    builder.c <<-'END_C'
+      long factorial_c(int max) {
+        long result = 1;
+        int i;
+        for (i = 1; i <= max; ++i)
+          result *= i;
+        return result;
+      }
+    END_C
+  end
+ 
+  inline do |builder|
+    builder.include %q("math.h")
+    builder.c <<-'END_C'
+      int my_ilogb(double value) {
+        return ilogb(value);
+      }
+    END_C
+  end
+end
+ 
+t = InlineTester.new
+11.upto(14) {|n| p [n, t.factorial_ruby(n), t.factorial_c(n)]}
+p t.my_ilogb(1000)
+
+====PYTHON=====
+import ctypes
+libc = ctypes.CDLL("/lib/libc.so.6")
+libc.strcmp("abc", "def")     # -1
+libc.strcmp("hello", "hello") #  0
+

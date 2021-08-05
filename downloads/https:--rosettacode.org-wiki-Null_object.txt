@@ -1,0 +1,29 @@
+====RUBY=====
+puts "@object is nil" if @object.nil?		# instance variable
+ 
+puts "$object is nil" if $object.nil?		# global variable, too
+ 
+# It recognizes as the local variable even if it isn't executed.
+object = 1  if false
+puts "object is nil" if object.nil?
+ 
+# nil itself is an object:
+puts nil.class  # => NilClass
+
+====RUBY=====
+var undefined;         # initialized with an implicit nil
+say undefined==nil;    # true
+say defined(nil)       # false
+
+====RUBY=====
+var null_obj = null;        # initialize with a null value  
+say null_obj.is_a(null);    # true
+say defined(null_obj);      # true
+
+====PYTHON=====
+x = None
+if x is None:
+  print "x is None"
+else:
+  print "x is not None"
+

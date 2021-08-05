@@ -1,0 +1,12 @@
+====RUBY=====
+print "\a"
+
+====RUBY=====
+print "\a";
+
+====PYTHON=====
+print "\a"
+
+====PYTHON=====
+print("\a")
+

@@ -1,0 +1,480 @@
+====RUBY=====
+def game_of_life(name, size, generations, initial_life=nil)
+  board = new_board size
+  seed board, size, initial_life
+  print_board board, name, 0
+  reason = generations.times do |gen|
+    new = evolve board, size
+    print_board new, name, gen+1
+    break :all_dead if barren? new, size
+    break :static   if board == new
+    board = new
+  end
+  if    reason == :all_dead then puts "no more life."
+  elsif reason == :static   then puts "no movement"
+  else                           puts "specified lifetime ended"
+  end
+  puts
+end
+ 
+def new_board(n)
+  Array.new(n) {Array.new(n, 0)}
+end
+ 
+def seed(board, n, points=nil)
+  if points.nil?
+    # randomly seed board
+    indices = []
+    n.times {|x| n.times {|y| indices << [x,y] }}
+    indices.shuffle[0,10].each {|x,y| board[y][x] = 1}
+  else
+    points.each {|x, y| board[y][x] = 1}
+  end
+end
+ 
+def evolve(board, n)
+  new = new_board n
+  n.times {|i| n.times {|j| new[i][j] = fate board, i, j, n}}
+  new
+end
+ 
+def fate(board, i, j, n)
+  i1 = [0, i-1].max; i2 = [i+1, n-1].min
+  j1 = [0, j-1].max; j2 = [j+1, n-1].min
+  sum = 0
+  for ii in (i1..i2)
+    for jj in (j1..j2)
+      sum += board[ii][jj] if not (ii == i and jj == j)
+    end
+  end
+  (sum == 3 or (sum == 2 and board[i][j] == 1)) ? 1 : 0
+end
+ 
+def barren?(board, n)
+  n.times {|i| n.times {|j| return false if board[i][j] == 1}}
+  true
+end
+ 
+def print_board(m, name, generation)
+  puts "#{name}: generation #{generation}"
+  m.each {|row| row.each {|val| print "#{val == 1 ? '#' : '.'} "}; puts}
+end
+ 
+game_of_life "blinker", 3, 2, [[1,0],[1,1],[1,2]]
+game_of_life "glider", 4, 4, [[1,0],[2,1],[0,2],[1,2],[2,2]]
+game_of_life "random", 5, 10
+
+====RUBY=====
+class Game
+  def initialize(name, size, generations, initial_life=nil)
+    @size = size
+    @board = GameBoard.new size, initial_life
+    @board.display name, 0
+ 
+    reason = generations.times do |gen|
+      new_board = evolve
+      new_board.display name, gen+1
+      break :all_dead if new_board.barren?
+      break :static   if @board == new_board
+      @board = new_board
+    end
+ 
+    case reason
+    when :all_dead  then puts "No more life."
+    when :static    then puts "No movement."
+    else                 puts "Specified lifetime ended."
+    end
+    puts
+  end
+ 
+  def evolve
+    life = @board.each_index.select {|i,j| cell_fate(i,j)}
+    GameBoard.new @size, life
+  end
+ 
+  def cell_fate(i, j)
+    left_right = [0, i-1].max .. [i+1, @size-1].min
+    top_bottom = [0, j-1].max .. [j+1, @size-1].min
+    sum = 0
+    for x in left_right
+      for y in top_bottom
+        sum += @board[x,y].value if x != i or y != j
+      end
+    end
+    sum == 3 or (sum == 2 and @board[i,j].alive?)
+  end
+end
+ 
+class GameBoard
+  include Enumerable
+ 
+  def initialize(size, initial_life=nil)
+    @size = size
+    @board = Array.new(size) {Array.new(size) {Cell.new false}}
+    seed_board initial_life
+  end
+ 
+  def seed_board(life)
+    if life.nil?
+      # randomly seed board
+      each_index.to_a.sample(10).each {|x,y| @board[y][x].live}
+    else
+      life.each {|x,y| @board[y][x].live}
+    end
+  end
+ 
+  def each
+    @size.times {|x| @size.times {|y| yield @board[y][x] }}
+  end
+ 
+  def each_index
+    return to_enum(__method__) unless block_given?
+    @size.times {|x| @size.times {|y| yield x,y }}
+  end
+ 
+  def [](x, y)
+    @board[y][x]
+  end
+ 
+  def ==(board)
+    self.life == board.life
+  end
+ 
+  def barren?
+    none? {|cell| cell.alive?}
+  end
+ 
+  def life
+    each_index.select {|x,y| @board[y][x].alive?}
+  end
+ 
+  def display(name, generation)
+    puts "#{name}: generation #{generation}"
+    puts @board.map {|row| row.map {|cell| cell.alive? ? '#' : '.'}.join(' ')}
+  end
+ 
+  def apocalypse
+    # utility function to entirely clear the game board
+    each {|cell| cell.die}
+  end
+end
+ 
+class Cell
+  def initialize(alive) @alive = alive  end
+  def alive?;           @alive          end
+  def value;            @alive ? 1 : 0  end
+  def live;             @alive = true   end
+  def die;              @alive = false  end
+end
+ 
+Game.new "blinker", 3, 2, [[1,0],[1,1],[1,2]]
+Game.new "glider", 4, 4, [[1,0],[2,1],[0,2],[1,2],[2,2]]
+Game.new "random", 5, 10
+
+====RUBY=====
+var w = Num(`tput cols`)
+var h = Num(`tput lines`)
+var r = "\033[H"
+ 
+var dirs = [[-1,-1], [-1, 0], [-1, 1], [ 0,-1],
+            [ 0, 1], [ 1,-1], [ 1, 0], [ 1, 1]]
+ 
+var universe = h.of { w.of {1.rand < 0.1} }
+ 
+func iterate {
+    var new = h.of { w.of(false) }
+    static rx = (^h ~X ^w)
+    for i,j in rx {
+        var neighbor = 0
+        for y,x in (dirs.map {|dir| dir »+« [i, j] }) {
+            universe[y % h][x % w] && ++neighbor
+            neighbor > 3 && break
+        }
+        new[i][j] = (universe[i][j]
+                        ? (neighbor==2 || neighbor==3)
+                        : (neighbor==3))
+    }
+    universe = new
+}
+ 
+STDOUT.autoflush(true)
+ 
+loop {
+    print r
+    say universe.map{|row| row.map{|cell| cell ? '#' : ' '}.join }.join("\n")
+    iterate()
+}
+
+====PYTHON=====
+cell_size = 10
+sample = 10 
+play = False   # simulation is running
+last_cell = 0
+ 
+def setup():
+    global grid, next_grid, rows, cols
+    size(800, 500)
+ 
+    rows = height / cell_size
+    cols = width / cell_size
+    grid = empty_grid()
+    next_grid = empty_grid()
+    randomize_grid()
+ 
+    println("Press 'space' to start/stop")
+    println("'e' to clear all cells")
+    println("'b' demonstrate 'blinker'")
+    println("'g' demonstrate glider")
+    println("'r' to randomize grid")
+    println("'+' and '-' to change speed")
+ 
+def draw():
+    background(0)
+    for i in range(cols):
+        x = i * cell_size
+        for j in range(rows):
+            y = j * cell_size
+            current_state = grid[i][j]
+            fill(255)
+            noStroke()
+            if current_state:
+                rect(x, y, cell_size, cell_size)
+            if play:
+                ngbs_alive = calc_ngbs_alive(i, j)
+                result = rule(current_state, ngbs_alive)
+                next_grid[i][j] = result
+ 
+    if play and frameCount % sample == 0 and not mousePressed:
+        step()
+ 
+def rule(current, ngbs):
+    """ classic Conway's Game of Life rule """
+    if ngbs < 2 or ngbs > 3:
+        return 0  # dies / dead
+    elif ngbs == 3:
+        return 1  # born / alive
+    else:
+        return current  # stays the same (ngbs == 2)
+ 
+def calc_ngbs_alive(i, j):
+    NEIGHBOURS = ((-1, 00), (01, 00),  # a tuple describing the neighbourhood of a cell
+                  (-1, -1), (00, -1),
+                  (01, -1), (-1, 01),
+                  (00, 01), (01, 01))
+    alive = 0
+    for iv, jv in NEIGHBOURS:
+        alive += grid[(i + iv) % cols][(j + jv) % rows]
+    return alive
+ 
+def empty_grid():
+    grid = []
+    for _ in range(cols):
+        grid.append([0] * rows)
+    return grid
+ 
+def randomize_grid():
+    from random import choice
+    for i in range(cols):
+        for j in range(rows):
+            grid[i][j] = choice((0, 1))
+ 
+def step():
+    global grid, next_grid
+    grid = next_grid
+    next_grid = empty_grid()
+ 
+def keyReleased():
+    global grid, play, sample
+    if key == "e":
+        grid = empty_grid()
+    if key == "r":
+        randomize_grid()
+    if key == "g":
+         grid[10][10:13] = [0, 1, 0]       
+         grid[11][10:13] = [0, 0, 1]       
+         grid[12][10:13] = [1, 1, 1]       
+    if key == "b":
+         grid[10][10:13] = [0, 1, 0]       
+         grid[11][10:13] = [0, 1, 0]       
+         grid[12][10:13] = [0, 1, 0]               
+    if key == " ":
+        play = not play 
+    if  str(key) in '+=':
+        sample = max(sample - 1, 1);
+    if key == '-':
+        sample += 1
+ 
+def mousePressed():
+    paint()
+ 
+def mouseDragged():
+    paint()
+ 
+def paint():
+    global last_cell
+    i, j = mouseX // cell_size, mouseY // cell_size
+    p = j * cols + i
+    if p != last_cell:
+        last_cell = p
+        grid[i][j] = (1, 0)[grid[i][j]]
+
+====PYTHON=====
+import random
+from collections import defaultdict
+ 
+printdead, printlive = '-#'
+maxgenerations = 3
+cellcount = 3,3
+celltable = defaultdict(int, {
+ (1, 2): 1,
+ (1, 3): 1,
+ (0, 3): 1,
+ } ) # Only need to populate with the keys leading to life
+ 
+##
+## Start States
+##
+# blinker
+u = universe = defaultdict(int)
+u[(1,0)], u[(1,1)], u[(1,2)] = 1,1,1
+ 
+## toad
+#u = universe = defaultdict(int)
+#u[(5,5)], u[(5,6)], u[(5,7)] = 1,1,1
+#u[(6,6)], u[(6,7)], u[(6,8)] = 1,1,1
+ 
+## glider
+#u = universe = defaultdict(int)
+#maxgenerations = 16
+#u[(5,5)], u[(5,6)], u[(5,7)] = 1,1,1
+#u[(6,5)] = 1
+#u[(7,6)] = 1
+ 
+## random start
+#universe = defaultdict(int, 
+#                       # array of random start values
+#                       ( ((row, col), random.choice((0,1)))
+#                         for col in range(cellcount[0])
+#                         for row in range(cellcount[1])
+#                       ) )  # returns 0 for out of bounds
+ 
+for i in range(maxgenerations):
+    print("\nGeneration %3i:" % ( i, ))
+    for row in range(cellcount[1]):
+        print("  ", ''.join(str(universe[(row,col)])
+                            for col in range(cellcount[0])).replace(
+                                '0', printdead).replace('1', printlive))
+    nextgeneration = defaultdict(int)
+    for row in range(cellcount[1]):
+        for col in range(cellcount[0]):
+            nextgeneration[(row,col)] = celltable[
+                ( universe[(row,col)],
+                  -universe[(row,col)] + sum(universe[(r,c)]
+                                             for r in range(row-1,row+2)
+                                             for c in range(col-1, col+2) )
+                ) ]
+    universe = nextgeneration
+
+====PYTHON=====
+from collections import Counter
+ 
+def life(world, N):
+    "Play Conway's game of life for N generations from initial world."
+    for g in range(N+1):
+        display(world, g)
+        counts = Counter(n for c in world for n in offset(neighboring_cells, c))
+        world = {c for c in counts 
+                if counts[c] == 3 or (counts[c] == 2 and c in world)}
+ 
+neighboring_cells = [(-1, -1), (-1, 0), (-1, 1), 
+                     ( 0, -1),          ( 0, 1), 
+                     ( 1, -1), ( 1, 0), ( 1, 1)]
+ 
+def offset(cells, delta):
+    "Slide/offset all the cells by delta, a (dx, dy) vector."
+    (dx, dy) = delta
+    return {(x+dx, y+dy) for (x, y) in cells}
+ 
+def display(world, g):
+    "Display the world as a grid of characters."
+    print('          GENERATION {}:'.format(g))
+    Xs, Ys = zip(*world)
+    Xrange = range(min(Xs), max(Xs)+1)
+    for y in range(min(Ys), max(Ys)+1):
+        print(''.join('#' if (x, y) in world else '.'
+                      for x in Xrange))
+ 
+blinker = {(1, 0), (1, 1), (1, 2)}
+block   = {(0, 0), (1, 1), (0, 1), (1, 0)}
+toad    = {(1, 2), (0, 1), (0, 0), (0, 2), (1, 3), (1, 1)}
+glider  = {(0, 1), (1, 0), (0, 0), (0, 2), (2, 1)}
+world   = (block | offset(blinker, (5, 2)) | offset(glider, (15, 5)) | offset(toad, (25, 5))
+           | {(18, 2), (19, 2), (20, 2), (21, 2)} | offset(block, (35, 7)))
+ 
+ 
+life(world, 5)
+
+====PYTHON=====
+import numpy as np
+from pandas import DataFrame
+import matplotlib.pyplot as plt
+#import time
+ 
+def conway_life(len=10, wid=10, gen=5):
+ 
+    curr_gen = DataFrame(np.random.randint(0, 2, (len+2, wid+2)),
+                         index = range(len+2), 
+                         columns = range(wid+2))
+    curr_gen[0] = 0
+    curr_gen[wid+1] = 0
+    curr_gen[0: 1] = 0
+    curr_gen[len+1: len+2] = 0    
+ 
+    for i in range(gen):
+ 
+        fig, ax = plt.subplots()
+        draw = curr_gen[1:len+1].drop([0, wid+1], axis=1)
+        # 画图
+ 
+        image = draw
+        ax.imshow(image, cmap=plt.cm.cool, interpolation='nearest')
+        ax.set_title("Conway's game of life.")
+ 
+        # Move left and bottom spines outward by 10 points
+        ax.spines['left'].set_position(('outward', 10))
+        ax.spines['bottom'].set_position(('outward', 10))
+        # Hide the right and top spines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+ 
+        plt.show()
+        # time.sleep(1)         
+ 
+ 
+        # 初始化空表
+        next_gen = DataFrame(np.random.randint(0, 1, (len+2, wid+2)),
+                             index = range(len+2), 
+                             columns = range(wid+2))
+ 
+ 
+        # 生成下一代
+        for x in range(1, wid+1):
+            for y in range(1, len+1):
+                env = (curr_gen[x-1][y-1] + curr_gen[x][y-1] + 
+                       curr_gen[x+1][y-1]+ curr_gen[x-1][y] + 
+                       curr_gen[x+1][y] + curr_gen[x-1][y+1] + 
+                       curr_gen[x][y+1] + curr_gen[x+1][y+1])
+ 
+                if (not curr_gen[x][y] and env == 3):
+                    next_gen[x][y] = 1
+                if (curr_gen[x][y] and env in (2, 3)):
+                    next_gen[x][y] = 1
+ 
+        curr_gen = next_gen 
+ 
+ 
+conway_life()
+

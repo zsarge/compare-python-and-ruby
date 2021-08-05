@@ -1,0 +1,230 @@
+====RUBY=====
+def polynomial_long_division(numerator, denominator)
+  dd = degree(denominator)
+  raise ArgumentError, "denominator is zero" if dd < 0
+  if dd == 0
+    return [multiply(numerator, 1.0/denominator[0]), [0]*numerator.length]
+  end
+ 
+  q = [0] * numerator.length
+ 
+  while (dn = degree(numerator)) >= dd
+    d = shift_right(denominator, dn - dd)
+    q[dn-dd] = numerator[dn] / d[degree(d)]
+    d = multiply(d, q[dn-dd])
+    numerator = subtract(numerator, d)
+  end
+ 
+  [q, numerator]
+end
+ 
+def degree(ary)
+  idx = ary.rindex(&:nonzero?)
+  idx ? idx : -1
+end
+ 
+def shift_right(ary, n)
+  [0]*n + ary[0, ary.length - n]
+end
+ 
+def subtract(a1, a2)
+  a1.zip(a2).collect {|v1,v2| v1 - v2}
+end
+ 
+def multiply(ary, num)
+  ary.collect {|x| x * num}
+end
+ 
+f = [-42, 0, -12, 1]
+g = [-3, 1, 0, 0]
+q, r = polynomial_long_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [-42, 0, -12, 1] / [-3, 1, 0, 0] => [-27, -9, 1, 0] remainder [-123, 0, 0, 0]
+ 
+g = [-3, 1, 1, 0]
+q, r = polynomial_long_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [-42, 0, -12, 1] / [-3, 1, 1, 0] => [-13, 1, 0, 0] remainder [-81, 16, 0, 0]
+
+====RUBY=====
+def polynomial_division(f, g)
+  if g.length == 0 or (g.length == 1 and g[0] == 0)
+    raise ArgumentError, "denominator is zero"
+  elsif g.length == 1
+    [f.collect {|x| Float(x)/g[0]}, [0]]
+  elsif g.length == 2
+    synthetic_division(f, g)
+  else 
+    higher_degree_synthetic_division(f, g)
+  end
+end
+ 
+def synthetic_division(f, g)
+  board = [f] << Array.new(f.length) << Array.new(f.length)
+  board[2][0] = board[0][0]
+ 
+  1.upto(f.length - 1).each do |i|
+    board[1][i] = board[2][i-1] * -g[1]
+    board[2][i] = board[0][i] + board[1][i]
+  end
+ 
+  [board[2][0..-2], [board[2][-1]]]
+end
+ 
+# an ugly mess of array index arithmetic
+# http://en.wikipedia.org/wiki/Polynomial_long_division#Higher_degree_synthetic_division
+def higher_degree_synthetic_division(f, g)
+ 
+  # [use] the negative coefficients of the denominator following the leading term
+  lhs = g[1..-1].collect {|x| -x}
+  board = [f]
+ 
+  q = []
+  1.upto(f.length - lhs.length).each do |i|
+    n = 2*i - 1
+ 
+    # underline the leading coefficient of the right-hand side, multiply it by
+    # the left-hand coefficients and write the products beneath the next columns
+    # on the right.
+    q << board[n-1][i-1]
+    board << Array.new(f.length).fill(0, i) # row n
+    (lhs.length).times do |j|
+      board[n][i+j] = q[-1]*lhs[j]
+    end
+ 
+    # perform an addition
+    board << Array.new(f.length).fill(0, i) # row n+1
+    (lhs.length + 1).times do |j|
+      board[n+1][i+j] = board[n-1][i+j] + board[n][i+j] if i+j < f.length
+    end
+  end
+ 
+  # the remaining numbers in the bottom row correspond to the coefficients of the remainder
+  r = board[-1].compact
+  q = [0] if q.empty?
+  [q, r]
+end
+ 
+f = [1, -12, 0, -42]
+g = [1, -3]
+q, r = polynomial_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [1, -12, 0, -42] / [1, -3] => [1, -9, -27] remainder [-123]
+ 
+g = [1, 1, -3]
+q, r = polynomial_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [1, -12, 0, -42] / [1, 1, -3] => [1, -13] remainder [16, -81]
+
+====RUBY=====
+def polynomial_division(f, g)
+  if g.length == 0 or (g.length == 1 and g[0] == 0)
+    raise ArgumentError, "denominator is zero"
+  end
+  return [[0], f] if f.length < g.length
+ 
+  q, n = [], f.dup
+  while n.length >= g.length
+    q << Float(n[0]) / g[0]
+    n[0, g.length].zip(g).each_with_index do |pair, i|
+      n[i] = pair[0] - q[-1] * pair[1]
+    end
+    n.shift
+  end
+  q = [0] if q.empty?
+  n = [0] if n.empty?
+  [q, n]
+end
+ 
+f = [1, -12, 0, -42]
+g = [1, -3]
+q, r = polynomial_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [1, -12, 0, -42] / [1, -3] => [1.0, -9.0, -27.0] remainder [-123.0]
+ 
+g = [1, 1, -3]
+q, r = polynomial_division(f, g)
+puts "#{f} / #{g} => #{q} remainder #{r}"
+# => [1, -12, 0, -42] / [1, 1, -3] => [1.0, -13.0] remainder [16.0, -81.0]
+
+====RUBY=====
+func poly_long_div(rn, rd) {
+ 
+    var n = rn.map{_}
+    var gd = rd.len
+ 
+    if (n.len >= gd) {
+        return(gather {
+            while (n.len >= gd) {
+                var piv = n[0]/rd[0]
+                take(piv)
+                { |i|
+                    n[i] -= (rd[i] * piv)
+                } << ^(n.len `min` gd)
+                n.shift
+            }
+        }, n)
+    }
+ 
+    return([0], rn)
+}
+
+====RUBY=====
+func poly_print(c) {
+    var l = c.len
+    c.each_kv {|i, n|
+        print n
+        print("x^", (l - i - 1), " + ") if (i < l-1)
+    }
+    print "\n";
+}
+ 
+var poly = [
+    Pair([1,-12,0,-42],  [1, -3]),
+    Pair([1,-12,0,-42], [1,1,-3]),
+    Pair(      [1,3,2],    [1,1]),
+    Pair( [1,-4,6,5,3],  [1,2,1]),
+]
+ 
+poly.each { |pair|
+    var (q, r) = poly_long_div(pair.first, pair.second)
+    poly_print(q)
+    poly_print(r)
+    print "\n"
+}
+
+====PYTHON=====
+# -*- coding: utf-8 -*-
+ 
+from itertools import izip
+ 
+def degree(poly):
+    while poly and poly[-1] == 0:
+        poly.pop()   # normalize
+    return len(poly)-1
+ 
+def poly_div(N, D):
+    dD = degree(D)
+    dN = degree(N)
+    if dD < 0: raise ZeroDivisionError
+    if dN >= dD:
+        q = [0] * dN
+        while dN >= dD:
+            d = [0]*(dN - dD) + D
+            mult = q[dN - dD] = N[-1] / float(d[-1])
+            d = [coeff*mult for coeff in d]
+            N = [coeffN - coeffd for coeffN, coeffd in izip(N, d)]
+            dN = degree(N)
+        r = N
+    else:
+        q = [0]
+        r = N
+    return q, r
+ 
+if __name__ == '__main__':
+    print "POLYNOMIAL LONG DIVISION"
+    N = [-42, 0, -12, 1]
+    D = [-3, 1, 0, 0]
+    print "  %s / %s =" % (N,D),
+    print " %s remainder %s" % poly_div(N, D)
+

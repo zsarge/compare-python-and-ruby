@@ -1,0 +1,10 @@
+====RUBY=====
+ENV['HOME']
+
+====RUBY=====
+say ENV{'HOME'};
+
+====PYTHON=====
+import os
+os.environ['HOME']
+

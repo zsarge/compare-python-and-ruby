@@ -1,0 +1,76 @@
+====RUBY=====
+require "big"
+ 
+LN2 = Math.log(2).to_big_f
+ 
+FACTORIALS = Hash(Int32, Float64).new{|h,k| h[k] = k * h[k-1]}
+FACTORIALS[0] = 1
+ 
+def hickerson(n)
+  FACTORIALS[n] / (2 * LN2 ** (n+1))
+end
+ 
+def nearly_int?(n)
+  int = n.round
+  (int - 0.1..int + 0.1).includes? n
+end
+ 
+1.upto(17) do |n|
+  h = hickerson(n)
+  str = nearly_int?(h) ? "nearly integer" : "NOT nearly integer"
+  puts "n:%3i h: %s\t%s" % [n, h, str]
+end
+ 
+
+====RUBY=====
+require "bigdecimal"
+ 
+LN2 = BigMath::log(2,16)  #Use LN2 = Math::log(2) to see the difference with floats
+FACTORIALS = Hash.new{|h,k| h[k] = k * h[k-1]}
+FACTORIALS[0] = 1
+ 
+def hickerson(n)
+  FACTORIALS[n] / (2 * LN2 ** (n+1))
+end
+ 
+def nearly_int?(n)
+  int = n.round
+  n.between?(int - 0.1, int + 0.1)
+end
+ 
+1.upto(17) do |n|
+  h = hickerson(n)
+  str = nearly_int?(h) ? "nearly integer" : "NOT nearly integer"
+  puts "n:%3i h: %s\t%s" % [n, h.to_s('F')[0,25], str] #increase the 25 to print more digits, there are 856 of them
+end
+
+====RUBY=====
+func h(n) {
+    n! / (2 * pow(2.log, n+1))
+}
+ 
+{ |n|
+    "h(%2d) = %22s is%s almost an integer.\n".printf(
+        n, var hn = h(n).round(-3), hn.to_s ~~ /\.[09]/ ? '' : ' NOT')
+} << 1..17
+
+====PYTHON=====
+from decimal import Decimal
+import math
+ 
+def h(n):
+    'Simple, reduced precision calculation'
+    return math.factorial(n) / (2 * math.log(2) ** (n + 1))
+ 
+def h2(n):
+    'Extended precision Hickerson function'
+    return Decimal(math.factorial(n)) / (2 * Decimal(2).ln() ** (n + 1))
+ 
+for n in range(18):
+    x = h2(n)
+    norm = str(x.normalize())
+    almostinteger = (' Nearly integer' 
+                     if 'E' not in norm and ('.0' in norm or '.9' in norm) 
+                     else ' NOT nearly integer!')
+    print('n:%2i h:%s%s' % (n, norm, almostinteger))
+

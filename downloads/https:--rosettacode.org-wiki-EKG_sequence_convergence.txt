@@ -1,0 +1,93 @@
+====RUBY=====
+class Seq(terms, callback) {
+    method next {
+        terms += callback(terms)
+    }
+ 
+    method nth(n) {
+        while (terms.len < n) {
+            self.next
+        }
+        terms[n-1]
+    }
+ 
+    method first(n) {
+        while (terms.len < n) {
+            self.next
+        }
+        terms.first(n)
+    }
+}
+ 
+func next_EKG (s) {
+    2..Inf -> first {|k|
+        !(s.contains(k) || s[-1].is_coprime(k))
+    }
+}
+ 
+func EKG (start) {
+    Seq([1, start], next_EKG)
+}
+ 
+func converge_at(ints) {
+    var ekgs = ints.map(EKG)
+ 
+    2..Inf -> first {|k|
+        (ekgs.map { .nth(k)        }.uniq.len == 1) &&
+        (ekgs.map { .first(k).sort }.uniq.len == 1)
+    }
+}
+ 
+for k in [2, 5, 7, 9, 10] {
+    say "EKG(#{k}) = #{EKG(k).first(10)}"
+}
+ 
+for arr in [[5,7], [2, 5, 7, 9, 10]] {
+    var c = converge_at(arr)
+    say "EKGs of #{arr} converge at term #{c}"
+}
+
+====PYTHON=====
+from itertools import count, islice, takewhile
+from math import gcd
+ 
+def EKG_gen(start=2):
+    """\
+    Generate the next term of the EKG together with the minimum cache of 
+    numbers left in its production; (the "state" of the generator).
+    Using math.gcd
+    """
+    c = count(start + 1)
+    last, so_far = start, list(range(2, start))
+    yield 1, []
+    yield last, []
+    while True:
+        for index, sf in enumerate(so_far):
+            if gcd(last, sf) > 1:
+                last = so_far.pop(index)
+                yield last, so_far[::]
+                break
+        else:
+            so_far.append(next(c))
+ 
+def find_convergence(ekgs=(5,7)):
+    "Returns the convergence point or zero if not found within the limit"
+    ekg = [EKG_gen(n) for n in ekgs]
+    for e in ekg:
+        next(e)    # skip initial 1 in each sequence
+    return 2 + len(list(takewhile(lambda state: not all(state[0] == s for  s in state[1:]),
+                                  zip(*ekg))))
+ 
+if __name__ == '__main__':
+    for start in 2, 5, 7, 9, 10:
+        print(f"EKG({start}):", str([n[0] for n in islice(EKG_gen(start), 10)])[1: -1])
+    print(f"\nEKG(5) and EKG(7) converge at term {find_convergence(ekgs=(5,7))}!")
+
+====PYTHON=====
+# After running the above, in the terminal:
+from pprint import pprint as pp
+ 
+for start in 5, 7:
+    print(f"EKG({start}):\n[(<next>, [<state>]), ...]")
+    pp(([n for n in islice(EKG_gen(start), 21)]))
+

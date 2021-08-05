@@ -1,0 +1,100 @@
+====RUBY=====
+ar = [0, 2, -4]
+100.times{ar << (111 - 1130.quo(ar[-1])+ 3000.quo(ar[-1]*ar[-2])) }
+ 
+[3, 4, 5, 6, 7, 8, 20, 30, 50, 100].each do |n|
+  puts "%3d -> %0.16f" % [n, ar[n]]
+end
+ 
+
+====RUBY=====
+require 'bigdecimal/math'
+balance = BigMath.E(50) - 1
+1.upto(25){|y| balance = balance * y - 1}
+puts "Bank balance after 25 years = #{balance.to_f}"
+
+====RUBY=====
+def rump(a,b)
+  a, b = a.to_r, b.to_r
+  333.75r * b**6 + a**2 * ( 11 * a**2 * b**2 - b**6 - 121 * b**4 - 2 )  + 5.5r *   b**8 + a / (2 * b)
+end
+ 
+puts "rump(77617, 33096) = #{rump(77617, 33096).to_f}"
+
+====RUBY=====
+func series (n) {
+    var (u, v) = (2, -4)
+    (n-2).times { (u, v) = (v, 111 - 1130/v + 3000/(v * u)) }
+    return v
+}
+ 
+[(3..8)..., 20, 30, 50, 100].each {|n|
+    printf("n = %3d -> %s\n", n, series(n))
+}
+
+====RUBY=====
+var years = 25
+var balance = (1 .. years+15 -> sum_by {|n| 1 / n! })
+say "Starting balance, $(e-1): $#{balance}"
+for i in (1..years) { balance = (i*balance - 1) }
+printf("After year %d, you will have $%1.16g in your account.\n", years, balance)
+
+====RUBY=====
+func f (a, b) {
+    (333.75 * b**6) + (a**2 * ((11 * a**2 * b**2) -
+      b**6 - (121 * b**4) - 2)) + (5.5 * b**8) + a/(2*b)
+}
+ 
+say f(77617.0, 33096.0)
+
+====PYTHON=====
+from fractions import Fraction
+ 
+def muller_seq(n:int) -> float:
+    seq = [Fraction(0), Fraction(2), Fraction(-4)]
+    for i in range(3, n+1):
+        next_value = (111 - 1130/seq[i-1]
+            + 3000/(seq[i-1]*seq[i-2]))
+        seq.append(next_value)
+    return float(seq[n])
+ 
+for n in [3, 4, 5, 6, 7, 8, 20, 30, 50, 100]:
+    print("{:4d} -> {}".format(n, muller_seq(n)))
+
+====PYTHON=====
+from decimal import Decimal, getcontext
+ 
+def bank(years:int) -> float:
+    """
+    Warning: still will diverge and return incorrect results after 250 years
+    the higher the precision, the more years will cover
+    """
+    getcontext().prec = 500
+    # standard math.e has not enough precision
+    e = Decimal('2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932003059921817413596629043572900334295260595630738132328627943490763233829880753195251019011573834187930702154089149934884167509244761460668082264800168477411853742345442437107539077744992069551702761838606261331384583000752044933826560297606737113200709328709127443747047230696977209310141692836819025515108657463772111252389784425056953696770785449969967946864454905987931636889230098793127736178215424999229576351')
+    decimal_balance = e - 1
+    for year in range(1, years+1):
+        decimal_balance = decimal_balance * year - 1
+    return(float(decimal_balance))
+ 
+print("Bank balance after 25 years = ", bank(25))
+
+====PYTHON=====
+for year in range(200, 256, 5):
+    print(year, '->', bank(year))
+ 
+
+====PYTHON=====
+from fractions import Fraction
+ 
+def rump(generic_a, generic_b) -> float:
+    a = Fraction('{}'.format(generic_a))
+    b = Fraction('{}'.format(generic_b))
+    fractional_result = Fraction('333.75') * b**6 \
+        + a**2 * ( 11 * a**2 * b**2 - b**6 - 121 * b**4 - 2 ) \
+        + Fraction('5.5') * b**8 + a / (2 * b)
+    return(float(fractional_result)) 
+ 
+print("rump(77617, 33096) = ", rump(77617.0, 33096.0))
+ 
+

@@ -1,0 +1,84 @@
+====RUBY=====
+class String
+  def strip_comment( markers = ['#',';'] )
+    re = Regexp.union( markers ) # construct a regular expression which will match any of the markers
+    if index = (self =~ re)
+      self[0, index].rstrip      # slice the string where the regular expression matches, and return it.
+    else
+      rstrip
+    end
+  end
+end
+ 
+p 'apples, pears # and bananas'.strip_comment
+str = 'apples, pears ; and bananas'
+p str.strip_comment
+str = 'apples, pears and bananas '
+p str.strip_comment
+p str.strip_comment('and')
+p " \t \n ;".strip_comment
+p "".strip_comment
+
+====RUBY=====
+func strip_comment(s) {
+    (s - %r'[#;].*').strip;
+}
+ 
+[" apples, pears # and bananas",
+ " apples, pears ; and bananas",
+ " apples, pears "].each { |s|
+    say strip_comment(s).dump;
+};
+
+====PYTHON=====
+def remove_comments(line, sep):
+    for s in sep:
+        i = line.find(s)
+        if i >= 0:
+            line = line[:i]
+    return line.strip()
+ 
+# test
+print remove_comments('apples ; pears # and bananas', ';#')
+print remove_comments('apples ; pears # and bananas', '!')
+ 
+
+====PYTHON=====
+import re
+ 
+m = re.match(r'^([^#]*)#(.*)$', line)
+if m:  # The line contains a hash / comment
+    line = m.group(1)
+ 
+
+====PYTHON=====
+'''Comments stripped with itertools.takewhile'''
+ 
+from itertools import takewhile
+ 
+ 
+# stripComments :: [Char] -> String -> String
+def stripComments(cs):
+    '''The lines of the input text, with any
+       comments (defined as starting with one
+       of the characters in cs) stripped out.
+    '''
+    def go(cs):
+        return lambda s: ''.join(
+            takewhile(lambda c: c not in cs, s)
+        ).strip()
+    return lambda txt: '\n'.join(map(
+        go(cs),
+        txt.splitlines()
+    ))
+ 
+ 
+if __name__ == '__main__':
+    print(
+        stripComments(';#')(
+            '''apples, pears # and bananas
+               apples, pears ; and bananas
+            '''
+        )
+    )
+

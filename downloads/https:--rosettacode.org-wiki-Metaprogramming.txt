@@ -1,0 +1,64 @@
+====RUBY=====
+class IDVictim
+ 
+  # Create elements of this man, woman, or child's identification.
+  attr_accessor :name, :birthday, :gender, :hometown
+ 
+  # Allows you to put in a space for anything which is not covered by the
+  # preexisting elements.
+  def self.new_element(element)
+    attr_accessor element
+  end
+ 
+end
+
+====RUBY=====
+class Number {
+    method ⊕(arg) {
+        self + arg
+    }
+}
+ 
+say (21 ⊕ 42)
+
+====RUBY=====
+var colors = Hash(
+               'black'   => "000",
+               'red'     => "f00",
+               'green'   => "0f0",
+               'yellow'  => "ff0",
+               'blue'    => "00f",
+               'magenta' => "f0f",
+               'cyan'    => "0ff",
+               'white'   => "fff",
+             )
+ 
+for color,code in colors {
+    String.def_method("in_#{color}", func (self) {
+        '<span style="color: #' + code + '">' + self + '</span>'
+    })
+}
+ 
+say "blue".in_blue
+say "red".in_red
+say "white".in_white
+
+====PYTHON=====
+ 
+from macropy.core.macros import *
+from macropy.core.quotes import macros, q, ast, u
+ 
+macros = Macros()
+ 
+@macros.expr
+def expand(tree, **kw):
+    addition = 10
+    return q[lambda x: x * ast[tree] + u[addition]]
+ 
+
+====PYTHON=====
+ 
+func = expand[1 + 2]
+print func(5)
+ 
+

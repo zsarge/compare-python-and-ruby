@@ -1,0 +1,47 @@
+====RUBY=====
+ 
+require 'date'
+ 
+def long_year?(year = Date.today.year)
+  Date.new(year, 12, 28).cweek == 53
+end
+ 
+(2020..2030).each{|year| puts "#{year} is long? #{ long_year?(year) }." } 
+ 
+
+====RUBY=====
+func is_long_year(year) {
+    Date.parse("#{year}-12-28", "%Y-%m-%d").week == 53
+}
+ 
+say (  "Long years in the 20th century:\n", (1900..^2000).grep(is_long_year))
+say ("\nLong years in the 21st century:\n", (2000..^2100).grep(is_long_year))
+say ("\nLong years in the 22nd century:\n", (2100..^2200).grep(is_long_year))
+
+====PYTHON=====
+'''Long Year ?'''
+ 
+from datetime import date
+ 
+ 
+# longYear :: Year Int -> Bool
+def longYear(y):
+    '''True if the ISO year y has 53 weeks.'''
+    return 52 < date(y, 12, 28).isocalendar()[1]
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Longer (53 week) years in the range 2000-2100'''
+    for year in [
+            x for x in range(2000, 1 + 2100)
+            if longYear(x)
+    ]:
+        print(year)
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

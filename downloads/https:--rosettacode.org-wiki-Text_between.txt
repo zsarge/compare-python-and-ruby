@@ -1,0 +1,170 @@
+====RUBY=====
+ 
+class String
+  def textBetween startDelimiter, endDelimiter
+ 
+  	if (startDelimiter == "start") then
+  		startIndex = 0
+  	else
+  		startIndex = self.index(startDelimiter) + startDelimiter.length
+  	end
+ 
+  	if (startIndex == nil) then
+  		return "Start delimiter not found"
+  	end
+ 
+  	thisLength = self.length
+ 
+  	returnText = self[startIndex, thisLength]
+ 
+ 	if (endDelimiter == "end") then
+  		endIndex = thisLength
+  	else
+  		endIndex = returnText.index(endDelimiter)
+  	end
+ 
+  	if (endIndex == nil) then
+  		return "End delimiter not found"
+  	end
+ 
+  	returnText = returnText[0, endIndex]
+ 
+  	return returnText
+ 
+  end
+end
+ 
+thisText = ARGV[0]
+startDelimiter = ARGV[1]
+endDelimiter = ARGV[2]
+ 
+#puts thisText
+#puts startDelimiter
+#puts endDelimiter
+ 
+returnText = thisText.textBetween(startDelimiter, endDelimiter)
+ 
+puts returnText
+ 
+
+====RUBY=====
+func text_between (text, beg, end) {
+ 
+    beg.escape! if beg.kind_of(String)
+    end.escape! if end.kind_of(String)
+ 
+    Regex("#{beg}(.*?)(?:#{end}|\\z)", 's').match(text)[0] \\ ""
+}
+ 
+var tests = [
+    Hash(
+        text  => "Hello Rosetta Code world",
+        start => "Hello ",
+        end   => " world",
+        out   => "Rosetta Code",
+    ),
+    Hash(
+        text  => "Hello Rosetta Code world",
+        start => /^/,
+        end   => " world",
+        out   => "Hello Rosetta Code",
+    ),
+    Hash(
+        text  => "Hello Rosetta Code world",
+        start => "Hello ",
+        end   => /$/,
+        out   => "Rosetta Code world",
+    ),
+    Hash(
+        text  => "</div><div style=\"chinese\">你好嗎</div>",
+        start => "<div style=\"chinese\">",
+        end   => "</div>",
+        out   => "你好嗎",
+    ),
+    Hash(
+        text  => "<text>Hello <span>Rosetta Code</span> world</text><table style=\"myTable\">",
+        start => "<text>",
+        end   => "<table>",
+        out   => "Hello <span>Rosetta Code</span> world</text><table style=\"myTable\">",
+    ),
+    Hash(
+        text  => "<table style=\"myTable\"><tr><td>hello world</td></tr></table>",
+        start => "<table>",
+        end   => "</table>",
+        out   => "",
+    ),
+    Hash(
+        text  => "The quick brown fox jumps over the lazy other fox",
+        start => "quick ",
+        end   => " fox",
+        out   => "brown",
+    ),
+    Hash(
+        text  => "One fish two fish red fish blue fish",
+        start => "fish ",
+        end   => " red",
+        out   => "two fish",
+    ),
+    Hash(
+        text  => "FooBarBazFooBuxQuux",
+        start => "Foo",
+        end   => "Foo",
+        out   => "BarBaz",
+    ),
+]
+ 
+tests.each { |t|
+    var r = text_between(t{:text}, t{:start}, t{:end})
+    assert_eq(t{:out}, r)
+    say "text_between(#{t{:text}.dump}, #{t{:start}.dump}, #{t{:end}.dump}) = #{r.dump}"
+}
+
+====PYTHON=====
+ 
+#!/usr/bin/env python
+from sys import argv
+ 
+# textBetween in python
+# Get the text between two delimiters
+# Usage:
+# python textBetween.py "hello Rosetta Code world" "hello " " world"
+ 
+def textBetween( thisText, startString, endString ):
+    try:
+    	if startString is 'start':
+    		startIndex = 0
+    	else:
+    		startIndex = thisText.index( startString ) 
+ 
+    	if not (startIndex >= 0):
+    		return 'Start delimiter not found'
+    	else:
+        	if startString is not 'start':
+        		startIndex = startIndex + len( startString )
+ 
+        returnText = thisText[startIndex:]
+ 
+ 
+    	if endString is 'end':
+    		return returnText
+    	else:
+    		endIndex = returnText.index( endString )
+ 
+    	if not (endIndex >= 0):
+    		return 'End delimiter not found'
+    	else:
+        	returnText = returnText[:endIndex]
+ 
+        return returnText
+    except ValueError:
+        return "Value error"
+ 
+script, first, second, third = argv
+ 
+thisText = first
+startString = second
+endString = third
+ 
+print textBetween( thisText, startString, endString )
+ 
+

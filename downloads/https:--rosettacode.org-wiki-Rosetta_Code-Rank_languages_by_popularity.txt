@@ -1,0 +1,127 @@
+====RUBY=====
+require 'rosettacode'
+ 
+langs = []
+RosettaCode.category_members("Programming Languages") {|lang| langs << lang}
+ 
+# API has trouble with long titles= values.
+# To prevent skipping languages, use short slices of 20 titles.
+langcount = {}
+langs.each_slice(20) do |sublist|
+  url = RosettaCode.get_api_url({
+    "action" => "query",
+    "prop" => "categoryinfo",
+    "format" => "xml",
+    "titles" => sublist.join("|"),
+  })
+ 
+  doc = REXML::Document.new open(url)
+  REXML::XPath.each(doc, "//page") do |page|
+    lang = page.attribute("title").value
+    info = REXML::XPath.first(page, "categoryinfo")
+    langcount[lang] = info.nil? ? 0 : info.attribute("pages").value.to_i
+  end
+end
+ 
+puts Time.now
+puts "There are #{langcount.length} languages"
+puts "the top 25:"
+langcount.sort_by {|key,val| val}.reverse[0,25].each_with_index do |(lang, count), i|
+  puts "#{i+1}. #{count} - #{lang.sub(/Category:/, '')}"
+end
+
+====RUBY=====
+require('MediaWiki::API')
+ 
+var api = %O<MediaWiki::API>.new(
+    Hash(api_url => 'http://rosettacode.org/mw/api.php')
+)
+ 
+var languages = []
+var gcmcontinue
+loop {
+    var apih = api.api(
+        Hash(
+            action      => 'query',
+            generator   => 'categorymembers',
+            gcmtitle    => 'Category:Programming Languages',
+            gcmlimit    => 250,
+            prop        => 'categoryinfo',
+            gcmcontinue => gcmcontinue,
+        )
+    )
+ 
+    languages.append(apih{:query}{:pages}.values...)
+    gcmcontinue = apih{:continue}{:gcmcontinue}
+    gcmcontinue || break
+}
+ 
+languages.each { |lang|
+    lang{:title} -= /^Category:/
+    lang{:categoryinfo}{:size} := 0
+}
+ 
+var sorted_languages = languages.sort_by { |lang|
+    -lang{:categoryinfo}{:size}
+}
+ 
+sorted_languages.each_kv { |i, lang|
+    printf("%3d. %20s - %3d\n", i+1, lang{:title}, lang{:categoryinfo}{:size})
+}
+
+====PYTHON=====
+import requests
+import re
+ 
+response = requests.get("http://rosettacode.org/wiki/Category:Programming_Languages").text
+languages = re.findall('title="Category:(.*?)">',response)[:-3] # strip last 3
+ 
+response = requests.get("http://rosettacode.org/mw/index.php?title=Special:Categories&limit=5000").text
+response = re.sub('(\d+),(\d+)',r'\1'+r'\2',response)           # strip ',' from popular languages above 999 members
+members  = re.findall('<li><a[^>]+>([^<]+)</a>[^(]*[(](\\d+) member[s]*[)]</li>',response) # find language and members
+ 
+for cnt, (language, members) in enumerate(sorted(members, key=lambda x: -int(x[1]))[:15]): # show only top 15 languages
+    if language in languages:
+        print("{:4d} {:4d} - {}".format(cnt+1, int(members), language))
+ 
+ 
+
+====PYTHON=====
+ 
+import requests
+import operator
+import re
+ 
+api_url    = 'http://rosettacode.org/mw/api.php'
+languages  = {}
+ 
+parameters = {
+    'format':       'json',
+    'action':       'query',
+    'generator':    'categorymembers',
+    'gcmtitle':     'Category:Programming Languages',
+    'gcmlimit':     '200',
+    'gcmcontinue':  '',
+    'continue':     '',
+    'prop':         'categoryinfo'
+}
+ 
+while(True):
+    response = requests.get(api_url, params=parameters).json()
+    for k,v in response['query']['pages'].items():
+        if 'title' in v and 'categoryinfo' in v:
+          languages[v['title']]=v['categoryinfo']['size']
+    if 'continue' in response:
+        gcmcontinue = response['continue']['gcmcontinue']
+#        print(gcmcontinue)
+        parameters.update({'gcmcontinue': gcmcontinue})
+    else:
+        break
+ 
+# report top 15 languages                        
+for i, (language, size) in enumerate(sorted(languages.items(), key=operator.itemgetter(1), reverse=True)[:15]):
+    print("{:4d} {:4d} - {}".format(i+1, size, re.sub('Category:','',language))) # strip Category: from language
+ 
+ 
+ 
+

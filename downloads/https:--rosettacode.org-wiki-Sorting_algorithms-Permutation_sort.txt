@@ -1,0 +1,59 @@
+====RUBY=====
+class Array
+  def permutationsort
+    permutation.each{|perm| return perm if perm.sorted?}
+  end
+ 
+  def sorted?
+    each_cons(2).all? {|a, b| a <= b}
+  end
+end
+
+====RUBY=====
+func psort(x, d=x.end) {
+ 
+    if (d.is_zero) {
+        for i in (1 .. x.end) {
+            (x[i] < x[i-1]) && return false;
+        }
+        return true;
+    }
+ 
+    (d+1).times {
+        x.prepend(x.splice(d, 1)...);
+        x[d] < x[d-1] && next;
+        psort(x, d-1) && return true;
+    }
+ 
+    return false;
+}
+ 
+var a = 10.of { 100.irand };
+say "Before:\t#{a}";
+psort(a);
+say "After:\t#{a}";
+
+====PYTHON=====
+from itertools import permutations
+ 
+in_order = lambda s: all(x <= s[i+1] for i,x in enumerate(s[:-1]))
+perm_sort = lambda s: (p for p in permutations(s) if in_order(p)).next()
+
+====PYTHON=====
+from itertools import permutations
+from more_itertools import windowed
+ 
+def is_sorted(seq):
+  return all(
+    v1 <= v2
+    for v1, v2 in windowed(seq, 2)
+  )
+ 
+def permutation_sort(seq):
+  return next(
+    permutation
+    for permutation in permutations(seq)
+    if is_sorted(permutation)
+  )
+ 
+

@@ -1,0 +1,600 @@
+====RUBY=====
+ 
+#!/usr/bin/env julia
+ 
+__precompile__(true)
+ 
+"""
+# EightQueensPuzzle
+ 
+Ported to **Julia** from examples in several languages from
+here: https://hbfs.wordpress.com/2009/11/10/is-python-slow
+"""
+module EightQueensPuzzle
+ 
+export main
+ 
+type Board
+    cols::Int
+    nodes::Int
+    diag45::Int
+    diag135::Int
+    solutions::Int
+ 
+    Board() = new(0, 0, 0, 0, 0)
+end
+ 
+"Marks occupancy."
+function mark!(b::Board, k::Int, j::Int)
+    b.cols    $= (1 << j)
+    b.diag135 $= (1 << (j+k))
+    b.diag45  $= (1 << (32+j-k))
+end
+ 
+"Tests if a square is menaced."
+function test(b::Board, k::Int, j::Int)
+    b.cols    & (1 << j)        +
+    b.diag135 & (1 << (j+k))    +
+    b.diag45  & (1 << (32+j-k)) == 0
+end
+ 
+"Backtracking solver."
+function solve!(b::Board, niv::Int, dx::Int)
+    if niv > 0
+        for i in 0:dx-1
+            if test(b, niv, i) == true
+                mark!(b, niv, i)
+                solve!(b, niv-1, dx)
+                mark!(b, niv, i)
+            end
+        end
+    else
+        for i in 0:dx-1
+            if test(b, 0, i) == true
+                b.solutions += 1
+            end
+        end
+    end
+    b.nodes += 1
+    b.solutions
+end
+ 
+"C/C++-style `main` function."
+function main()
+    for n = 1:17
+        gc()
+        b = Board()
+        @show n
+        print("elapsed:")
+        solutions = @time solve!(b, n-1, n)
+        @show solutions
+        println()
+    end
+end
+ 
+end
+ 
+using  EightQueensPuzzle
+ 
+main()
+ 
+
+====RUBY=====
+ 
+[email protected]:~$ /opt/julia-0.5/bin/julia eight_queen_puzzle.jl
+n = 1
+elapsed:  0.000001 seconds
+solutions = 1
+ 
+n = 2
+elapsed:  0.000001 seconds
+solutions = 0
+ 
+n = 3
+elapsed:  0.000001 seconds
+solutions = 0
+ 
+n = 4
+elapsed:  0.000001 seconds
+solutions = 2
+ 
+n = 5
+elapsed:  0.000003 seconds
+solutions = 10
+ 
+n = 6
+elapsed:  0.000008 seconds
+solutions = 4
+ 
+n = 7
+elapsed:  0.000028 seconds
+solutions = 40
+ 
+n = 8
+elapsed:  0.000108 seconds
+solutions = 92
+ 
+n = 9
+elapsed:  0.000463 seconds
+solutions = 352
+ 
+n = 10
+elapsed:  0.002146 seconds
+solutions = 724
+ 
+n = 11
+elapsed:  0.010646 seconds
+solutions = 2680
+ 
+n = 12
+elapsed:  0.057603 seconds
+solutions = 14200
+ 
+n = 13
+elapsed:  0.334600 seconds
+solutions = 73712
+ 
+n = 14
+elapsed:  2.055078 seconds
+solutions = 365596
+ 
+n = 15
+elapsed: 13.480449 seconds
+solutions = 2279184
+ 
+n = 16
+elapsed: 97.192552 seconds
+solutions = 14772512
+ 
+n = 17
+elapsed:720.314676 seconds
+solutions = 95815104
+ 
+
+====RUBY=====
+# 1. Divide n by 12. Remember the remainder (n is 8 for the eight queens
+#    puzzle).
+# 2. Write a list of the even numbers from 2 to n in order.
+# 3. If the remainder is 3 or 9, move 2 to the end of the list.
+# 4. Append the odd numbers from 1 to n in order, but, if the remainder is 8,
+#    switch pairs (i.e. 3, 1, 7, 5, 11, 9, …).
+# 5. If the remainder is 2, switch the places of 1 and 3, then move 5 to the
+#    end of the list.
+# 6. If the remainder is 3 or 9, move 1 and 3 to the end of the list.
+# 7. Place the first-column queen in the row with the first number in the
+#    list, place the second-column queen in the row with the second number in
+#    the list, etc.
+ 
+ 
+def n_queens(n)
+  if n == 1
+    return "Q"
+  elsif n < 4
+    puts "no solutions for n=#{n}"
+    return ""
+  end
+ 
+  evens = (2..n).step(2).to_a
+  odds = (1..n).step(2).to_a
+ 
+  rem = n % 12  # (1)
+  nums = evens  # (2)
+ 
+  nums.rotate if rem == 3 or rem == 9  # (3)
+ 
+  # (4)
+  if rem == 8
+    odds = odds.each_slice(2).flat_map(&:reverse)
+  end
+  nums.concat(odds)
+ 
+  # (5)
+  if rem == 2
+    nums[nums.index(1)], nums[nums.index(3)] = nums[nums.index(3)], nums[nums.index(1)]
+    nums << nums.delete(5)
+  end
+ 
+  # (6)
+  if rem == 3 or rem == 9
+    nums << nums.delete(1)
+    nums << nums.delete(3)
+  end
+ 
+  # (7)
+  nums.map do |q|
+    a = Array.new(n,".")
+    a[q-1] = "Q"
+    a*(" ")
+  end
+end
+ 
+(1 .. 15).each {|n| puts "n=#{n}"; puts n_queens(n); puts}
+
+====RUBY=====
+class Queen
+  attr_reader :count
+ 
+  def initialize(num=8, out=true)
+    @num   = num
+    @out   = out
+    @row   = *0[email protected]
+    @frame = "+-" + "--" * @num + "+"
+    @count = 0
+    add = Array.new(2 * @num - 1, true)       # \ direction check
+    sub = Array.new(2 * @num - 1, true)       # / direction check
+    solve([], add, sub)
+  end
+ 
+  private
+  def solve(row, add, sub)
+    y = row.size
+    if y == @num
+      print_out(row) if @out
+      @count += 1
+    else
+      (@row-row).each do |x|
+        next unless add[x+y] and sub[x-y]
+        add[x+y] = sub[x-y] = false
+        solve(row+[x], add, sub)
+        add[x+y] = sub[x-y] = true
+      end
+    end
+  end
+ 
+  def print_out(row)
+    puts @frame
+    row.each do |i|
+      line = @num.times.map {|j| j==i ? "Q " : ". "}.join
+      puts "| #{line}|"
+    end
+    puts @frame
+  end
+end
+
+====RUBY=====
+(1..6).each do |n|
+  puzzle = Queen.new(n)
+  puts " #{n} Queen : #{puzzle.count}"
+end
+ 
+(7..12).each do |n|
+  puzzle = Queen.new(n, false)                # do not display
+  puts " #{n} Queen : #{puzzle.count}"
+end
+
+====RUBY=====
+func N_queens_solution(N = 8) {
+ 
+    func collision(field, row) {
+        for i in (^row) {
+            var distance = (field[i] - field[row])
+            distance ~~ [0, row-i, i-row] && return true
+        }
+        return false
+    }
+ 
+    func search(field, row) {
+        row == N && return field
+        for i in (^N) {
+            field[row] = i
+            if (!collision(field, row)) {
+                return (__FUNC__(field, row+1) || next)
+            }
+        }
+        return []
+    }
+ 
+    for i in (0 .. N>>1) {
+        if (var r = search([i], 1)) {
+            return r
+        }
+    }
+}
+ 
+for n in (1..15) {
+    say "#{'%2d' % n}: #{N_queens_solution(n) || 'No solution'}"
+}
+
+====PYTHON=====
+from itertools import permutations, product
+ 
+n = 8
+cols = range(n)
+i = 0  # solution shown
+ 
+solutions = [vec for vec in permutations(cols)
+             if n == len(set(vec[i] + i for i in cols))
+                  == len(set(vec[i] - i for i in cols))]
+ 
+def setup():
+    size(400, 400)
+    textAlign(CENTER, CENTER)
+    textFont(createFont("DejaVu Sans", 44))
+ 
+def draw():
+    background(0)
+    w = width / n
+    for x, y in product(range(n), range(n)):
+        fill(255 * ((x + y) % 2))
+        square(x * w, y * w, w)
+        if solutions[i][y] == x:
+            fill(255 - 255 * ((x + y) % 2))
+            text(u'♕', w / 2 + x * w, w / 3 + y * w)
+ 
+def keyPressed():  # show next solution
+    global i
+    i = (i + 1) % len(solutions)
+ 
+
+====PYTHON=====
+from itertools import permutations
+ 
+n = 8
+cols = range(n)
+for vec in permutations(cols):
+    if n == len(set(vec[i]+i for i in cols)) \
+         == len(set(vec[i]-i for i in cols)):
+        print ( vec )
+
+====PYTHON=====
+def board(vec):
+    print ("\n".join('.' * i + 'Q' + '.' * (n-i-1) for i in vec) + "\n===\n")
+
+====PYTHON=====
+# From: http://wiki.python.org/moin/SimplePrograms, with permission from the author, Steve Howell
+BOARD_SIZE = 8
+ 
+def under_attack(col, queens):
+    return col in queens or \
+           any(abs(col - x) == len(queens)-i for i,x in enumerate(queens))
+ 
+def solve(n):
+    solutions = [[]]
+    for row in range(n):
+        solutions = [solution+[i+1]
+                       for solution in solutions
+                       for i in range(BOARD_SIZE)
+                       if not under_attack(i+1, solution)]
+    return solutions
+ 
+for answer in solve(BOARD_SIZE): print(list(enumerate(answer, start=1)))
+
+====PYTHON=====
+BOARD_SIZE = 8
+ 
+def under_attack(col, queens):
+    return col in queens or \
+           any(abs(col - x) == len(queens)-i for i,x in enumerate(queens))
+ 
+def solve(n):
+    solutions = [[]]
+    for row in range(n):
+        solutions = (solution+[i+1]
+                       for solution in solutions # first for clause is evaluated immediately,
+                                                 # so "solutions" is correctly captured
+                       for i in range(BOARD_SIZE)
+                       if not under_attack(i+1, solution))
+    return solutions
+ 
+answers = solve(BOARD_SIZE)
+first_answer = next(answers)
+print(list(enumerate(first_answer, start=1)))
+
+====PYTHON=====
+def queens(n, i, a, b, c):
+    if i < n:
+        for j in range(n):
+            if j not in a and i + j not in b and i - j not in c:
+                yield from queens(n, i + 1, a + [j], b + [i + j], c + [i - j])
+    else:
+        yield a
+ 
+for solution in queens(8, 0, [], [], []):
+    print(solution)
+
+====PYTHON=====
+def queens(n):
+    a = list(range(n))
+    up = [True]*(2*n - 1)
+    down = [True]*(2*n - 1)
+    def sub(i):
+        if i == n:
+            yield tuple(a)
+        else:
+            for k in range(i, n):
+                j = a[k]
+                p = i + j
+                q = i - j + n - 1
+                if up[p] and down[q]:
+                    up[p] = down[q] = False
+                    a[i], a[k] = a[k], a[i]
+                    yield from sub(i + 1)
+                    up[p] = down[q] = True
+                    a[i], a[k] = a[k], a[i]
+    yield from sub(0)
+ 
+#Count solutions for n=8:
+sum(1 for p in queens(8))
+92
+
+====PYTHON=====
+def queens_lex(n):
+    a = list(range(n))
+    up = [True]*(2*n - 1)
+    down = [True]*(2*n - 1)
+    def sub(i):
+        if i == n:
+            yield tuple(a)
+        else:
+            for k in range(i, n):
+                a[i], a[k] = a[k], a[i]
+                j = a[i]
+                p = i + j
+                q = i - j + n - 1
+                if up[p] and down[q]:
+                    up[p] = down[q] = False
+                    yield from sub(i + 1)
+                    up[p] = down[q] = True
+            x = a[i]
+            for k in range(i + 1, n):
+                a[k - 1] = a[k]
+            a[n - 1] = x
+    yield from sub(0)
+ 
+next(queens(31))
+(0, 2, 4, 1, 3, 8, 10, 12, 14, 6, 17, 21, 26, 28, 25, 27, 24, 30, 7, 5, 29, 15, 13, 11, 9, 18, 22, 19, 23, 16, 20)
+ 
+next(queens_lex(31))
+(0, 2, 4, 1, 3, 8, 10, 12, 14, 5, 17, 22, 25, 27, 30, 24, 26, 29, 6, 16, 28, 13, 9, 7, 19, 11, 15, 18, 21, 23, 20)
+ 
+#Compare to A065188
+#1, 3, 5, 2, 4, 9, 11, 13, 15, 6, 8, 19, 7, 22, 10, 25, 27, 29, 31, 12, 14, 35, 37, ...
+
+====PYTHON=====
+'''N Queens problem'''
+ 
+from functools import reduce
+from itertools import chain
+ 
+ 
+# queenPuzzle :: Int -> Int -> [[Int]]
+def queenPuzzle(nCols):
+    '''All board patterns of this dimension
+       in which no two Queens share a row,
+       column, or diagonal.
+    '''
+    def go(nRows):
+        lessRows = nRows - 1
+        return reduce(
+            lambda a, xys: a + reduce(
+                lambda b, iCol: b + [xys + [iCol]] if (
+                    safe(lessRows, iCol, xys)
+                ) else b,
+                enumFromTo(1)(nCols),
+                []
+            ),
+            go(lessRows),
+            []
+        ) if 0 < nRows else [[]]
+    return go
+ 
+ 
+# safe :: Int -> Int -> [Int] -> Bool
+def safe(iRow, iCol, pattern):
+    '''True if no two queens in the pattern
+       share a row, column or diagonal.
+    '''
+    def p(sc, sr):
+        return (iCol == sc) or (
+            sc + sr == (iCol + iRow)
+        ) or (sc - sr == (iCol - iRow))
+    return not any(map(p, pattern, range(0, iRow)))
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Number of solutions for boards of various sizes'''
+ 
+    n = 5
+    xs = queenPuzzle(n)(n)
+ 
+    print(
+        str(len(xs)) + ' solutions for a {n} * {n} board:\n'.format(n=n)
+    )
+    print(showBoards(10)(xs))
+ 
+    print(
+        fTable(
+            '\n\n' + main.__doc__ + ':\n'
+        )(str)(lambda n: str(n).rjust(3, ' '))(
+            lambda n: len(queenPuzzle(n)(n))
+        )(enumFromTo(1)(10))
+    )
+ 
+ 
+# ---------------------- FORMATTING ----------------------
+ 
+# showBoards :: Int -> [[Int]] -> String
+def showBoards(nCols):
+    '''String representation, with N columns
+       of a set of board patterns.
+    '''
+    def showBlock(b):
+        return '\n'.join(map(intercalate('  '), zip(*b)))
+ 
+    def go(bs):
+        return '\n\n'.join(map(
+            showBlock,
+            chunksOf(nCols)([
+                showBoard(b) for b in bs
+            ])
+        ))
+    return go
+ 
+ 
+# showBoard :: [Int] -> String
+def showBoard(xs):
+    '''String representation of a Queens board.'''
+    lng = len(xs)
+ 
+    def showLine(n):
+        return ('.' * (n - 1)) + '♛' + ('.' * (lng - n))
+    return map(showLine, xs)
+ 
+ 
+# fTable :: String -> (a -> String) ->
+#                     (b -> String) -> (a -> b) -> [a] -> String
+def fTable(s):
+    '''Heading -> x display function -> fx display function ->
+                     f -> xs -> tabular string.
+    '''
+    def go(xShow, fxShow, f, xs):
+        ys = [xShow(x) for x in xs]
+        w = max(map(len, ys))
+        return s + '\n' + '\n'.join(map(
+            lambda x, y: y.rjust(w, ' ') + ' -> ' + fxShow(f(x)),
+            xs, ys
+        ))
+    return lambda xShow: lambda fxShow: lambda f: lambda xs: go(
+        xShow, fxShow, f, xs
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: range(m, 1 + n)
+ 
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divible, the final list will be shorter than n.
+    '''
+    return lambda xs: reduce(
+        lambda a, i: a + [xs[i:n + i]],
+        range(0, len(xs), n), []
+    ) if 0 < n else []
+ 
+ 
+# intercalate :: [a] -> [[a]] -> [a]
+# intercalate :: String -> [String] -> String
+def intercalate(x):
+    '''The concatenation of xs
+       interspersed with copies of x.
+    '''
+    return lambda xs: x.join(xs) if isinstance(x, str) else list(
+        chain.from_iterable(
+            reduce(lambda a, v: a + [x, v], xs[1:], [xs[0]])
+        )
+    ) if xs else []
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

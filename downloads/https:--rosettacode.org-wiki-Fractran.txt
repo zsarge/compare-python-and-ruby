@@ -1,0 +1,89 @@
+====RUBY=====
+ar = %w[17/91 78/85 19/51 23/38 29/33 77/29 95/23 77/19 1/17 11/13 13/11 15/14 15/2 55/1]
+FractalProgram = ar.map(&:to_r)                                #=> array of rationals
+ 
+Runner = Enumerator.new do |y|
+  num = 2
+  loop{ y << num *= FractalProgram.detect{|f| (num*f).denominator == 1} }
+end
+ 
+prime_generator = Enumerator.new do |y| 
+  Runner.each do |num|
+    l = Math.log2(num)
+    y << l.to_i if l.floor == l
+  end
+end
+ 
+# demo
+p Runner.take(20).map(&:numerator)
+p prime_generator.take(20)
+
+====RUBY=====
+var str ="17/91, 78/85, 19/51, 23/38, 29/33, 77/29, 95/23, 77/19, 1/17, 11/13, 13/11, 15/14, 15/2, 55/1"
+const FractalProgram = str.split(',').map{.num}      #=> array of rationals
+ 
+func runner(n, callback) {
+    var num = 2
+    n.times {
+        callback(num *= FractalProgram.find { |f| f * num -> is_int })
+    }
+}
+ 
+func prime_generator(n, callback) {
+    var x = 0;
+    runner(Inf, { |num|
+        var l = num.log2
+        if (l.floor == l) {
+            callback(l.int)
+            ++x == n && return nil
+        }
+    })
+}
+ 
+STDOUT.autoflush(true)
+ 
+runner(20, {|n| print (n, ' ') })
+print "\n"
+ 
+prime_generator(20, {|n| print (n, ' ') })
+print "\n"
+
+====PYTHON=====
+from fractions import Fraction
+ 
+def fractran(n, fstring='17 / 91, 78 / 85, 19 / 51, 23 / 38, 29 / 33,'
+                        '77 / 29, 95 / 23, 77 / 19, 1 / 17, 11 / 13,'
+                        '13 / 11, 15 / 14, 15 / 2, 55 / 1'):
+    flist = [Fraction(f) for f in fstring.replace(' ', '').split(',')]
+ 
+    n = Fraction(n)
+    while True:
+        yield n.numerator
+        for f in flist:
+            if (n * f).denominator == 1:
+                break
+        else:
+            break
+        n *= f
+ 
+if __name__ == '__main__':
+    n, m = 2, 15
+    print('First %i members of fractran(%i):\n  ' % (m, n) +
+          ', '.join(str(f) for f,i in zip(fractran(n), range(m))))
+
+====PYTHON=====
+ 
+from fractran import fractran
+ 
+def fractran_primes():
+    for i, fr in enumerate(fractran(2), 1):
+        binstr = bin(fr)[2:]
+        if binstr.count('1') == 1:
+            prime = binstr.count('0')
+            if prime > 1:   # Skip 2**0 and 2**1
+                yield prime, i
+ 
+if __name__ == '__main__':
+    for (prime, i), j in zip(fractran_primes(), range(15)):
+        print("Generated prime %2i from the %6i'th member of the fractran series" % (prime, i))
+

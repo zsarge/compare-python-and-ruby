@@ -1,0 +1,93 @@
+====RUBY=====
+def jacobi(a, n)
+  raise ArgumentError.new "n must b positive and odd" if n < 1 || n.even?
+  res = 1
+  until (a %= n) == 0
+    while a.even?
+      a >>= 1
+      res = -res if [3, 5].includes? n % 8
+    end
+    a, n = n, a
+    res = -res if a % 4 == n % 4 == 3
+  end
+  n == 1 ? res : 0
+end
+ 
+puts "Jacobian symbols for jacobi(a, n)"
+puts "n\\a  0  1  2  3  4  5  6  7  8  9 10"
+puts "------------------------------------"
+1.step(to: 17, by: 2) do |n|
+   printf("%2d ", n)
+   (0..10).each { |a| printf(" % 2d", jacobi(a, n)) }
+   puts
+end
+
+====RUBY=====
+def jacobi(a, n)
+  raise ArgumentError.new "n must b positive and odd" if n < 1 || n.even?
+  res = 1
+  until (a %= n) == 0
+    while a.even?
+      a >>= 1
+      res = -res if [3, 5].include? n % 8
+    end
+    a, n = n, a
+    res = -res if [a % 4, n % 4] == [3, 3]
+  end
+  n == 1 ? res : 0
+end
+ 
+puts "Jacobian symbols for jacobi(a, n)"
+puts "n\\a  0  1  2  3  4  5  6  7  8  9 10"
+puts "------------------------------------"
+1.step(to: 17, by: 2) do |n|
+   printf("%2d ", n)
+   (0..10).each { |a| printf(" % 2d", jacobi(a, n)) }
+   puts
+end
+
+====RUBY=====
+func jacobi(n, k) {
+ 
+    assert(k > 0,    "#{k} must be positive")
+    assert(k.is_odd, "#{k} must be odd")
+ 
+    var t = 1
+    while (n %= k) {
+        var v = n.valuation(2)
+        t *= (-1)**v if (k%8 ~~ [3,5])
+        n >>= v
+        (n,k) = (k,n)
+        t = -t if ([n%4, k%4] == [3,3])
+    }
+ 
+    k==1 ? t : 0
+}
+ 
+for n in (0..50), k in (0..50) {
+    assert_eq(jacobi(n, 2*k + 1), kronecker(n, 2*k + 1))
+}
+
+====PYTHON=====
+def jacobi(a, n):
+    if n <= 0:
+        raise ValueError("'n' must be a positive integer.")
+    if n % 2 == 0:
+        raise ValueError("'n' must be odd.")
+    a %= n
+    result = 1
+    while a != 0:
+        while a % 2 == 0:
+            a /= 2
+            n_mod_8 = n % 8
+            if n_mod_8 in (3, 5):
+                result = -result
+        a, n = n, a
+        if a % 4 == 3 and n % 4 == 3:
+            result = -result
+        a %= n
+    if n == 1:
+        return result
+    else:
+        return 0
+

@@ -1,0 +1,75 @@
+====RUBY=====
+_="_=%p;puts _%%_";puts _%_
+
+====RUBY=====
+x = "x = %p; puts x %% x"; puts x % x
+
+====RUBY=====
+puts <<e*2,'e'
+puts <<e*2,'e'
+e
+
+====RUBY=====
+eval s="puts'eval s='+s.inspect"
+
+====RUBY=====
+puts open(__FILE__).read
+
+====RUBY=====
+s = %(s = %%(%s); printf(s, s);
+); printf(s, s);
+
+====RUBY=====
+say(<<e*2, 'e')
+say(<<e*2, 'e')
+e
+
+====PYTHON=====
+w = "print('w = ' + chr(34) + w + chr(34) + chr(10) + w)"
+print('w = ' + chr(34) + w + chr(34) + chr(10) + w)
+
+====PYTHON=====
+x = 'x = %r\nprint(x %% x)'
+print(x % x)
+
+====PYTHON=====
+x = 'x = {!r};print(x.format(x))';print(x.format(x))
+
+====PYTHON=====
+import sys; sys.stdout.write(open(sys.argv[0]).read())
+
+====PYTHON=====
+import sys,inspect;sys.stdout.write(inspect.getsource(inspect.currentframe()))
+
+====PYTHON=====
+exec(c:="print(f'exec(c:={chr(34)+c+chr(34)})')")
+
+====PYTHON=====
+print(__file__[:-3])
+
+====PYTHON=====
+x = """x = {0}{1}{0}
+print x.format(chr(34)*3,x)"""
+print x.format(chr(34)*3,x)
+
+====PYTHON=====
+a = 'YSA9ICcnCmIgPSBhLmRlY29kZSgnYmFzZTY0JykKcHJpbnQgYls6NV0rYStiWzU6XQ=='
+b = a.decode('base64')
+print b[:5]+a+b[5:]
+
+====PYTHON=====
+data = (
+	'ZGF0YSA9ICgKCSc=',
+	'JywKCSc=',
+	'JwopCnByZWZpeCwgc2VwYXJhdG9yLCBzdWZmaXggPSAoZC5kZWNvZGUoJ2Jhc2U2NCcpIGZvciBkIGluIGRhdGEpCnByaW50IHByZWZpeCArIGRhdGFbMF0gKyBzZXBhcmF0b3IgKyBkYXRhWzFdICsgc2VwYXJhdG9yICsgZGF0YVsyXSArIHN1ZmZpeA=='
+)
+prefix, separator, suffix = (d.decode('base64') for d in data)
+print prefix + data[0] + separator + data[1] + separator + data[2] + suffix
+
+====PYTHON=====
+def applyToOwnSourceCode(functionBody):
+	print "def applyToOwnSourceCode(functionBody):"
+	print functionBody
+	print "applyToOwnSourceCode(" + repr(functionBody) + ")"
+applyToOwnSourceCode('\tprint "def applyToOwnSourceCode(functionBody):"\n\tprint functionBody\n\tprint "applyToOwnSourceCode(" + repr(functionBody) + ")"')
+

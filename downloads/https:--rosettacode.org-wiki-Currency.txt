@@ -1,0 +1,70 @@
+====RUBY=====
+require 'bigdecimal/util'
+ 
+before_tax = 4000000000000000 * 5.50.to_d + 2 * 2.86.to_d
+tax        = (before_tax * 0.0765.to_d).round(2)
+total      = before_tax + tax
+ 
+puts "Before tax: $#{before_tax.to_s('F')}
+Tax: $#{tax.to_s('F')}
+Total: $#{total.to_s('F')}"
+ 
+
+====RUBY=====
+struct Item {
+    name, price, quant
+}
+ 
+var check = %q{
+    Hamburger   5.50    4000000000000000
+    Milkshake   2.86    2
+}.lines.grep(/\S/).map { Item(.words...) }
+ 
+var tax_rate = 0.0765
+var fmt = "%-10s %8s %18s %22s\n"
+ 
+printf(fmt, %w(Item Price Quantity Extension)...)
+ 
+var subtotal = check.map { |item|
+    var extension = Num(item.price)*Num(item.quant)
+    printf(fmt, item.name, item.price, item.quant, extension.round(-2))
+    extension
+}.sum(0)
+ 
+printf(fmt, '', '', '', '-----------------')
+printf(fmt, '', '', 'Subtotal ', subtotal)
+ 
+var tax = (subtotal * tax_rate -> round(-2))
+printf(fmt, '', '', 'Tax ', tax)
+ 
+var total = subtotal+tax
+printf(fmt, '', '', 'Total ', total)
+
+====PYTHON=====
+from decimal import Decimal as D
+from collections import namedtuple
+ 
+Item = namedtuple('Item', 'price, quant')
+ 
+items = dict( hamburger=Item(D('5.50'), D('4000000000000000')),
+              milkshake=Item(D('2.86'), D('2')) )
+tax_rate = D('0.0765')
+ 
+fmt = "%-10s %8s %18s %22s"
+print(fmt % tuple('Item Price Quantity Extension'.upper().split()))
+ 
+total_before_tax = 0
+for item, (price, quant) in sorted(items.items()):
+    ext = price * quant
+    print(fmt % (item, price, quant, ext))
+    total_before_tax += ext
+print(fmt % ('', '', '', '--------------------'))
+print(fmt % ('', '', 'subtotal', total_before_tax))
+ 
+tax = (tax_rate * total_before_tax).quantize(D('0.00'))
+print(fmt % ('', '', 'Tax', tax))
+ 
+total = total_before_tax + tax
+print(fmt % ('', '', '', '--------------------'))
+print(fmt % ('', '', 'Total', total))
+

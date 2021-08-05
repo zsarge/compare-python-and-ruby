@@ -1,0 +1,166 @@
+====RUBY=====
+Node = Struct.new(:val, :back)
+ 
+def lis(n)
+  pileTops = []
+  # sort into piles
+  for x in n
+    # binary search
+    low, high = 0, pileTops.size-1
+    while low <= high
+      mid = low + (high - low) / 2
+      if pileTops[mid].val >= x
+        high = mid - 1
+      else
+        low = mid + 1
+      end
+    end
+    i = low
+    node = Node.new(x)
+    node.back = pileTops[i-1]  if i > 0
+    pileTops[i] = node
+  end
+ 
+  result = []
+  node = pileTops.last
+  while node
+    result.unshift(node.val)
+    node = node.back
+  end
+  result
+end
+ 
+p lis([3, 2, 6, 4, 5, 1])
+p lis([0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15])
+
+====RUBY=====
+func lis(a) {
+    var l = a.len.of { [] }
+    l[0] << a[0]
+    for i in (1..a.end) {
+        for j in ^i {
+            if ((a[j] < a[i]) && (l[i].len < l[j].len+1)) {
+                l[i] = [l[j]...]
+            }
+        }
+        l[i] << a[i]
+    }
+    l.max_by { .len }
+}
+ 
+say lis(%i<3 2 6 4 5 1>)
+say lis(%i<0 8 4 12 2 10 6 14 1 9 5 13 3 11 7 15>)
+
+====RUBY=====
+func lis(deck) {
+    var pileTops = []
+    deck.each { |x|
+        var low = 0;
+        var high = pileTops.end
+        while (low <= high) {
+            var mid = ((low + high) // 2)
+            if (pileTops[mid]{:val} >= x) {
+                high = mid-1
+            } else {
+                low = mid+1
+            }
+        }
+        var i = low
+        var node = Hash(val => x)
+        node{:back} = pileTops[i-1] if (i != 0)
+        pileTops[i] = node
+    }
+    var result = []
+    for (var node = pileTops[-1]; node; node = node{:back}) {
+        result << node{:val}
+    }
+    result.reverse
+}
+ 
+say lis(%i<3 2 6 4 5 1>)
+say lis(%i<0 8 4 12 2 10 6 14 1 9 5 13 3 11 7 15>)
+
+====PYTHON=====
+def longest_increasing_subsequence(X):
+    """Returns the Longest Increasing Subsequence in the Given List/Array"""
+    N = len(X)
+    P = [0] * N
+    M = [0] * (N+1)
+    L = 0
+    for i in range(N):
+       lo = 1
+       hi = L
+       while lo <= hi:
+           mid = (lo+hi)//2
+           if (X[M[mid]] < X[i]):
+               lo = mid+1
+           else:
+               hi = mid-1
+ 
+       newL = lo
+       P[i] = M[newL-1]
+       M[newL] = i
+ 
+       if (newL > L):
+           L = newL
+ 
+    S = []
+    k = M[L]
+    for i in range(L-1, -1, -1):
+        S.append(X[k])
+        k = P[k]
+    return S[::-1]
+ 
+if __name__ == '__main__':
+    for d in [[3,2,6,4,5,1], [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15]]:
+        print('a L.I.S. of %s is %s' % (d, longest_increasing_subsequence(d)))
+
+====PYTHON=====
+def longest_increasing_subsequence(d):
+    'Return one of the L.I.S. of list d'
+    l = []
+    for i in range(len(d)):
+        l.append(max([l[j] for j in range(i) if l[j][-1] < d[i]] or [[]], key=len) 
+                  + [d[i]])
+    return max(l, key=len)
+ 
+if __name__ == '__main__':
+    for d in [[3,2,6,4,5,1], [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15]]:
+        print('a L.I.S. of %s is %s' % (d, longest_increasing_subsequence(d)))
+
+====PYTHON=====
+from collections import namedtuple
+from functools import total_ordering
+from bisect import bisect_left
+ 
+@total_ordering
+class Node(namedtuple('Node_', 'val back')):
+    def __iter__(self):
+        while self is not None:
+            yield self.val
+            self = self.back
+    def __lt__(self, other):
+        return self.val < other.val
+    def __eq__(self, other):
+        return self.val == other.val
+ 
+def lis(d):
+    """Return one of the L.I.S. of list d using patience sorting."""
+    if not d:
+        return []
+    pileTops = []
+    for di in d:
+        j = bisect_left(pileTops, Node(di, None))
+        new_node = Node(di, pileTops[j-1] if j > 0 else None)
+        if j == len(pileTops):
+            pileTops.append(new_node)
+        else:
+            pileTops[j] = new_node
+ 
+    return list(pileTops[-1])[::-1]
+ 
+if __name__ == '__main__':
+    for d in [[3,2,6,4,5,1],
+              [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15]]:
+        print('a L.I.S. of %s is %s' % (d, lis(d)))
+

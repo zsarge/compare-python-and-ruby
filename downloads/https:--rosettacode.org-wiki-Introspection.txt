@@ -1,0 +1,67 @@
+====RUBY=====
+exit if RUBY_VERSION < '1.8.6'
+puts bloop.abs if defined?(bloop) and bloop.respond_to?(:abs)
+
+====RUBY=====
+def variable_counter(b)
+  int_vars = []
+  sum = 0
+  check_var = lambda do |name, value|
+    if value.is_a?(Integer)
+      int_vars << name
+      sum += value
+    end
+  end
+ 
+  global_variables.each {|varname| check_var.call(varname, eval(varname.to_s))}
+  eval('local_variables', b).each {|varname| check_var.call(varname, eval(varname.to_s, b))}
+ 
+  puts "these #{int_vars.length} variables in the global scope are integers:"
+  puts int_vars.inspect
+  puts "their sum is: #{sum}"
+end
+ 
+an_int = 5
+a_string = 'foo'
+a_float = 3.14
+ 
+variable_counter(binding)
+
+====PYTHON=====
+# Checking for system version
+ import sys
+ major, minor, bugfix = sys.version_info[:3]
+ if major < 2:
+     sys.exit('Python 2 is required')
+ 
+ 
+ def defined(name): # LBYL (Look Before You Leap)
+     return name in globals() or name in locals() or name in vars(__builtins__)
+ 
+ def defined2(name): # EAFP (Easier to Ask Forgiveness than Permission)
+     try:
+          eval(name)
+          return True
+     except NameError:
+          return False
+ 
+ if defined('bloop') and defined('abs') and callable(abs):
+     print abs(bloop)
+ 
+ if defined2('bloop') and defined2('abs') and callable(abs):
+     print abs(bloop)
+
+====PYTHON=====
+try:
+    print abs(bloop)
+except (NameError, TypeError):
+    print "Something's missing"
+
+====PYTHON=====
+def sum_of_global_int_vars():
+    variables = vars(__builtins__).copy()
+    variables.update(globals())
+    print sum(v for v in variables.itervalues() if type(v) == int)
+ 
+sum_of_global_int_vars()
+

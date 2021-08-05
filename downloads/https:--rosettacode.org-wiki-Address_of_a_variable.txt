@@ -1,0 +1,25 @@
+====RUBY=====
+>foo = Object.new  # => #<Object:0x10ae32000>
+>id = foo.object_id  # => 2238812160
+>"%x" % (id << 1)  # => "10ae32000"
+ 
+
+====RUBY=====
+var n = 42;
+say Sys.refaddr(\n);        # prints the address of the variable
+say Sys.refaddr(n);         # prints the address of the object at which the variable points to
+
+====PYTHON=====
+var num = 12
+var pointer = ptr(num) # get pointer
+ 
+print pointer # print address
+ 
+@unsafe # bad idea!
+pointer.addr = 0xFFFE # set the address
+ 
+
+====PYTHON=====
+foo = object()  # Create (instantiate) an empty object
+address = id(foo)
+

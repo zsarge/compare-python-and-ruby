@@ -1,0 +1,92 @@
+====RUBY=====
+fullname = favouritefruit = ""
+needspeeling = seedsremoved = false
+otherfamily = []
+ 
+IO.foreach("config.file") do |line|
+  line.chomp!
+  key, value = line.split(nil, 2)
+  case key
+  when /^([#;]|$)/; # ignore line
+  when "FULLNAME"; fullname = value
+  when "FAVOURITEFRUIT"; favouritefruit = value
+  when "NEEDSPEELING"; needspeeling = true
+  when "SEEDSREMOVED"; seedsremoved = true
+  when "OTHERFAMILY"; otherfamily = value.split(",").map(&:strip)
+  when /^./; puts "#{key}: unknown key"
+  end
+end
+ 
+puts "fullname       = #{fullname}"
+puts "favouritefruit = #{favouritefruit}"
+puts "needspeeling   = #{needspeeling}"
+puts "seedsremoved   = #{seedsremoved}"
+otherfamily.each_with_index do |name, i|
+  puts "otherfamily(#{i+1}) = #{name}"
+end
+
+====RUBY=====
+var fullname = (var favouritefruit = "");
+var needspeeling = (var seedsremoved = false);
+var otherfamily = [];
+ 
+ARGF.each { |line|
+    var(key, value) = line.strip.split(/\h+/, 2)...;
+ 
+    given(key) {
+        when (nil)              { }
+        when (/^([#;]|\h*$)/)   { }
+        when ("FULLNAME")       { fullname = value }
+        when ("FAVOURITEFRUIT") { favouritefruit = value }
+        when ("NEEDSPEELING")   { needspeeling = true }
+        when ("SEEDSREMOVED")   { seedsremoved = true }
+        when ("OTHERFAMILY")    { otherfamily = value.split(',')»strip»() }
+        default                 { say "#{key}: unknown key" }
+    }
+}
+ 
+say "fullname       = #{fullname}";
+say "favouritefruit = #{favouritefruit}";
+say "needspeeling   = #{needspeeling}";
+say "seedsremoved   = #{seedsremoved}";
+ 
+otherfamily.each_kv {|i, name|
+    say "otherfamily(#{i+1}) = #{name}";
+}
+
+====PYTHON=====
+def readconf(fn):
+    ret = {}
+    with file(fn) as fp:
+        for line in fp:
+            # Assume whitespace is ignorable
+            line = line.strip()
+            if not line or line.startswith('#'): continue
+ 
+            boolval = True
+            # Assume leading ";" means a false boolean
+            if line.startswith(';'):
+                # Remove one or more leading semicolons
+                line = line.lstrip(';')
+                # If more than just one word, not a valid boolean
+                if len(line.split()) != 1: continue
+                boolval = False
+ 
+            bits = line.split(None, 1)
+            if len(bits) == 1:
+                # Assume booleans are just one standalone word
+                k = bits[0]
+                v = boolval
+            else:
+                # Assume more than one word is a string value
+                k, v = bits
+            ret[k.lower()] = v
+    return ret
+ 
+ 
+if __name__ == '__main__':
+    import sys
+    conf = readconf(sys.argv[1])
+    for k, v in sorted(conf.items()):
+        print k, '=', v
+

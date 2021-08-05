@@ -1,0 +1,141 @@
+====RUBY=====
+"J̲o̲s̲é̲".bytesize
+
+====RUBY=====
+"J̲o̲s̲é̲".chars.length
+
+====RUBY=====
+"J̲o̲s̲é̲".grapheme_clusters.length
+
+====RUBY=====
+# -*- coding: iso-8859-1 -*-
+s = "møøse"
+puts "Byte length: %d" % s.bytesize
+puts "Character length: %d" % s.length
+
+====RUBY=====
+# -*- coding: utf-8 -*-
+s = "møøse"
+puts "Byte length: %d" % s.bytesize
+puts "Character length: %d" % s.length
+
+====RUBY=====
+# -*- coding: gb18030 -*-
+s = "møøse"
+puts "Byte length: %d" % s.bytesize
+puts "Character length: %d" % s.length
+
+====RUBY=====
+# -*- coding: utf-8 -*-
+ 
+class String
+  # Define String#bytesize for Ruby 1.8.6.
+  unless method_defined?(:bytesize)
+    alias bytesize length
+  end
+end
+ 
+s = "文字化け"
+puts "Byte length: %d" % s.bytesize
+puts "Character length: %d" % s.gsub(/./u, ' ').size
+
+====RUBY=====
+var str = "J\x{332}o\x{332}s\x{332}e\x{301}\x{332}";
+
+====RUBY=====
+say str.bytes.len;       #=> 14
+
+====RUBY=====
+say str.encode('UTF-16').bytes.len;      #=> 20
+
+====RUBY=====
+say str.chars.len;    #=> 9
+
+====RUBY=====
+say str.graphs.len;   #=> 4
+
+====PYTHON=====
+print len('ascii')
+# 5
+
+====PYTHON=====
+# The letter Alef
+print len(u'\u05d0'.encode('utf-8'))
+# 2
+print len(u'\u05d0'.encode('iso-8859-8'))
+# 1
+
+====PYTHON=====
+#!/bin/env python
+# -*- coding: UTF-8 -*-
+s = u"møøse"
+assert len(s) == 5
+assert len(s.encode('UTF-8')) == 7
+assert len(s.encode('UTF-16-BE')) == 10 # There are 3 different UTF-16 encodings: LE and BE are little endian and big endian respectively, the third one (without suffix) adds 2 extra leading bytes: the byte-order mark (BOM).
+
+====PYTHON=====
+import sys
+sys.maxunicode # 1114111 on a wide build, 65535 on a narrow build 
+
+====PYTHON=====
+print len('ascii')
+# 5
+print len(u'\u05d0') # the letter Alef as unicode literal
+# 1
+print len('\xd7\x90'.decode('utf-8')) # Same encoded as utf-8 string
+# 1
+print hex(sys.maxunicode), len(unichr(0x1F4A9))
+# ('0x10ffff', 1)
+
+====PYTHON=====
+print hex(sys.maxunicode), len(unichr(0x1F4A9))
+# ('0xffff', 2)
+
+====PYTHON=====
+print(len(b'Hello, World!'))
+# 13
+
+====PYTHON=====
+# The letter Alef
+print(len('\u05d0'.encode())) # the default encoding is utf-8 in Python3
+# 2
+print(len('\u05d0'.encode('iso-8859-8')))
+# 1
+
+====PYTHON=====
+#!/bin/env python
+# -*- coding: UTF-8 -*-
+s = "møøse"
+assert len(s) == 5
+assert len(s.encode('UTF-8')) == 7
+assert len(s.encode('UTF-16-BE')) == 10 # There are 3 different UTF-16 encodings: LE and BE are little endian and big endian respectively, the third one (without suffix) adds 2 extra leading bytes: the byte-order mark (BOM).
+u="𝔘𝔫𝔦𝔠𝔬𝔡𝔢"
+assert len(u.encode()) == 28
+assert len(u.encode('UTF-16-BE')) == 28
+
+====PYTHON=====
+print(len("𝔘𝔫𝔦𝔠𝔬𝔡𝔢")) 
+# 7
+
+====PYTHON=====
+import sys
+sys.maxunicode # 1114111 on a wide build, 65535 on a narrow build
+
+====PYTHON=====
+print(len('ascii'))
+# 5
+print(len('\u05d0')) # the letter Alef as unicode literal
+# 1
+
+====PYTHON=====
+print(len(b'\xd7\x90'.decode('utf-8'))) # Alef encoded as utf-8 byte sequence
+# 1
+
+====PYTHON=====
+print(hex(sys.maxunicode), len(unichr(0x1F4A9)))
+# ('0x10ffff', 1)
+
+====PYTHON=====
+print(hex(sys.maxunicode), len(unichr(0x1F4A9)))
+# ('0xffff', 2)
+

@@ -1,0 +1,77 @@
+====RUBY=====
+ 
+for candidate in 2 .. 2**19
+  sum = Rational(1, candidate)
+  for factor in 2 .. Integer.sqrt(candidate)
+    if candidate % factor == 0
+      sum += Rational(1, factor) + Rational(1, candidate / factor)
+    end
+  end
+  if sum.denominator == 1
+    puts "Sum of recipr. factors of %d = %d exactly %s" %
+           [candidate, sum.to_i, sum == 1 ? "perfect!" : ""]
+  end
+end
+
+====RUBY=====
+for n in (1 .. 2**19) {
+    var frac = 0
+ 
+    n.divisors.each {|d|
+        frac += 1/d
+    }
+ 
+    if (frac.is_int) {
+        say "Sum of reciprocal divisors of #{n} = #{frac} exactly #{
+            frac == 2 ? '- perfect!' : ''
+        }"
+    }
+}
+
+====PYTHON=====
+from fractions import Fraction
+ 
+for candidate in range(2, 2**19):
+  sum = Fraction(1, candidate)
+  for factor in range(2, int(candidate**0.5)+1):
+    if candidate % factor == 0:
+      sum += Fraction(1, factor) + Fraction(1, candidate // factor)
+  if sum.denominator == 1:
+    print("Sum of recipr. factors of %d = %d exactly %s" %
+           (candidate, int(sum), "perfect!" if sum == 1 else ""))
+
+====PYTHON=====
+def lcm(a, b):
+    return a // gcd(a,b) * b
+ 
+def gcd(u, v):
+    return gcd(v, u%v) if v else abs(u)
+ 
+class Fraction:
+    def __init__(self, numerator, denominator):
+        common = gcd(numerator, denominator)
+        self.numerator = numerator//common
+        self.denominator = denominator//common
+    def __add__(self, frac):
+        common = lcm(self.denominator, frac.denominator)
+        n = common // self.denominator * self.numerator + common // frac.denominator * frac.numerator
+        return Fraction(n, common)
+    def __sub__(self, frac):
+        return self.__add__(-frac)
+    def __neg__(self):
+        return Fraction(-self.numerator, self.denominator)
+    def __abs__(self):
+        return Fraction(abs(self.numerator), abs(self.denominator))
+    def __mul__(self, frac):
+        return Fraction(self.numerator * frac.numerator, self.denominator * frac.denominator)
+    def __div__(self, frac):
+        return self.__mul__(frac.reciprocal())
+    def reciprocal(self):
+        return Fraction(self.denominator, self.numerator)
+    def __cmp__(self, n):
+        return int(float(self) - float(n))
+    def __float__(self):
+        return float(self.numerator / self.denominator)
+    def __int__(self):
+        return (self.numerator // self.denominator)
+

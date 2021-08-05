@@ -1,0 +1,93 @@
+====RUBY=====
+class Numeric
+  def pow(m)
+    raise TypeError, "exponent must be an integer: #{m}" unless m.is_a? Integer
+    puts "pow!!"
+    Array.new(m, self).reduce(1, :*)
+  end
+end
+ 
+p 5.pow(3)
+p 5.5.pow(3)
+p 5.pow(3.1)
+
+====RUBY=====
+class Numeric
+  def **(m)
+    pow(m)
+  end
+end
+
+====RUBY=====
+class Fixnum
+  def **(m)
+    print "Fixnum "
+    pow(m)
+  end
+end
+class Bignum
+  def **(m)
+    print "Bignum "
+    pow(m)
+  end
+end
+class Float
+  def **(m)
+    print "Float "
+    pow(m)
+  end
+end
+ 
+p i=2**64
+p i ** 2
+p 2.2 ** 3
+
+====RUBY=====
+func expon(_, {.is_zero}) { 1 }
+ 
+func expon(base, exp {.is_neg}) {
+    expon(1/base, -exp)
+}
+ 
+func expon(base, exp {.is_int}) {
+ 
+  var c = 1
+  while (exp > 1) {
+    c *= base if exp.is_odd
+    base *= base
+    exp >>= 1
+  }
+ 
+  return (base * c)
+}
+ 
+say expon(3, 10)
+say expon(5.5, -3)
+
+====RUBY=====
+class Number {
+    method ⊙(exp) {
+        expon(self, exp)
+    }
+}
+ 
+say (3 ⊙ 10)
+say (5.5 ⊙ -3)
+
+====PYTHON=====
+MULTIPLY = lambda x, y: x*y
+ 
+class num(float):
+    # the following method has complexity O(b)
+    # rather than O(log b) via the rapid exponentiation
+    def __pow__(self, b):
+        return reduce(MULTIPLY, [self]*b, 1)
+ 
+# works with ints as function or operator
+print num(2).__pow__(3)
+print num(2) ** 3
+ 
+# works with floats as function or operator
+print num(2.3).__pow__(8)
+print num(2.3) ** 8
+

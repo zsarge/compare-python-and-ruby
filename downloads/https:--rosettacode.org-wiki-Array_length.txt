@@ -1,0 +1,26 @@
+====RUBY=====
+ 
+puts ["apple", "orange"].size
+ 
+
+====RUBY=====
+puts ['apple', 'orange'].length  # or .size
+
+====RUBY=====
+var arr = ['apple', 'orange'];
+say arr.len;        #=> 2
+say arr.end;        #=> 1 (zero based)
+
+====PYTHON=====
+ 
+arr = ['apple', 'orange']  # a list for an array
+ 
+def setup():
+    println(len(arr))
+ 
+
+====PYTHON=====
+>>> print(len(['apple', 'orange']))
+2
+>>> 
+

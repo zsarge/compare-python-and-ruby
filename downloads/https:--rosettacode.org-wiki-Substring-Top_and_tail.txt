@@ -1,0 +1,81 @@
+====RUBY=====
+puts "knight"[1..-1]   # strip first character
+puts "socks"[0..-2]    # strip last character
+puts "socks".chop      # alternate way to strip last character
+puts "brooms"[1..-2]   # strip both first and last characters
+puts "与今令"[1..-2]    # => 今
+
+====RUBY=====
+say "knight".substr(1);       # strip first character
+say "socks".substr(0, -1);    # strip last character
+say "brooms".substr(1, -1);   # strip both first and last characters
+say "与今令".substr(1, -1);    # => 今
+
+====RUBY=====
+var gstr = "J\x{332}o\x{332}s\x{332}e\x{301}\x{332}";
+say gstr-/^\X/;                    # strip first grapheme
+say gstr-/\X\z/;                   # strip last grapheme
+say gstr.sub(/^\X/).sub(/\X\z/);   # strip both first and last graphemes
+
+====PYTHON=====
+print "knight"[1:]     # strip first character
+print "socks"[:-1]     # strip last character
+print "brooms"[1:-1]   # strip both first and last characters
+
+====PYTHON=====
+from functools import (reduce)
+ 
+ 
+def main():
+    for xs in transpose(
+        (chunksOf(3)(
+            ap([tail, init, compose(init)(tail)])(
+                ['knights', 'socks', 'brooms']
+            )
+        ))
+    ):
+        print(xs)
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# tail :: [a] -> [a]
+def tail(xs):
+    return xs[1:]
+ 
+ 
+# init::[a] - > [a]
+def init(xs):
+    return xs[:-1]
+ 
+ 
+# ap (<*>) :: [(a -> b)] -> [a] -> [b]
+def ap(fs):
+    return lambda xs: reduce(
+        lambda a, f: a + reduce(
+            lambda a, x: a + [f(x)], xs, []
+        ), fs, []
+    )
+ 
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    return lambda xs: reduce(
+        lambda a, i: a + [xs[i:n + i]],
+        range(0, len(xs), n), []
+    ) if 0 < n else []
+ 
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# transpose :: [[a]] -> [[a]]
+def transpose(xs):
+    return list(map(list, zip(*xs)))
+ 
+ 
+if __name__ == '__main__':
+    main()
+

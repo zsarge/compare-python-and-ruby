@@ -1,0 +1,565 @@
+====RUBY=====
+record Item, name : String, weight : Int32, value : Int32, count : Int32
+ 
+record Selection, mask : Array(Int32), cur_index : Int32, total_value : Int32
+ 
+class Knapsack
+  @threshold_value = 0
+  @threshold_choice : Selection?
+  getter checked_nodes = 0
+ 
+  def knapsack_step(taken, items, remaining_weight)
+    if taken.total_value > @threshold_value
+      @threshold_value = taken.total_value
+      @threshold_choice = taken
+    end
+    candidate_index = items.index(taken.cur_index) { |item| item.weight <= remaining_weight }
+    return nil unless candidate_index
+    @checked_nodes += 1
+    candidate = items[candidate_index]
+    # candidate is a best of available items, so if we fill remaining value with
+    # and still don't reach the threshold, the branch is wrong
+    return nil if taken.total_value + 1.0 * candidate.value / candidate.weight * remaining_weight < @threshold_value
+    # now recursively check all variants (from taking maximum count to taking nothing)
+    max_count = {candidate.count, remaining_weight // candidate.weight}.min
+    (0..max_count).reverse_each do |n|
+      mask = taken.mask.clone
+      mask[candidate_index] = n
+      knapsack_step Selection.new(mask, candidate_index + 1, taken.total_value + n*candidate.value), items, remaining_weight - n*candidate.weight
+    end
+  end
+ 
+  def select(items, max_weight)
+    @checked_variants = 0
+    # sort by descending relative value
+    list = items.sort_by { |item| -1.0 * item.value / item.weight }
+    nothing = Selection.new(Array(Int32).new(items.size, 0), 0, 0)
+    @threshold_value = 0
+    @threshold_choice = nothing
+    knapsack_step(nothing, list, max_weight)
+    selected = @threshold_choice.not_nil!
+    result = Hash(Item, Int32).new(0)
+    selected.mask.each_with_index { |v, i| result[list[i]] = v if v > 0 }
+    result
+  end
+end
+ 
+possible = [
+  Item.new("map", 9, 150, 1),
+  Item.new("compass", 13, 35, 1),
+  Item.new("water", 153, 200, 2),
+  Item.new("sandwich", 50, 60, 2),
+  Item.new("glucose", 15, 60, 2),
+  Item.new("tin", 68, 45, 3),
+  Item.new("banana", 27, 60, 3),
+  Item.new("apple", 39, 40, 3),
+  Item.new("cheese", 23, 30, 1),
+  Item.new("beer", 52, 10, 3),
+  Item.new("suntan cream", 11, 70, 1),
+  Item.new("camera", 32, 30, 1),
+  Item.new("T-shirt", 24, 15, 2),
+  Item.new("trousers", 48, 10, 2),
+  Item.new("umbrella", 73, 40, 1),
+  Item.new("waterproof trousers", 42, 70, 1),
+  Item.new("waterproof overclothes", 43, 75, 1),
+  Item.new("note-case", 22, 80, 1),
+  Item.new("sunglasses", 7, 20, 1),
+  Item.new("towel", 18, 12, 2),
+  Item.new("socks", 4, 50, 1),
+  Item.new("book", 30, 10, 2),
+]
+ 
+solver = Knapsack.new
+used = solver.select(possible, 400)
+puts "optimal choice: #{used.map { |item, count| count == 1 ? item.name : "#{count}x #{item.name}" }.join(", ")}"
+puts "total weight #{used.sum { |item, count| item.weight*count }}"
+puts "total value #{used.sum { |item, count| item.value*count }}"
+puts "checked nodes: #{solver.checked_nodes}"
+
+====RUBY=====
+# Item struct to represent each item in the problem
+record Item, name : String, weight : Int32, value : Int32, count : Int32
+ 
+def choose_item(items, weight, id, cache)
+  return 0, ([] of Int32) if id < 0
+ 
+  k = {weight, id}
+  cache = cache || {} of Tuple(Int32, Int32) => Tuple(Int32, Array(Int32))
+  return cache[k] if cache[k]?
+  value = items[id].value
+  best_v = 0
+  best_list = [] of Int32
+  (items[id].count + 1).times do |i|
+    wlim = weight - i * items[id].weight
+    break if wlim < 0
+    val, taken = choose_item(items, wlim, id - 1, cache)
+    if val + i * value > best_v
+      best_v = val + i * value
+      best_list = taken + [i]
+    end
+  end
+  cache[k] = {best_v, best_list}
+  return {best_v, best_list}
+end
+ 
+items = [
+  Item.new("map", 9, 150, 1),
+  Item.new("compass", 13, 35, 1),
+  Item.new("water", 153, 200, 2),
+  Item.new("sandwich", 50, 60, 2),
+  Item.new("glucose", 15, 60, 2),
+  Item.new("tin", 68, 45, 3),
+  Item.new("banana", 27, 60, 3),
+  Item.new("apple", 39, 40, 3),
+  Item.new("cheese", 23, 30, 1),
+  Item.new("beer", 52, 10, 3),
+  Item.new("suntan cream", 11, 70, 1),
+  Item.new("camera", 32, 30, 1),
+  Item.new("T-shirt", 24, 15, 2),
+  Item.new("trousers", 48, 10, 2),
+  Item.new("umbrella", 73, 40, 1),
+  Item.new("waterproof trousers", 42, 70, 1),
+  Item.new("waterproof overclothes", 43, 75, 1),
+  Item.new("note-case", 22, 80, 1),
+  Item.new("sunglasses", 7, 20, 1),
+  Item.new("towel", 18, 12, 2),
+  Item.new("socks", 4, 50, 1),
+  Item.new("book", 30, 10, 2),
+]
+ 
+val, list = choose_item(items, 400, items.size - 1, nil)
+w = 0
+list.each_with_index do |cnt, i|
+  if cnt > 0
+    print "#{cnt} #{items[i].name}\n"
+    w += items[i].weight * cnt
+  end
+end
+ 
+p "Total weight: #{w}, Value: #{val}"
+
+====RUBY=====
+ 
+# Item struct to represent each item in the problem
+Struct.new('Item', :name, :weight, :value, :count)
+ 
+$items = [
+  Struct::Item.new('map', 9, 150, 1),
+  Struct::Item.new('compass', 13, 35, 1),
+  Struct::Item.new('water', 153, 200, 3),
+  Struct::Item.new('sandwich', 50, 60, 2),
+  Struct::Item.new('glucose', 15, 60, 2),
+  Struct::Item.new('tin', 68, 45, 3),
+  Struct::Item.new('banana', 27, 60, 3),
+  Struct::Item.new('apple', 39, 40, 3),
+  Struct::Item.new('cheese', 23, 30, 1),
+  Struct::Item.new('beer', 52, 10, 3),
+  Struct::Item.new('suntan cream', 11, 70, 1),
+  Struct::Item.new('camera', 32, 30, 1),
+  Struct::Item.new('t-shirt', 24, 15, 2),
+  Struct::Item.new('trousers', 48, 10, 2),
+  Struct::Item.new('umbrella', 73, 40, 1),
+  Struct::Item.new('w-trousers', 42, 70, 1),
+  Struct::Item.new('w-overcoat', 43, 75, 1),
+  Struct::Item.new('note-case', 22, 80, 1),
+  Struct::Item.new('sunglasses', 7, 20, 1),
+  Struct::Item.new('towel', 18, 12, 2),
+  Struct::Item.new('socks', 4, 50, 1),
+  Struct::Item.new('book', 30, 10, 2)
+]
+ 
+def choose_item(weight, id, cache)
+  return 0, [] if id < 0
+ 
+  k = [weight, id]
+  return cache[k] unless cache[k].nil?
+  value = $items[id].value
+  best_v = 0
+  best_list = []
+  ($items[id].count+1).times do |i|
+    wlim = weight - i * $items[id].weight
+    break if wlim < 0
+    val, taken = choose_item(wlim, id - 1, cache)
+    if val + i * value > best_v
+      best_v = val + i * value
+      best_list = taken + [i]
+    end
+  end
+  cache[k] = [best_v, best_list]
+  return [best_v, best_list]
+end
+ 
+val, list = choose_item(400, $items.length - 1, {})
+w = 0
+list.each_with_index do |cnt, i|
+  if cnt > 0
+    print "#{cnt} #{$items[i].name}\n"
+    w += $items[i][1] * cnt
+  end
+end
+ 
+p "Total weight: #{w}, Value: #{val}"
+ 
+
+====RUBY=====
+var raw = <<'TABLE'
+map           9     150      1
+compass      13      35      1
+water       153     200      2
+sandwich     50      60      2
+glucose      15      60      2
+tin          68      45      3
+banana       27      60      3
+apple        39      40      3
+cheese       23      30      1
+beer         52      10      1
+suntancream  11      70      1
+camera       32      30      1
+T-shirt      24      15      2
+trousers     48      10      2
+umbrella     73      40      1
+w_trousers   42      70      1
+w_overcoat   43      75      1
+note-case    22      80      1
+sunglasses    7      20      1
+towel        18      12      2
+socks         4      50      1
+book         30      10      2
+TABLE
+ 
+struct KnapsackItem {
+    String name,
+    Number weight,
+    Number value,
+    Number quant,
+}
+ 
+var items = []
+raw.each_line{ |row|
+    var fields = row.words;
+    items << KnapsackItem(
+          name: fields[0],
+        weight: fields[1].to_n,
+         value: fields[2].to_n,
+         quant: fields[3].to_n,
+    )
+}
+ 
+func pick(weight, pos) is cached {
+ 
+    if (pos.is_neg || weight.is_neg || weight.is_zero) {
+        return (0, 0, [])
+    }
+ 
+    var (bv=0, bi=0, bw=0, bp=[])
+    var item = items[pos];
+ 
+    for i in range(0, item.quant) {
+        break if (i*item.weight > weight)
+        var (v, w, p) = pick(weight - i*item.weight, pos.dec)
+        next if ((v += i*item.value) <= bv)
+        (bv, bi, bw, bp) = (v, i, w, p)
+    }
+ 
+    (bv, bw + bi*item.weight, [bp..., bi])
+}
+ 
+var (v, w, p) = pick(400, items.end)
+p.range.each { |i|
+    say "#{p[i]} of #{items[i].name}" if p[i].is_pos
+}
+say "Value: #{v}; Weight: #{w}"
+
+====PYTHON=====
+# Knapsack. Recursive solution.
+ 
+import strformat
+import tables
+ 
+# Description of an item.
+type Item = tuple[name: string; weight, value, pieces: int]
+ 
+# List of available items.
+const Items: seq[Item] = @[("map", 9, 150, 1),
+                           ("compass", 13, 35, 1),
+                           ("water", 153, 200, 2),
+                           ("sandwich", 50, 60, 2),
+                           ("glucose", 15, 60, 2),
+                           ("tin", 68, 45, 3),
+                           ("banana", 27, 60, 3),
+                           ("apple", 39, 40, 3),
+                           ("cheese", 23, 30, 1),
+                           ("beer", 52, 10, 3),
+                           ("suntan cream", 11, 70, 1),
+                           ("camera", 32, 30, 1),
+                           ("T-shirt", 24, 15, 2),
+                           ("trousers", 48, 10, 2),
+                           ("umbrella", 73, 40, 1),
+                           ("waterproof trousers", 42, 70, 1),
+                           ("waterproof overclothes", 43, 75, 1),
+                           ("note-case", 22, 80, 1),
+                           ("sunglasses", 7, 20, 1),
+                           ("towel", 18, 12, 2),
+                           ("socks", 4, 50, 1),
+                           ("book", 30, 10, 2)
+                          ]
+ 
+type
+ 
+  # Item numbers (used rather than items themselves).
+  Number = range[0..Items.high]
+ 
+  # Description of an expanded item.
+  ExpandedItem = tuple[num: Number; weight, value: int]
+ 
+ 
+# Expanded items management.
+ 
+proc expandedItems(items: seq[Item]): seq[ExpandedItem] =
+  ## Expand the list of items.
+  for idx, item in Items:
+    for _ in 1..item.pieces:
+      result.add((idx.Number, item.weight, item.value))
+ 
+const ItemList = expandedItems(Items)
+ 
+type
+ 
+  # Index in the expanded list.
+  ExpandedIndex = 0..ItemList.high
+ 
+  # Chosen items and their total value.
+  Choice = tuple[indexes: set[ExpandedIndex]; weight, value: int]
+ 
+# Cache used to speed up the search.
+var cache: Table[tuple[index, weight: int], Choice]
+ 
+ 
+#---------------------------------------------------------------------------------------------------
+ 
+proc select(idx, weightLimit: int): Choice =
+  ## Find the best choice starting from item at index "idx".
+ 
+  if idx < 0 or weightLimit == 0:
+    return
+ 
+  if (idx, weightLimit) in cache:
+    return cache[(idx, weightLimit)]
+ 
+  let weight = ItemList[idx].weight
+  if weight > weightLimit:
+    return select(idx - 1, weightLimit)
+ 
+  # Try by leaving this item and selecting among remaining items.
+  result = select(idx - 1, weightLimit)
+ 
+  # Try by taking this item and completing with some remaining items.
+  var result1 = select(idx - 1, weightLimit - weight)
+  inc result1.value, ItemList[idx].value
+ 
+  # Select the best choice (giving the greater value).
+  if result1.value > result.value:
+    result = (result1.indexes + {idx.ExpandedIndex}, result1.weight + weight, result1.value)
+ 
+  cache[(idx, weightLimit)] = result
+ 
+#---------------------------------------------------------------------------------------------------
+ 
+let (indexes, weight, value) = select(ItemList.high, 400)
+ 
+# Count the number of pieces for each item.
+var pieces = newSeq[int](Items.len)
+for idx in indexes:
+  inc pieces[ItemList[idx].num]
+ 
+echo "List of items:"
+for num in 0..Items.high:
+  if pieces[num] > 0:
+    echo fmt"– {pieces[num]} of {Items[num].pieces} {Items[num].name}"
+echo ""
+echo "Total weight: ", weight
+echo "Total value: ", value
+ 
+
+====PYTHON=====
+from itertools import groupby
+from collections import namedtuple
+ 
+def anyvalidcomb(items, maxwt, val=0, wt=0):
+    ' All combinations below the maxwt '
+    if not items:
+        yield [], val, wt
+    else:
+        this, *items = items            # car, cdr
+        for n in range(this.number + 1):
+            w = wt  + n * this.weight
+            if w > maxwt:
+                break
+            v = val + n * this.value
+            this_comb = [this] * n
+            for comb, value, weight in anyvalidcomb(items, maxwt, v, w):
+                yield this_comb + comb, value, weight
+ 
+maxwt = 400
+COMB, VAL, WT = range(3)
+Item  = namedtuple('Items', 'name weight value number')
+items = [ Item(*x) for x in
+          (
+            ("map", 9, 150, 1),
+            ("compass", 13, 35, 1),
+            ("water", 153, 200, 3),
+            ("sandwich", 50, 60, 2),
+            ("glucose", 15, 60, 2),
+            ("tin", 68, 45, 3),
+            ("banana", 27, 60, 3),
+            ("apple", 39, 40, 3),
+            ("cheese", 23, 30, 1),
+            ("beer", 52, 10, 3),
+            ("suntan cream", 11, 70, 1),
+            ("camera", 32, 30, 1),
+            ("t-shirt", 24, 15, 2),
+            ("trousers", 48, 10, 2),
+            ("umbrella", 73, 40, 1),
+            ("waterproof trousers", 42, 70, 1),
+            ("waterproof overclothes", 43, 75, 1),
+            ("note-case", 22, 80, 1),
+            ("sunglasses", 7, 20, 1),
+            ("towel", 18, 12, 2),
+            ("socks", 4, 50, 1),
+            ("book", 30, 10, 2),
+           ) ]  
+ 
+bagged = max( anyvalidcomb(items, maxwt), key=lambda c: (c[VAL], -c[WT])) # max val or min wt if values equal
+print("Bagged the following %i items" % len(bagged[COMB]))
+print('\n\t'.join('%i off: %s' % (len(list(grp)), item.name) for item, grp in groupby(sorted(bagged[COMB]))))
+print("for a total value of %i and a total weight of %i" % bagged[1:])
+
+====PYTHON=====
+from itertools import groupby
+ 
+try:
+    xrange
+except:
+    xrange = range
+ 
+maxwt = 400
+ 
+groupeditems = (
+            ("map", 9, 150, 1),
+            ("compass", 13, 35, 1),
+            ("water", 153, 200, 3),
+            ("sandwich", 50, 60, 2),
+            ("glucose", 15, 60, 2),
+            ("tin", 68, 45, 3),
+            ("banana", 27, 60, 3),
+            ("apple", 39, 40, 3),
+            ("cheese", 23, 30, 1),
+            ("beer", 52, 10, 3),
+            ("suntan cream", 11, 70, 1),
+            ("camera", 32, 30, 1),
+            ("t-shirt", 24, 15, 2),
+            ("trousers", 48, 10, 2),
+            ("umbrella", 73, 40, 1),
+            ("waterproof trousers", 42, 70, 1),
+            ("waterproof overclothes", 43, 75, 1),
+            ("note-case", 22, 80, 1),
+            ("sunglasses", 7, 20, 1),
+            ("towel", 18, 12, 2),
+            ("socks", 4, 50, 1),
+            ("book", 30, 10, 2),
+           )
+items = sum( ([(item, wt, val)]*n for item, wt, val,n in groupeditems), [])
+ 
+def knapsack01_dp(items, limit):
+    table = [[0 for w in range(limit + 1)] for j in xrange(len(items) + 1)]
+ 
+    for j in xrange(1, len(items) + 1):
+        item, wt, val = items[j-1]
+        for w in xrange(1, limit + 1):
+            if wt > w:
+                table[j][w] = table[j-1][w]
+            else:
+                table[j][w] = max(table[j-1][w],
+                                  table[j-1][w-wt] + val)
+ 
+    result = []
+    w = limit
+    for j in range(len(items), 0, -1):
+        was_added = table[j][w] != table[j-1][w]
+ 
+        if was_added:
+            item, wt, val = items[j-1]
+            result.append(items[j-1])
+            w -= wt
+ 
+    return result
+ 
+ 
+bagged = knapsack01_dp(items, maxwt)
+print("Bagged the following %i items\n  " % len(bagged) +
+      '\n  '.join('%i off: %s' % (len(list(grp)), item[0])
+                  for item,grp in groupby(sorted(bagged))))
+print("for a total value of %i and a total weight of %i" % (
+    sum(item[2] for item in bagged), sum(item[1] for item in bagged)))
+
+====PYTHON=====
+items = {
+	"sandwich":	(50,	60,	2),
+	"map": 		(9,	150,	1),
+	"compass": 	(13,	35,	1),
+	"water": 	(153,	200,	3),
+	"glucose": 	(15,	60,	2),
+	"tin": 		(68,	45,	3),
+	"banana": 	(27,	60,	3),
+	"apple": 	(39,	40,	3),
+	"cheese": 	(23,	30,	1),
+	"beer": 	(52,	10,	3),
+	"suntan cream": (11,	70,	1),
+	"camera": 	(32,	30,	1),
+	"t-shirt": 	(24,	15,	2),
+	"trousers": 	(48,	10,	2),
+	"umbrella": 	(73,	40,	1),
+	"w-trousers": 	(42,	70,	1),
+	"w-overcoat": 	(43,	75,	1),
+	"note-case": 	(22,	80,	1),
+	"sunglasses": 	(7,	20,	1),
+	"towel": 	(18,	12,	2),
+	"socks": 	(4,	50,	1),
+	"book": 	(30,	10,	2),
+}
+ 
+item_keys = list(items.keys())
+ 
+#cache: could just use memoize module, but explicit caching is clearer
+def choose_item(weight, idx, cache):
+    if idx < 0: return 0, []
+ 
+    k = (weight, idx)
+    if k in cache: return cache[k]
+ 
+    name, w, v, qty = item_keys[idx], *items[item_keys[idx]]
+    best_v, best_list = 0, []
+ 
+    for i in range(0, qty + 1):
+        wlim = weight - i * w
+        if wlim < 0: break
+ 
+        val, taken = choose_item(wlim, idx - 1, cache)
+        if val + i * v > best_v:
+            best_v = val + i * v
+            best_list = taken[:]
+            best_list.append((i, name))
+ 
+    cache[k] = [best_v, best_list]
+    return best_v, best_list
+ 
+ 
+v, lst = choose_item(400, len(items) - 1, {})
+w = 0
+for cnt, name in lst:
+    if cnt > 0:
+        print(cnt, name)        
+        w = w + items[name][0] * cnt
+ 
+print("Total weight:", w, "Value:", v)
+

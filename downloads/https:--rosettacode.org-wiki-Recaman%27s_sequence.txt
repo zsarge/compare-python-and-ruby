@@ -1,0 +1,307 @@
+====RUBY=====
+require 'set'
+ 
+a = [0]
+used = Set[0]
+used1000 = Set[0]
+foundDup = false
+n = 1
+while n <= 15 or not foundDup or used1000.size < 1001
+    nxt = a[n - 1] - n
+    if nxt < 1 or used === nxt then
+        nxt = nxt + 2 * n
+    end
+    alreadyUsed = used === nxt
+    a << nxt
+    if not alreadyUsed then
+        used << nxt
+        if nxt >= 0 and nxt <= 1000 then
+            used1000 << nxt
+        end
+    end
+    if n == 14 then
+        print "The first 15 terms of the Recaman's sequence are ", a, "\n"
+    end
+    if not foundDup and alreadyUsed then
+        print "The first duplicated term is a[", n, "] = ", nxt, "\n"
+        foundDup = true
+    end
+    if used1000.size == 1001 then
+        print "Terms up to a[", n, "] are needed to generate 0 to 1000\n"
+    end
+    n = n + 1
+end
+
+====RUBY=====
+func recamans_generator() {
+ 
+    var term = 0
+    var prev = 0
+    var seen = Hash()
+ 
+    {
+        var this = (prev - term)
+ 
+        if ((this <= 0) || seen{this}) {
+            this = (prev + term)
+        }
+ 
+        prev = this
+        seen{this} = true
+        term++
+        this
+    }
+}
+ 
+with (recamans_generator()) { |r|
+    say ("First 15 terms of the Recaman's sequence: ", 15.of { r.run }.join(', '))
+}
+ 
+with (recamans_generator()) {|r|
+    var seen = Hash()
+    Inf.times {|i|
+        var n = r.run
+        if (seen{n}) {
+            say "First duplicate term in the series is a(#{i}) = #{n}"
+            break
+        }
+        seen{n} = true
+    }
+}
+ 
+with (recamans_generator()) {|r|
+    var seen = Hash()
+    Inf.times {|i|
+        var n = r.run
+        if ((n <= 1000) && (seen{n} := true) && (seen.len == 1001)) {
+            say "Terms up to a(#{i}) are needed to generate 0 to 1000"
+            break
+        }
+    }
+}
+
+====PYTHON=====
+from itertools import islice
+ 
+class Recamans():
+    "Recamán's sequence generator callable class"
+    def __init__(self):
+        self.a = None   # Set of results so far
+        self.n = None   # n'th term (counting from zero)
+ 
+    def __call__(self):
+        "Recamán's sequence  generator"
+        nxt = 0
+        a, n = {nxt}, 0
+        self.a = a
+        self.n = n
+        yield nxt
+        while True:
+            an1, n = nxt, n + 1
+            nxt = an1 - n
+            if nxt < 0 or nxt in a:
+                nxt = an1 + n
+            a.add(nxt)
+            self.n = n
+            yield nxt
+ 
+if __name__ == '__main__':
+    recamans = Recamans()
+    print("First fifteen members of Recamans sequence:", 
+          list(islice(recamans(), 15)))
+ 
+    so_far = set()
+    for term in recamans():
+        if term in so_far:
+            print(f"First duplicate number in series is: a({recamans.n}) = {term}")
+            break
+        so_far.add(term)
+ 
+    n = 1_000
+    setn = set(range(n + 1))    # The target set of numbers to be covered
+    for _ in recamans():
+        if setn.issubset(recamans.a):
+            print(f"Range 0 ..{n} is covered by terms up to a({recamans.n})")
+            break
+
+====PYTHON=====
+'''Recaman sequence'''
+ 
+ 
+# recamanUntil :: (Int -> Set Int > [Int] -> Bool) -> [Int]
+def recamanUntil(p):
+    '''All terms of the Recaman series before the
+       first term for which the predicate p holds.'''
+    n = 1
+    r = 0  # First term of series
+    rs = [r]
+    seen = set(rs)
+    blnNew = True
+    while not p(seen, n, r, blnNew):
+        r = recamanSucc(seen, n, r)
+        blnNew = r not in seen
+        seen.add(r)
+        rs.append(r)
+        n = 1 + n
+    return rs
+ 
+ 
+# recamanSucc :: Set Int -> Int -> Int
+def recamanSucc(seen, n, r):
+    '''The successor for a given Recaman term,
+       given the set of Recaman terms seen so far.'''
+    back = r - n
+    return n + r if 0 > back or (back in seen) else back
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+    print(
+        'First 15 Recaman:\r',
+        recamanUntil(
+            lambda seen, n, r, _: 15 == n
+        )
+    )
+    print(
+        'First duplicated Recaman:\r',
+        recamanUntil(
+            lambda seen, n, r, blnNew: not blnNew
+        )[-1]
+    )
+    setK = set(enumFromTo(0)(1000))
+    print(
+        'Number of Recaman terms needed to generate',
+        'all integers from [0..1000]:\r',
+        len(recamanUntil(
+            lambda seen, n, r, blnNew: (
+                blnNew and 1001 > r and setK.issubset(seen)
+            )
+        )) - 1
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: range(m, 1 + n)
+ 
+ 
+if __name__ == '__main__':
+    main()
+
+====PYTHON=====
+'''Recaman by iteration of a function over a tuple.'''
+ 
+from itertools import (islice)
+ 
+ 
+# recamanTupleSucc :: Set Int -> (Int, Int, Bool) -> (Int, Int, Bool)
+def recamanTupleSucc(seen):
+    '''The Nth in a series of Recaman tuples,
+       (N, previous term, boolPreviouslySeen?)
+       given the set of all terms seen so far.'''
+    def go(n, r, _):
+        back = r - n
+        nxt = n + r if 0 > back or (back in seen) else back
+        bln = nxt in seen
+        seen.add(nxt)
+        return (1 + n, nxt, bln)
+    return lambda tpl: go(*tpl)
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO()
+def main():
+    '''First 15, and first duplicated Recaman.'''
+    f = recamanTupleSucc(set([0]))
+    print(
+        'First 15 Recaman:\n',
+        list(map(
+            snd,
+            take(15)(iterate(f)((1, 0, False)))
+        ))
+    )
+    f = recamanTupleSucc(set([0]))
+    print(
+        'First duplicated Recaman:\n',
+        until(lambda x: x[2])(f)(
+            (1, 0, False)
+        )[1]
+    )
+ 
+    sk = set(enumFromTo(0)(1000))
+    sr = set([0])
+    f = recamanTupleSucc(sr)
+    print(
+        'Number of Recaman terms needed to generate',
+        'all integers from [0..1000]:\n',
+        until(
+            lambda x: not x[2] and 1001 > x[1] and sk.issubset(sr)
+        )(f)(
+            (1, 0, False)
+        )[0] - 1
+    )
+ 
+ 
+# ----------------- GENERIC ABSTRACTIONS -----------------
+ 
+# enumFromTo :: (Int, Int) -> [Int]
+def enumFromTo(m):
+    '''Integer enumeration from m to n.'''
+    return lambda n: range(m, 1 + n)
+ 
+ 
+# iterate :: (a -> a) -> a -> Gen [a]
+def iterate(f):
+    '''An infinite list of repeated
+       applications of f to x.
+    '''
+    def go(x):
+        v = x
+        while True:
+            yield v
+            v = f(v)
+    return go
+ 
+ 
+# snd :: (a, b) -> b
+def snd(tpl):
+    '''Second component of a tuple.'''
+    return tpl[1]
+ 
+ 
+# take :: Int -> [a] -> [a]
+# take :: Int -> String -> String
+def take(n):
+    '''The prefix of xs of length n,
+       or xs itself if n > length xs.'''
+    return lambda xs: (
+        xs[0:n]
+        if isinstance(xs, list)
+        else islice(xs, n)
+    )
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.
+    '''
+    def go(f):
+        def g(x):
+            v = x
+            while not p(v):
+                v = f(v)
+            return v
+        return g
+    return go
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,51 @@
+====RUBY=====
+def multiply(a, b)
+    a * b
+end
+
+====RUBY=====
+func multiply(a, b) {
+    a * b;
+}
+
+====PYTHON=====
+def multiply(x, y):
+    return x * y
+
+====PYTHON=====
+def multiply(a, b):
+    return a * b
+
+====PYTHON=====
+multiply = lambda a, b: a * b
+
+====PYTHON=====
+class Multiply:
+    def __init__(self):
+        pass
+    def __call__(self, a, b):
+        return a * b
+ 
+multiply = Multiply()
+print multiply(2, 4)    # prints 8
+
+====PYTHON=====
+def (multiply a b)
+  a*b
+
+====PYTHON=====
+(multiply 3 4)
+=> 12
+
+====PYTHON=====
+(multiply 3 :a 4)  # arg order doesn't matter here, but try subtract instead
+=> 12
+
+====PYTHON=====
+def (multiply a b|by)
+  (* a b)
+
+====PYTHON=====
+multiply 3 :by 4
+=> 12
+

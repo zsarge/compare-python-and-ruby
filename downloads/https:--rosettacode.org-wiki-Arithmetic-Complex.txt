@@ -1,0 +1,63 @@
+====RUBY=====
+ 
+# Four ways to write complex numbers:
+a = Complex(1, 1)       # 1. call Kernel#Complex
+i = Complex::I          # 2. use Complex::I
+b = 3.14159 + 1.25 * i
+c = '1/2+3/4i'.to_c     # 3. Use the .to_c method from String, result ((1/2)+(3/4)*i)
+c =  1.0/2+3/4i         # (0.5-(3/4)*i) 
+ 
+# Operations:
+puts a + b              # addition
+puts a * b              # multiplication
+puts -a                 # negation
+puts 1.quo a            # multiplicative inverse
+puts a.conjugate        # complex conjugate
+puts a.conj             # alias for complex conjugate
+
+====RUBY=====
+# Other ways to find the multiplicative inverse:
+puts 1.quo a            # always works
+puts 1.0 / a            # works, but forces floating-point math
+puts 1 / a              # might truncate to integer
+
+====RUBY=====
+var a = 1:1                 # Complex(1, 1)
+var b = 3.14159:1.25        # Complex(3.14159, 1.25)
+ 
+[   a + b,                  # addition
+    a * b,                  # multiplication
+    -a,                     # negation
+    a.inv,                  # multiplicative inverse
+    a.conj,                 # complex conjugate
+    a.abs,                  # abs
+    a.sqrt,                 # sqrt
+    b.re,                   # real
+    b.im,                   # imaginary
+].each { |c| say c }
+
+====PYTHON=====
+>>> z1 = 1.5 + 3j
+>>> z2 = 1.5 + 1.5j
+>>> z1 + z2
+(3+4.5j)
+>>> z1 - z2
+1.5j
+>>> z1 * z2
+(-2.25+6.75j)
+>>> z1 / z2
+(1.5+0.5j)
+>>> - z1
+(-1.5-3j)
+>>> z1.conjugate()
+(1.5-3j)
+>>> abs(z1)
+3.3541019662496847
+>>> z1 ** z2
+(-1.1024829553277784-0.38306415117199333j)
+>>> z1.real
+1.5
+>>> z1.imag
+3.0
+>>> 
+

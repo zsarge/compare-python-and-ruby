@@ -1,0 +1,91 @@
+====RUBY=====
+# I define a class to implement baby NG
+class NG
+  def initialize(a1, a, b1, b)
+    @a1, @a, @b1, @b = a1, a, b1, b
+  end
+  def ingress(n)
+    @a, @a1 = @a1, @a + @a1 * n
+    @b, @b1 = @b1, @b + @b1 * n
+  end
+  def needterm?
+    return true if @b == 0 or @b1 == 0
+    return true unless @a/@b == @a1/@b1
+    false
+  end
+  def egress
+    n = @a / @b
+    @a,  @b  = @b,  @a  - @b  * n
+    @a1, @b1 = @b1, @a1 - @b1 * n
+    n
+  end
+  def egress_done
+    @a, @b = @a1, @b1 if needterm?
+    egress
+  end
+  def done?
+    @b == 0 and @b1 == 0
+  end
+end
+
+====RUBY=====
+data = [["[1;5,2] + 1/2",      [2,1,0,2], [13,11]],
+        ["[3;7] + 1/2",        [2,1,0,2], [22, 7]],
+        ["[3;7] divided by 4", [1,0,0,4], [22, 7]]]
+ 
+data.each do |str, ng, r|
+  printf "%-20s->", str
+  op = NG.new(*ng)
+  r2cf(*r) do |n|
+    print " #{op.egress}" unless op.needterm?
+    op.ingress(n)
+  end
+  print " #{op.egress_done}" until op.done?
+  puts
+end
+
+====PYTHON=====
+class NG:
+  def __init__(self, a1, a, b1, b):
+    self.a1, self.a, self.b1, self.b = a1, a, b1, b
+ 
+  def ingress(self, n):
+    self.a, self.a1 = self.a1, self.a + self.a1 * n
+    self.b, self.b1 = self.b1, self.b + self.b1 * n
+ 
+  @property
+  def needterm(self):
+    return (self.b == 0 or self.b1 == 0) or not self.a//self.b == self.a1//self.b1
+ 
+  @property
+  def egress(self):
+    n = self.a // self.b
+    self.a,  self.b  = self.b,  self.a  - self.b  * n
+    self.a1, self.b1 = self.b1, self.a1 - self.b1 * n
+    return n
+ 
+  @property
+  def egress_done(self):
+    if self.needterm: self.a, self.b = self.a1, self.b1
+    return self.egress
+ 
+  @property
+  def done(self):
+    return self.b == 0 and self.b1 == 0
+
+====PYTHON=====
+data = [["[1;5,2] + 1/2",      [2,1,0,2], [13,11]],
+        ["[3;7] + 1/2",        [2,1,0,2], [22, 7]],
+        ["[3;7] divided by 4", [1,0,0,4], [22, 7]]]
+ 
+for string, ng, r in data:
+  print( "%-20s->" % string, end='' )
+  op = NG(*ng)
+  for n in r2cf(*r):
+    if not op.needterm: print( " %r" % op.egress, end='' )
+    op.ingress(n)
+  while True:
+    print( " %r" % op.egress_done, end='' )
+    if op.done: break
+  print()
+

@@ -1,0 +1,265 @@
+====RUBY=====
+require "big"
+ 
+def prime?(n)                     # P3 Prime Generator primality test
+  return n | 1 == 3 if n < 5      # n: 2,3|true; 0,1,4|false 
+  return false if n.gcd(6) != 1   # this filters out 2/3 of all integers
+  pc = typeof(n).new(5)           # first P3 prime candidates sequence value
+  until pc*pc > n
+    return false if n % pc == 0 || n % (pc + 2) == 0  # if n is composite
+    pc += 6                       # 1st prime candidate for next residues group
+  end
+  true
+end
+ 
+# The smallest divisor d of p-1 such that 10^d = 1 (mod p), 
+# is the length of the period of the decimal expansion of 1/p. 
+def long_prime?(p)
+  return false unless prime? p
+  (2...p).each do |d|
+    return d == (p - 1) if (p - 1) % d == 0 && (10.to_big_i ** d) % p == 1
+  end 
+  false
+end
+ 
+start = Time.monotonic  # time of starting
+puts "Long primes ≤ 500:"
+(2..500).each { |pc| print "#{pc} " if long_prime? pc }
+puts 
+[500, 1000, 2000, 4000, 8000, 16000, 32000, 64000].each do |n|
+  puts "Number of long primes ≤ #{n}: #{(7..n).count { |pc| long_prime? pc }}"
+end
+puts "\nTime: #{(Time.monotonic - start).total_seconds} secs"
+
+====RUBY=====
+require "big"
+ 
+def prime?(n)                     # P3 Prime Generator primality test
+  n = n.to_big_i
+  return n | 1 == 3 if n < 5      # n: 0,1,4|false, 2,3|true 
+  return false if n.gcd(6) != 1   # 1/3 (2/6) of integers are P3 pc
+  p = typeof(n).new(5)            # first P3 sequence value
+  until p*p > n
+    return false if n % p == 0 || n % (p + 2) == 0  # if n is composite
+    p += 6      # first prime candidate for next kth residues group
+  end
+  true
+end
+ 
+def powmod(b, e, m)               # Compute b**e mod m
+  r, b = 1, b.to_big_i
+  while e > 0
+    r = (b * r) % m if e.odd?
+    b = (b * b) % m
+    e >>= 1
+  end
+  r
+end
+ 
+def divisors(n)                   # divisors of n -> [1,..,n]
+  f = [] of Int32
+  (1..Math.sqrt(n)).each { |i| (n % i).zero? && (f << i; f << n // i if n // i != i) }
+  f.sort
+end
+ 
+# The smallest divisor d of p-1 such that 10^d = 1 (mod p), 
+# is the length of the period of the decimal expansion of 1/p. 
+def long_prime?(p)
+  return false unless prime? p
+  divisors(p - 1).each { |d| return d == (p - 1) if powmod(10, d, p) == 1 }
+  false
+end
+ 
+start = Time.monotonic  # time of starting
+puts "Long primes ≤ 500:"
+(7..500).each { |pc| print "#{pc} " if long_prime? pc }
+puts 
+[500, 1000, 2000, 4000, 8000, 16000, 32000, 64000].each do |n|
+  puts "Number of long primes ≤ #{n}: #{(7..n).count { |pc| long_prime? pc }}"
+end
+puts "\nTime: #{(Time.monotonic - start).total_seconds} secs"
+
+====RUBY=====
+require 'prime'
+ 
+batas = 64_000    # limit number
+start = Time.now  # time of starting
+lp_array = []     # array of long-prime numbers
+ 
+def find_period(n)
+  r, period = 1, 0
+  (1...n).each {r = (10 * r) % n}
+  rr = r
+  loop do 
+    r = (10 * r) % n
+    period += 1
+    break if r == rr
+  end
+  return period
+end
+ 
+Prime.each(batas).each do |prime|
+  lp_array.push(prime) if find_period(prime) == prime-1 && prime != 2
+end
+ 
+[500, 1000, 2000, 4000, 8000, 16000, 32000, 64000].each do |s|
+  if s == 500
+    puts "\nAll long primes up to  #{s} are: #{lp_array.count {|x| x < s}}. They are:"
+    lp_array.each {|x| print x, " " if x < s}
+  else
+    print "\nAll long primes up to #{s} are: #{lp_array.count {|x| x < s}}"
+  end
+end
+ 
+puts "\n\nTime: #{Time.now - start}"
+
+====RUBY=====
+require 'prime'
+require 'bigdecimal'
+require 'strscan'
+ 
+batas = 64_000          # limit number
+start = Time.now        # time of starting
+lp_array = []           # array of long-prime numbers
+a = BigDecimal.("1")    # number being divided, that is 1.
+ 
+Prime.each(batas).each do |prime|
+  cek = a.div(prime, (prime-1)*2).truncate((prime-1)*2).to_s('F')[2..-1] # Dividing 1 with prime and take its value as string.
+  if (cek[0, prime-1] == cek[prime-1, prime-1])
+    i = prime-2
+    until i < 5
+      break if cek[0, i] == cek[i, i]
+      i-=1
+      cek.slice!(-2, 2) # Shortening checked string to reduce checking process load
+    end
+ 
+    until i == 0
+      break if cek[0, (cek.size/i)*i].scan(/.{#{i}}/).uniq.length == 1
+      i-=1
+    end
+ 
+    lp_array.push(prime) if i == 0
+  end
+end
+ 
+[500, 1000, 2000, 4000, 8000, 16000, 32000, 64000].each do |s|
+  if s == 500
+    puts "\nAll long primes up to  #{s} are: #{lp_array.count {|x| x < s}}. They are:"
+    lp_array.each {|x| print x, " " if x < s}
+  else
+    print "\nAll long primes up to #{s} are: #{lp_array.count {|x| x < s}}"
+  end
+end
+ 
+puts "\n\nTime: #{Time.now - start}"
+
+====RUBY=====
+def prime?(n)                     # P3 Prime Generator primality test
+  return n | 1 == 3 if n < 5      # n: 2,3|true; 0,1,4|false 
+  return false if n.gcd(6) != 1   # this filters out 2/3 of all integers
+  pc, sqrtn = 5, Integer.sqrt(n)  # first P3 prime candidates sequence value
+  until pc > sqrtn
+    return false if n % pc == 0 || n % (pc + 2) == 0  # if n is composite
+    pc += 6                       # 1st prime candidate for next residues group
+  end
+  true
+end
+ 
+def divisors(n)                   # divisors of n -> [1,..,n]
+  f = []
+  (1..Integer.sqrt(n)).each { |i| (n % i).zero? && (f << i; f << n / i if n / i != i) }
+  f.sort
+end
+ 
+# The smallest divisor d of p-1 such that 10^d = 1 (mod p), 
+# is the length of the period of the decimal expansion of 1/p. 
+def long_prime?(p)
+  return false unless prime? p
+  divisors(p - 1).each { |d| return d == (p - 1) if 10.pow(d, p) == 1 }
+  false
+end
+ 
+start = Time.now
+puts "Long primes ≤ 500:"
+(7..500).each { |pc| print "#{pc} " if long_prime? pc }
+puts 
+[500, 1000, 2000, 4000, 8000, 16000, 32000, 64000].each do |n|
+  puts "Number of long primes ≤ #{n}: #{(7..n).count { |pc| long_prime? pc }}"
+end
+puts "\nTime: #{(Time.now - start)} secs"
+
+====RUBY=====
+func is_long_prime(p) {
+ 
+    for d in (divisors(p-1)) {
+        if (powmod(10, d, p) == 1) {
+            return (d+1 == p)
+        }
+    }
+ 
+    return false
+}
+ 
+say "Long primes ≤ 500:"
+say primes(500).grep(is_long_prime).join(' ')
+ 
+for n in ([500, 1000, 2000, 4000, 8000, 16000, 32000, 64000]) {
+    say ("Number of long primes ≤ #{n}: ", primes(n).count_by(is_long_prime))
+}
+
+====RUBY=====
+func is_long_prime(p) {
+    znorder(10, p) == p-1
+}
+
+====PYTHON=====
+def sieve(limit):
+    primes = []
+    c = [False] * (limit + 1) # composite = true
+    # no need to process even numbers
+    p = 3
+    while True:
+        p2 = p * p
+        if p2 > limit: break
+        for i in range(p2, limit, 2 * p): c[i] = True
+        while True:
+            p += 2
+            if not c[p]: break
+ 
+    for i in range(3, limit, 2):
+        if not c[i]: primes.append(i)
+    return primes
+ 
+# finds the period of the reciprocal of n
+def findPeriod(n):
+    r = 1
+    for i in range(1, n): r = (10 * r) % n
+    rr = r
+    period = 0
+    while True:
+        r = (10 * r) % n
+        period += 1
+        if r == rr: break
+    return period
+ 
+primes = sieve(64000)
+longPrimes = []
+for prime in primes:
+    if findPeriod(prime) == prime - 1:
+        longPrimes.append(prime)
+numbers = [500, 1000, 2000, 4000, 8000, 16000, 32000, 64000]
+count = 0
+index = 0
+totals = [0] * len(numbers)
+for longPrime in longPrimes:
+    if longPrime > numbers[index]:
+        totals[index] = count
+        index += 1
+    count += 1
+totals[-1] = count
+print('The long primes up to 500 are:')
+print(str(longPrimes[:totals[0]]).replace(',', ''))
+print('\nThe number of long primes up to:')
+for (i, total) in enumerate(totals):
+    print('  %5d is %d' % (numbers[i], total))
+

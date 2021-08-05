@@ -1,0 +1,221 @@
+====RUBY=====
+class Array
+  def radix_sort(base=10)
+    ary = dup
+    rounds = (Math.log(ary.minmax.map(&:abs).max)/Math.log(base)).floor + 1
+    rounds.times do |i|
+      buckets = Array.new(2*base){[]}
+      base_i = base**i
+      ary.each do |n|
+        digit = (n/base_i) % base
+        digit += base if 0<=n
+        buckets[digit] << n
+      end
+      ary = buckets.flatten
+      p [i, ary] if $DEBUG
+    end
+    ary
+  end
+  def radix_sort!(base=10)
+    replace radix_sort(base)
+  end
+end
+ 
+p [1, 3, 8, 9, 0, 0, 8, 7, 1, 6].radix_sort
+p [170, 45, 75, 90, 2, 24, 802, 66].radix_sort
+p [170, 45, 75, 90, 2, 24, -802, -66].radix_sort
+p [100000, -10000, 400, 23, 10000].radix_sort
+
+====RUBY=====
+class Array
+  def radix_sort(base=10)
+    ary = dup
+    m, max = 1, ary.minmax.map(&:abs).max
+    while m <= max
+      buckets = Array.new(base){[]}
+      ary.each {|n| buckets[(n.abs / m) % base] << n}
+      ary = buckets.flatten
+      m *= base
+    end
+    ary.partition{|n| n<0}.inject{|minus,plus| minus.reverse + plus}
+  end
+end
+
+====RUBY=====
+class Array {
+    method radix_sort(base=10) {
+        var arr = self.clone
+        var rounds = ([arr.minmax].map{.abs}.max.ilog(base) + 1)
+        for i in (0..rounds) {
+            var buckets = (2*base -> of {[]})
+            var base_i = base**i
+            for n in arr {
+                var digit = (n/base_i % base)
+                digit += base if (0 <= n)
+                buckets[digit].append(n)
+            }
+            arr = buckets.flat
+        }
+        return arr
+    }
+}
+ 
+for arr in [
+    [1, 3, 8, 9, 0, 0, 8, 7, 1, 6],
+    [170, 45, 75, 90, 2, 24, 802, 66],
+    [170, 45, 75, 90, 2, 24, -802, -66],
+    [100000, -10000, 400, 23, 10000],
+] {
+    say arr.radix_sort
+}
+
+====PYTHON=====
+#python2.6 <
+from math import log
+ 
+def getDigit(num, base, digit_num):
+    # pulls the selected digit
+    return (num // base ** digit_num) % base  
+ 
+def makeBlanks(size):
+    # create a list of empty lists to hold the split by digit
+    return [ [] for i in range(size) ]  
+ 
+def split(a_list, base, digit_num):
+    buckets = makeBlanks(base)
+    for num in a_list:
+        # append the number to the list selected by the digit
+        buckets[getDigit(num, base, digit_num)].append(num)  
+    return buckets
+ 
+# concatenate the lists back in order for the next step
+def merge(a_list):
+    new_list = []
+    for sublist in a_list:
+       new_list.extend(sublist)
+    return new_list
+ 
+def maxAbs(a_list):
+    # largest abs value element of a list
+    return max(abs(num) for num in a_list)
+ 
+def split_by_sign(a_list):
+    # splits values by sign - negative values go to the first bucket,
+    # non-negative ones into the second
+    buckets = [[], []]
+    for num in a_list:
+        if num < 0:
+            buckets[0].append(num)
+        else:
+            buckets[1].append(num)
+    return buckets
+ 
+def radixSort(a_list, base):
+    # there are as many passes as there are digits in the longest number
+    passes = int(round(log(maxAbs(a_list), base)) + 1) 
+    new_list = list(a_list)
+    for digit_num in range(passes):
+        new_list = merge(split(new_list, base, digit_num))
+    return merge(split_by_sign(new_list))
+ 
+
+====PYTHON=====
+#python3.7 <
+def flatten(some_list):
+    """
+    Flatten a list of lists.
+    Usage: flatten([[list a], [list b], ...])
+    Output: [elements of list a, elements of list b]
+    """
+    new_list = []
+    for sub_list in some_list:
+        new_list += sub_list
+    return new_list
+ 
+def radix(some_list, idex=None, size=None):
+    """
+    Recursive radix sort
+    Usage: radix([unsorted list])
+    Output: [sorted list]
+    """
+    # Initialize variables not set in the initial call
+    if size == None:
+        largest_num = max(some_list)
+        largest_num_str = str(largest_num)
+        largest_num_len = len(largest_num_str)
+        size = largest_num_len
+ 
+    if idex == None:
+        idex = size
+ 
+    # Translate the index we're looking at into an array index.
+    # e.g., looking at the 10's place for 100:
+    # size: 3
+    # idex: 2
+    #    i: (3-2) == 1
+    # str(123)[i] -> 2
+    i = size - idex 
+ 
+    # The recursive base case.
+    # Hint: out of range indexing errors
+    if i >= size:
+        return some_list
+ 
+    # Initialize the bins we will place numbers into
+    bins = [[] for _ in range(10)]
+ 
+    # Iterate over the list of numbers we are given
+    for e in some_list:
+        # The destination bin; e.g.,:
+        #   size: 5
+        #      e: 29
+        #  num_s: '00029'
+        #      i: 3
+        # dest_c: '2'
+        # dest_i: 2
+        num_s  = str(e).zfill(size)
+        dest_c = num_s[i]
+        dest_i = int(dest_c) 
+        bins[dest_i] += [e]
+ 
+    result = []
+    for b in bins:
+        #If the bin is empty it skips the recursive call
+        if b == []:
+            continue
+        # Make the recursive call
+        # Sort each of the sub-lists in our bins
+        result.append(radix(b, idex-1, size))
+ 
+    # Flatten our list
+    # This is also called in our recursive call,
+    # so we don't need flatten to be recursive.
+    flattened_result = flatten(result)
+ 
+    return flattened_result
+ 
+
+====PYTHON=====
+#python3.7 <
+def flatten(l):
+    return [y for x in l for y in x]
+ 
+def radix(l, p=None, s=None):
+    if s == None:
+        s = len(str(max(l)))
+    if p == None:
+        p = s
+ 
+    i = s - p
+ 
+    if i >= s:
+        return l
+ 
+    bins = [[] for _ in range(10)]
+ 
+    for e in l:
+        bins[int(str(e).zfill(s)[i])] += [e]
+ 
+    return flatten([radix(b, p-1, s) for b in bins])
+ 
+

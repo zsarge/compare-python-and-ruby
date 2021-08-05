@@ -1,0 +1,95 @@
+====RUBY=====
+^1e5 -> grep { Set(.digits...) == Set(.digits(16)...) }.say
+
+====RUBY=====
+func generate_from_prefix(limit, p, base, digits) {
+ 
+    var seq = [p]
+ 
+    for d in (digits) {
+        var t = [d, p...]
+        if (t.digits2num(base) <= limit) {
+            seq << __FUNC__(limit, t, base, digits)...
+        }
+    }
+ 
+    return seq
+}
+ 
+func numbers_with_same_digitset(limit, base = 10) {
+ 
+    (1..9).map  {|p| generate_from_prefix(limit, [p], base, @(0..9))... }\
+          .map  {|t| digits2num(t, base) }\
+          .grep {|t| Set(t.digits...) == Set(t.digits(base)...) }\
+          .sort\
+          .prepend(0)
+}
+ 
+say numbers_with_same_digitset(1e5, 16)
+
+====PYTHON=====
+col = 0
+for i in range(100000):
+    if set(str(i)) == set(hex(i)[2:]):
+        col += 1
+        print("{:7}".format(i), end='\n'[:col % 10 == 0])
+print()
+
+====PYTHON=====
+'''Decimal - Hexadecimal numbers'''
+ 
+ 
+# p :: Int -> Bool
+def p(n):
+    '''True if the hex and dec representations
+       of n use the same set of digits.
+    '''
+    return set(hex(n)[2:]) == set(str(n))
+ 
+ 
+# ------------------------- TEST -------------------------
+# main :: IO ()
+def main():
+    '''Matches below 100000'''
+    print(
+        table(10)([
+            str(x) for x in range(100000)
+            if p(x)
+        ])
+    )
+ 
+ 
+# ----------------------- GENERIC ------------------------
+ 
+# chunksOf :: Int -> [a] -> [[a]]
+def chunksOf(n):
+    '''A series of lists of length n, subdividing the
+       contents of xs. Where the length of xs is not evenly
+       divisible, the final list will be shorter than n.
+    '''
+    def go(xs):
+        return (
+            xs[i:n + i] for i in range(0, len(xs), n)
+        ) if 0 < n else None
+    return go
+ 
+ 
+# table :: Int -> [a] -> String
+def table(n):
+    '''A list of values formatted as
+       right-justified rows of n columns.
+    '''
+    def go(xs):
+        w = len(xs[-1])
+        return '\n'.join(
+            ' '.join(row) for row in chunksOf(n)([
+                x.rjust(w, ' ') for x in xs
+            ])
+        )
+    return go
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

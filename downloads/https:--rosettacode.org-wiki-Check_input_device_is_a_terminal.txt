@@ -1,0 +1,16 @@
+====RUBY=====
+File.new("testfile").tty?   #=> false
+File.new("/dev/tty").tty?   #=> true
+STDIN.tty?  #=> true
+
+====RUBY=====
+File.new("testfile").isatty   #=> false
+File.new("/dev/tty").isatty   #=> true
+
+====PYTHON=====
+from sys import stdin
+if stdin.isatty():
+    print("Input comes from tty.")
+else:
+    print("Input doesn't come from tty.")
+

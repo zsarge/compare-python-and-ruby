@@ -1,0 +1,57 @@
+====RUBY=====
+def recurse x
+  puts x
+  recurse(x+1)
+end
+ 
+recurse(0)
+
+====RUBY=====
+def recurse n
+  recurse(n+1)
+rescue SystemStackError
+  n
+end
+ 
+puts recurse(0)
+
+====RUBY=====
+func recurse(n) {
+   say n;
+   recurse(n+1);
+}
+ 
+recurse(0);
+
+====PYTHON=====
+import sys
+print(sys.getrecursionlimit())
+
+====PYTHON=====
+import sys
+sys.setrecursionlimit(12345)
+
+====PYTHON=====
+def recurse(counter):
+  print(counter)
+  counter += 1
+  recurse(counter)
+
+====PYTHON=====
+File "<stdin>", line 2, in recurse
+RecursionError: maximum recursion depth exceeded while calling a Python object
+996
+
+====PYTHON=====
+def recurseDeeper(counter):
+    try:
+        print(counter)
+        recurseDeeper(counter + 1)
+    except RecursionError:
+        print("RecursionError at depth", counter)
+        recurseDeeper(counter + 1)
+
+====PYTHON=====
+1045
+Fatal Python error: Cannot recover from stack overflow.
+

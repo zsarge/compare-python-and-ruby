@@ -1,0 +1,183 @@
+====RUBY=====
+def equalBirthdays(nSharers, groupSize, nRepetitions)
+    eq = 0
+ 
+    for i in 1 .. nRepetitions
+        group = [0] * 365
+        for j in 1 .. groupSize
+            group[rand(group.length)] += 1
+        end
+        eq += group.any? { |n| n >= nSharers } ? 1 : 0
+    end
+ 
+    return (eq * 100.0) / nRepetitions
+end
+ 
+def main
+    groupEst = 2
+    for sharers in 2 .. 5
+        # Coarse
+        groupSize = groupEst + 1
+        while equalBirthdays(sharers, groupSize, 100) < 50.0
+            groupSize += 1
+        end
+ 
+        # Finer
+        inf = (groupSize - (groupSize - groupEst) / 4.0).floor
+        for gs in inf .. groupSize + 999
+            eq = equalBirthdays(sharers, groupSize, 250)
+            if eq > 50.0 then
+                groupSize = gs
+                break
+            end
+        end
+ 
+        # Finest
+        for gs in groupSize - 1 .. groupSize + 999
+            eq = equalBirthdays(sharers, gs, 50000)
+            if eq > 50.0 then
+                groupEst = gs
+                print "%d independant people in a group of %s share a common birthday. (%5.1f)\n" % [sharers, gs, eq]
+                break
+            end
+        end
+    end
+end
+ 
+main()
+
+====PYTHON=====
+ 
+from random import randint
+ 
+def equal_birthdays(sharers=2, groupsize=23, rep=100000):
+    'Note: 4 sharing common birthday may have 2 dates shared between two people each' 
+    g = range(groupsize)
+    sh = sharers - 1
+    eq = sum((groupsize - len(set(randint(1,365) for i in g)) >= sh)
+             for j in range(rep))
+    return (eq * 100.) / rep
+ 
+def equal_birthdays(sharers=2, groupsize=23, rep=100000):
+    'Note: 4 sharing common birthday must all share same common day' 
+    g = range(groupsize)
+    sh = sharers - 1
+    eq = 0
+    for j in range(rep):
+        group = [randint(1,365) for i in g]
+        if (groupsize - len(set(group)) >= sh and
+            any( group.count(member) >= sharers for member in set(group))):
+            eq += 1
+    return (eq * 100.) / rep
+ 
+group_est = [2]
+for sharers in (2, 3, 4, 5):
+    groupsize = group_est[-1]+1
+    while equal_birthdays(sharers, groupsize, 100) < 50.:
+        # Coarse
+        groupsize += 1
+    for groupsize in range(int(groupsize - (groupsize - group_est[-1])/4.), groupsize + 999):
+        # Finer
+        eq = equal_birthdays(sharers, groupsize, 250)
+        if eq > 50.:
+            break
+    for groupsize in range(groupsize - 1, groupsize +999):
+        # Finest
+        eq = equal_birthdays(sharers, groupsize, 50000)
+        if eq > 50.:
+            break
+    group_est.append(groupsize)
+    print("%i independent people in a group of %s share a common birthday. (%5.1f)" % (sharers, groupsize, eq))
+
+====PYTHON=====
+from collections import defaultdict
+days = 365
+ 
+def find_half(c):
+ 
+    # inc_people takes birthday combinations of n people and generates the
+    # new set for n+1
+    def inc_people(din, over):
+        # 'over' is the number of combinations that have at least c people
+        # sharing a birthday. These are not contained in the set.
+ 
+        dout,over = defaultdict(int), over * days
+        for k,s in din.items():
+            for i,v in enumerate(k):
+                if v + 1 >= c:
+                    over += s
+                else:
+                    dout[tuple(sorted(k[0:i] + (v + 1,) + k[i+1:]))] += s
+            dout[(1,) + k] += s * (days - len(k))
+        return dout, over
+ 
+    d, combos, good, n = {():1}, 1, 0, 0
+ 
+    # increase number of people until at least half of the cases have at
+    # at least c people sharing a birthday
+    while True:
+        n += 1
+        combos *= days # or, combos = sum(d.values()) + good
+        d,good = inc_people(d, good)
+ 
+        #!!! print d.items()
+        if good * 2 >= combos:
+            return n, good, combos
+ 
+# In all fairness, I don't know if the code works for x >= 4: I probably don't
+# have enough RAM for it, and certainly not enough patience. But it should.
+# In theory.
+for x in range(2, 5):
+    n, good, combos = find_half(x)
+    print "%d of %d people sharing birthday: %d out of %d combos"% (x, n, good, combos)
+ 
+
+====PYTHON=====
+# ought to use a memoize class for all this
+# factorial
+def fact(n, cache={0:1}):
+    if not n in cache:
+        cache[n] = n * fact(n - 1)
+    return cache[n]
+ 
+# permutations
+def perm(n, k, cache={}):
+    if not (n,k) in cache:
+        cache[(n,k)] = fact(n) / fact(n - k)
+    return cache[(n,k)]
+ 
+def choose(n, k, cache={}):
+    if not (n,k) in cache:
+        cache[(n,k)] = perm(n, k) / fact(k)
+    return cache[(n, k)]
+ 
+# ways of distribute p people's birthdays into d days, with
+# no more than m sharing any one day
+def combos(d, p, m, cache={}):
+    if not p: return 1
+    if not m: return 0
+    if p <= m: return d**p        # any combo would satisfy
+ 
+    k = (d, p, m)
+    if not k in cache:
+        result = 0
+        for x in range(0, p//m + 1):
+            c = combos(d - x, p - x * m, m - 1)
+            # ways to occupy x days with m people each
+            if c: result += c * choose(d, x) * perm(p, x * m) / fact(m)**x
+        cache[k] = result
+ 
+    return cache[k]
+ 
+def find_half(m):
+    n = 0
+    while True:
+        n += 1
+        total = 365 ** n
+        c = total - combos(365, n, m - 1)
+        if c * 2 >= total:
+            print "%d of %d people: %d/%d combos" % (n, m, c, total)
+            return
+ 
+for x in range(2, 6): find_half(x)
+

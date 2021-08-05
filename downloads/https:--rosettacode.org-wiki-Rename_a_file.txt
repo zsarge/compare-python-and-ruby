@@ -1,0 +1,71 @@
+====RUBY=====
+File.rename('input.txt', 'output.txt')
+File.rename('/input.txt', '/output.txt')
+File.rename('docs', 'mydocs')
+File.rename('/docs', '/mydocs')
+
+====RUBY=====
+require 'fileutils'
+moves = { "input.txt" => "output.txt", "/input.txt" => "/output.txt", "docs" => "mydocs","/docs" => "/mydocs"}
+moves.each{ |src, dest| FileUtils.move( src, dest, :verbose => true ) }
+
+====RUBY=====
+# Here
+File.rename('input.txt', 'output.txt');
+File.rename('docs',      'mydocs');
+ 
+# Root dir
+File.rename(Dir.root + %f'input.txt', Dir.root + %f'output.txt');
+File.rename(Dir.root + %f'docs',      Dir.root + %f'mydocs');
+
+====PYTHON=====
+from java.io import File
+ 
+=={{header|Processing Python mode}}==
+ 
+<lang python>def setup():
+    # rename local file
+    sketchfile = rename(sketchPath("input.txt"), sketchPath("output.txt"))
+    # rename local folder
+    sketchfold = rename(sketchPath("docs"), sketchPath("mydocs"))
+    # rename root file (if permitted)
+    rootfile = rename("input.txt", "output.txt")
+    # rename root folder (if permitted)
+    rootfold = rename("docs", "mydocs")
+ 
+    # display results of four operations: True=success, False=fail
+    println(str(sketchfile) + ' ' +
+            str(sketchfold) + ' ' +
+            str(rootfile) +  ' ' +
+            str(rootfold)) 
+    # output:
+    #     True True False False
+ 
+ 
+def rename(oldname, newname):
+    # File (or directory) with old name
+    file = File(oldname)
+    # File (or directory) with new name
+    file2 = File(newname)
+    # Rename file (or directory)
+    success = file.renameTo(file2)
+    return success
+
+====PYTHON=====
+import os
+ 
+os.rename("input.txt", "output.txt")
+os.rename("docs", "mydocs")
+ 
+os.rename(os.sep + "input.txt", os.sep + "output.txt")
+os.rename(os.sep + "docs", os.sep + "mydocs")
+
+====PYTHON=====
+import shutil
+ 
+shutil.move("input.txt", "output.txt")
+shutil.move("docs", "mydocs")
+ 
+shutil.move("/input.txt", "/output.txt")
+shutil.move("/docs", "/mydocs")
+

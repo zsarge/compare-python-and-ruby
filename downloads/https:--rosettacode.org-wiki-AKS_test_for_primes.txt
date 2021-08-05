@@ -1,0 +1,157 @@
+====RUBY=====
+def x_minus_1_to_the(p)
+  p.times.reduce([1]) do |ex, _|
+    ([0_i64] + ex).zip(ex + [0]).map { |x,y| x - y }
+  end
+end
+ 
+def prime?(p)
+  return false if p < 2
+  coeff = x_minus_1_to_the(p)[1..p//2] # only need half of coeff terms
+  coeff.all?{ |n| n%p == 0 }
+end
+ 
+8.times do |n|
+  puts "(x-1)^#{n} = " + 
+  x_minus_1_to_the(n).map_with_index{ |c, p|
+    p.zero? ? c.to_s : (c < 0 ? " - " : " + ") + (c.abs == 1 ? "x" : "#{c.abs}x") + (p == 1 ? "" : "^#{p}")
+  }.join
+end
+ 
+puts "\nPrimes below 50:", 50.times.select { |n| prime? n }.join(',')
+ 
+
+====RUBY=====
+require 'polynomial'
+ 
+def x_minus_1_to_the(p)
+  return Polynomial.new(-1,1)**p
+end
+ 
+def prime?(p)
+  return false if p < 2
+  (x_minus_1_to_the(p) - Polynomial.from_string("x**#{p}-1")).coefs.all?{|n| n%p==0}
+end
+ 
+8.times do |n|
+  # the default Polynomial#to_s would be OK here; the substitutions just make the
+  # output match the other version below.
+  puts "(x-1)^#{n} = #{x_minus_1_to_the(n).to_s.gsub(/\*\*/,'^').gsub(/\*/,'')}"
+end
+ 
+puts "\nPrimes below 50:", 50.times.select {|n| prime? n}.join(',')
+
+====RUBY=====
+def x_minus_1_to_the(p)
+  p.times.inject([1]) do |ex, _|
+    ([0] + ex).zip(ex + [0]).map { |x,y| x - y }
+  end
+end
+ 
+def prime?(p)
+  return false if p < 2
+  coeff = x_minus_1_to_the(p)[1..p/2] # only need half of coeff terms
+  coeff.all?{ |n| n%p == 0 }
+end
+ 
+8.times do |n|
+  puts "(x-1)^#{n} = " + 
+  x_minus_1_to_the(n).map.with_index { |c, p|
+    p.zero? ? c.to_s :
+      (c < 0 ? " - " : " + ") + (c.abs == 1 ? "x" : "#{c.abs}x") + (p == 1 ? "" : "^#{p}")
+  }.join
+end
+ 
+puts "\nPrimes below 50:", 50.times.select {|n| prime? n}.join(',')
+
+====RUBY=====
+func binprime(p) {
+    p >= 2 || return false
+    for i in (1 .. p>>1) {
+        (binomial(p, i) % p) && return false
+    }
+    return true
+}
+ 
+func coef(n, e) {
+    (e == 0) && return "#{n}"
+    (n == 1) && (n = "")
+    (e == 1) ? "#{n}x" : "#{n}x^#{e}"
+}
+ 
+func binpoly(p) {
+    join(" ", coef(1, p), ^p -> map {|i|
+        join(" ", %w(+ -)[(p-i)&1], coef(binomial(p, i), i))
+    }.reverse...)
+}
+ 
+say "expansions of (x-1)^p:"
+for i in ^10 { say binpoly(i) }
+say "Primes to 80: [#{2..80 -> grep { binprime(_) }.join(' ')}]"
+
+====PYTHON=====
+def expand_x_1(n): 
+# This version uses a generator and thus less computations
+    c =1
+    for i in range(n//2+1):
+        c = c*(n-i)//(i+1)
+        yield c
+ 
+def aks(p):
+    if p==2:
+        return True
+ 
+    for i in expand_x_1(p):
+        if i % p:
+# we stop without computing all possible solutions
+            return False
+    return True
+
+====PYTHON=====
+def aks(p):
+    if p==2:return True
+    c=1
+    for i in range(p//2+1):
+        c=c*(p-i)//(i+1)
+        if c%p:return False
+    return True
+
+====PYTHON=====
+def expand_x_1(p):
+    ex = [1]
+    for i in range(p):
+        ex.append(ex[-1] * -(p-i) / (i+1))
+    return ex[::-1]
+ 
+def aks_test(p):
+    if p < 2: return False
+    ex = expand_x_1(p)
+    ex[0] += 1
+    return not any(mult % p for mult in ex[0:-1])
+ 
+ 
+print('# p: (x-1)^p for small p')
+for p in range(12):
+    print('%3i: %s' % (p, ' '.join('%+i%s' % (e, ('x^%i' % n) if n else '')
+                                   for n,e in enumerate(expand_x_1(p)))))
+ 
+print('\n# small primes using the aks test')
+print([p for p in range(101) if aks_test(p)])
+
+====PYTHON=====
+print('''
+{| class="wikitable" style="text-align:left;"
+|+ Polynomial Expansions and AKS prime test
+|-
+! <math>p</math>
+! <math>(x-1)^p</math>
+|-''')
+for p in range(12):
+    print('! <math>%i</math>\n| <math>%s</math>\n| %r\n|-'
+          % (p,
+             ' '.join('%s%s' % (('%+i' % e) if (e != 1 or not p or (p and not n) ) else '+',
+                                (('x^{%i}' % n) if n > 1 else 'x') if n else '')
+                      for n,e in enumerate(expand_x_1(p))),
+             aks_test(p)))
+print('|}')
+

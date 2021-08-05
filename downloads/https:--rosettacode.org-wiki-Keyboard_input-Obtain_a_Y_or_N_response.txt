@@ -1,0 +1,105 @@
+====RUBY=====
+ 
+def yesno
+  begin
+    system("stty raw -echo")
+    str = STDIN.getc
+  ensure
+    system("stty -raw echo")
+  end
+  if str == "Y"
+    return true
+  elsif str == "N"
+    return false
+  else
+    raise "Invalid character."
+  end
+end
+ 
+
+====RUBY=====
+ 
+require 'io/console'
+ 
+def yesno
+  case $stdin.getch
+    when "Y" then true
+    when "N" then false
+    else raise "Invalid character."
+  end
+end
+ 
+
+====RUBY=====
+func prompt_yn {
+    static rk = frequire('Term::ReadKey');
+    rk.ReadMode(4);     # change to raw input mode
+ 
+    var key = '';
+    while (key !~ /[yn]/i) {
+        while (rk.ReadKey(-1) != nil) {};   # discard any previous input
+        print "Type Y/N: ";
+        say (key = rk.ReadKey(0));          # read a single character
+    }
+ 
+    rk.ReadMode(0);     # reset the terminal to normal mode
+    return key.uc;
+}
+ 
+var key = prompt_yn();
+say "You typed: #{key}";
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+try:
+    from msvcrt import getch
+except ImportError:
+    def getch():
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+ 
+print "Press Y or N to continue"
+while True:
+    char = getch()
+    if char.lower() in ("y", "n"):
+        print char
+        break
+
+====PYTHON=====
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from curses import wrapper
+#
+#
+def main(stdscr):
+  # const
+  #y = ord("y")
+  #n = ord("n")
+  while True:
+    # keyboard input interceptor|listener
+    #window.nodelay(yes)
+    # - If yes is 1, getch() will be non-blocking.
+    # return char code
+    #kb_Inpt = stdscr.getch()
+    # return string
+    kb_Inpt = stdscr.getkey()
+    #if kb_Inpt == (y or n):
+    if kb_Inpt.lower() == ('y' or 'n'):
+      break
+      return None
+  #
+  return None
+#
+#*** unit test ***#
+if __name__ == "__main__":
+  #
+  wrapper(main)
+

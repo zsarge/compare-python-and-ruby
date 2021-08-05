@@ -1,0 +1,74 @@
+====RUBY=====
+puts <<-DOC
+this is a heredoc
+  it preserves indents and newlines
+  the DOC identifier is completely arbitrary
+  it can be lowercase, a keyword, or even a number (but not a float)
+DOC
+
+====RUBY=====
+address = <<END
+1, High Street,
+#{town_name},
+West Midlands.
+WM4 5HD.
+END
+
+====RUBY=====
+pancake = <<"NO MORE INGREDIENTS"
+egg
+milk
+flour
+NO MORE INGREDIENTS
+
+====RUBY=====
+x = <<'FOO'
+No
+#{interpolation}
+here
+FOO
+
+====RUBY=====
+output = <<`BAR`
+ls /home
+BAR
+
+====RUBY=====
+puts <<EOF + "lamb"
+Mary had
+  a little
+EOF
+
+====RUBY=====
+var text = <<"EOF";
+a = #{1+2}
+b = #{3+4}
+EOF
+
+====RUBY=====
+var x = <<'FOO';
+No
+#{interpolation}
+here
+FOO
+
+====RUBY=====
+say (<<EOF + "lamb");
+Mary had
+  a little
+EOF
+
+====RUBY=====
+say (<<EOF
+Mary had
+  a little
+EOF
++ "lamb");
+
+====PYTHON=====
+print("""\
+Usage: thingy [OPTIONS]
+     -h                        Display this usage message
+     -H hostname               Hostname to connect to
+""")
+

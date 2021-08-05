@@ -1,0 +1,94 @@
+====RUBY=====
+def shuffle(l)
+    l.sort_by { rand }
+end
+ 
+def bogosort(l)
+    l = shuffle(l) until in_order(l)
+    l
+end
+ 
+def in_order(l)
+    (0..l.length-2).all? {|i| l[i] <= l[i+1] }
+end
+
+====RUBY=====
+def shuffle(l)
+    l.sort_by { rand }
+end
+ 
+def bogosort(l)
+   l = shuffle(l) until l == l.sort
+   l
+end
+
+====RUBY=====
+def in_order(l)
+    (0..l.length-2).all? {|i| l[i] <= l[i+1] }
+end
+ 
+def bogosort(l)
+   l.shuffle! until in_order(l)
+   l
+end
+
+====RUBY=====
+func in_order(a) {
+    return true if (a.len <= 1);
+    var first = a[0];
+    a.ft(1).all { |elem| first <= elem  ? do { first = elem; true } : false }
+}
+ 
+func bogosort(a) {
+    a.shuffle! while !in_order(a);
+    return a;
+}
+ 
+var arr = 5.of{ 100.rand.int };
+say "Before: #{arr}";
+say "After:  #{bogosort(arr)}";
+
+====PYTHON=====
+import random
+ 
+def bogosort(l):
+    while not in_order(l):
+        random.shuffle(l)
+    return l
+ 
+def in_order(l):
+    if not l:
+        return True
+    last = l[0]
+    for x in l[1:]:
+        if x < last:
+            return False
+        last = x
+    return True
+
+====PYTHON=====
+def in_order(l):
+    return all( l[i] <= l[i+1] for i in xrange(0,len(l)-1))
+
+====PYTHON=====
+import random
+def bogosort(lst):
+   random.shuffle(lst)  # must shuffle it first or it's a bug if lst was pre-sorted! :)
+   while lst != sorted(lst):
+       random.shuffle(lst)
+   return lst
+
+====PYTHON=====
+import operator
+import random
+from itertools import dropwhile, imap, islice, izip, repeat, starmap
+ 
+def shuffled(x):
+    x = x[:]
+    random.shuffle(x)
+    return x
+ 
+bogosort = lambda l: next(dropwhile(
+    lambda l: not all(starmap(operator.le, izip(l, islice(l, 1, None)))),
+    imap(shuffled, repeat(l))))
+

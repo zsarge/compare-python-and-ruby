@@ -1,0 +1,256 @@
+====RUBY=====
+class Markov(N)
+  @dictionary = Hash(StaticArray(String, N), Array(String)).new { [] of String }
+ 
+  def parse(filename : String)
+    File.open(filename) do |file|
+      parse(file)
+    end
+  end
+ 
+  private def prefix_from(array)
+    StaticArray(String, N).new { |i| array[-(N - i)] }
+  end
+ 
+  def parse(input : IO)
+    sequence = [] of String
+    loop do
+      word = input.gets(' ', true)
+      break unless word
+      if sequence.size == N
+        prefix = prefix_from(sequence)
+        @dictionary[prefix] = (@dictionary[prefix] << word)
+      end
+      sequence << word
+      sequence.shift if sequence.size > N
+    end
+  end
+ 
+  def generate(count)
+    prefix = @dictionary.keys.sample
+    result = Array(String).new(prefix.size) { |i| prefix[i] }
+    (count - N).times do
+      prefix = prefix_from(result)
+      values = @dictionary[prefix]
+      break if values.size == 0
+      result << values.sample
+    end
+    result.join(' ')
+  end
+end
+ 
+chain = Markov(3).new
+chain.parse("alice_oz.txt")
+puts chain.generate(200)
+
+====RUBY=====
+func build_dict (n, words) {
+    var dict = Hash()
+    words.each_cons(n+1, {|*prefix|
+        var suffix = prefix.pop
+        dict{prefix.join(' ')} := [] << suffix
+    })
+    return dict
+}
+ 
+var file = File(ARGV[0] || "alice_oz.txt")
+var n    =  Num(ARGV[1] || 2)
+var max  =  Num(ARGV[2] || 100)
+ 
+var words = file.open_r.words
+words << words.first(n)...
+ 
+var dict = build_dict(n, words)
+var rotor = words.first(n)
+var chain = [rotor...]
+ 
+max.times {
+    var new = dict{rotor.join(' ')}.rand
+    chain.push(new)
+    rotor.shift
+    rotor.push(new)
+}
+ 
+say chain.join(' ')
+
+====PYTHON=====
+import random, sys
+ 
+def makerule(data, context):
+    '''Make a rule dict for given data.'''
+    rule = {}
+    words = data.split(' ')
+    index = context
+ 
+    for word in words[index:]:
+        key = ' '.join(words[index-context:index])
+        if key in rule:
+            rule[key].append(word)
+        else:
+            rule[key] = [word]
+        index += 1
+ 
+    return rule
+ 
+ 
+def makestring(rule, length):    
+    '''Use a given rule to make a string.'''
+    oldwords = random.choice(list(rule.keys())).split(' ') #random starting words
+    string = ' '.join(oldwords) + ' '
+ 
+    for i in range(length):
+        try:
+            key = ' '.join(oldwords)
+            newword = random.choice(rule[key])
+            string += newword + ' '
+ 
+            for word in range(len(oldwords)):
+                oldwords[word] = oldwords[(word + 1) % len(oldwords)]
+            oldwords[-1] = newword
+ 
+        except KeyError:
+            return string
+    return string
+ 
+ 
+if __name__ == '__main__':
+    with open(sys.argv[1], encoding='utf8') as f:
+        data = f.read()
+    rule = makerule(data, int(sys.argv[2]))
+    string = makestring(rule, int(sys.argv[3]))
+    print(string)
+
+====PYTHON=====
+'''Markov chain text generation'''
+ 
+from os.path import (expanduser)
+from os import (getcwd)
+ 
+from itertools import (starmap)
+from functools import (reduce)
+from random import (choice)
+from textwrap import (fill)
+ 
+ 
+# markovText :: Dict -> [String] -> ([String] -> Bool) -> IO [String]
+def markovText(dct):
+    '''nGram-hashed word dict -> opening words -> end condition -> text
+    '''
+    # nGram length
+    n = len(list(dct.keys())[0].split())
+ 
+    # step :: [String] -> [String]
+    def step(xs):
+        return xs + [choice(dct[' '.join(xs[-n:])])]
+    return lambda ws: lambda p: (
+        until(p)(step)(ws)
+    )
+ 
+ 
+# markovRules :: Int -> [String] -> Dict
+def markovRules(n):
+    '''All words in ordered list hashed by
+       preceding nGrams of length n.
+    '''
+    def nGramKey(dct, tpl):
+        k = ' '.join(list(tpl[:-1]))
+        dct[k] = (dct[k] if k in dct else []) + [tpl[-1]]
+        return dct
+    return lambda ws: reduce(
+        nGramKey,
+        nGramsFromWords(1 + n)(ws),
+        {}
+    )
+ 
+ 
+# TEST ----------------------------------------------------
+# main :: IO ()
+def main():
+    '''Text generation test.'''
+ 
+    nGramLength = 3
+    dctNGrams = markovRules(nGramLength)(
+        readFile(getcwd() + '/' + 'alice_oz.txt').split()
+    )
+    print(__doc__ + ':\n')
+    print(
+        fill(
+            ' '.join(
+                markovText(dctNGrams)(
+                    anyNGramWithInitialCap(dctNGrams)
+                )(sentenceEndAfterMinWords(200))
+            ),
+            width=75
+        )
+    )
+ 
+ 
+# HELPER FUNCTIONS ----------------------------------------
+ 
+# nGramsFromWords :: Int -> [String] -> [Tuple]
+def nGramsFromWords(n):
+    '''List of nGrams, of length n, derived
+       from ordered list of words ws.
+    '''
+    return lambda ws: zipWithN(lambda *xs: xs)(
+        map(lambda i: ws[i:], range(0, n))
+    )
+ 
+ 
+# anyNGramWithInitialCap :: Dict -> [String]
+def anyNGramWithInitialCap(dct):
+    '''Random pick from nGrams which
+       start with capital letters
+    '''
+    return choice(list(filter(
+        lambda k: 1 < len(k) and k[0].isupper() and k[1].islower(),
+        dct.keys()
+    ))).split()
+ 
+ 
+# sentenceEndAfterMinWords :: Int -> [String] -> Bool
+def sentenceEndAfterMinWords(n):
+    '''Predicate :: Sentence punctuation
+       after minimum word count
+    '''
+    return lambda ws: n <= len(ws) and (
+        ws[-1][-1] in ['.', "'", '!', '?']
+    )
+ 
+ 
+# GENERIC -------------------------------------------------
+ 
+# readFile :: FilePath -> IO String
+def readFile(fp):
+    '''The contents of any file at the path
+       derived by expanding any ~ in fp.'''
+    with open(expanduser(fp), 'r', encoding='utf-8') as f:
+        return f.read()
+ 
+ 
+# until :: (a -> Bool) -> (a -> a) -> a -> a
+def until(p):
+    '''The result of repeatedly applying f until p holds.
+       The initial seed value is x.'''
+    def go(f, x):
+        v = x
+        while not p(v):
+            v = f(v)
+        return v
+    return lambda f: lambda x: go(f, x)
+ 
+ 
+# zipWithN :: (a -> b -> ... -> c) -> ([a], [b] ...) -> [c]
+def zipWithN(f):
+    '''A new list constructed by the application of f
+       to each tuple in the zip of an arbitrary
+       number of existing lists.
+    '''
+    return lambda xs: list(
+        starmap(f, zip(*xs))
+    )
+ 
+ 
+if __name__ == '__main__':
+    main()
+

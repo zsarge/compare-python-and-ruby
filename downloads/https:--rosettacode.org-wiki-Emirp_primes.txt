@@ -1,0 +1,82 @@
+====RUBY=====
+require 'prime'
+ 
+emirp = Enumerator.new do |y|
+  Prime.each do |prime|
+    rev = prime.to_s.reverse.to_i
+    y << prime  if rev.prime? and rev != prime
+  end
+end
+ 
+puts "First 20 emirps:", emirp.first(20).join(" ")
+puts "Emirps between 7,700 and 8,000:"
+emirp.with_index(1) do |prime,i|
+  print "#{prime} "  if (7700..8000).cover?(prime)
+  if i==10000
+    puts "", "10,000th emirp:", prime
+    break
+  end
+end
+
+====RUBY=====
+func forprimes(a, b, callback) {
+    for (var p = a.dec.next_prime; p <= b; p.next_prime!) {
+        callback(p)
+    }
+}
+ 
+func is_emirp(p) {
+    var str = Str(p)
+    var rev = str.reverse
+    (str != rev) && is_prime(Num(rev))
+}
+ 
+func emirp_list(count) {
+    var i = 13
+    var inc = (100 + 10*count)
+    var n = []
+    while (n.len < count) {
+        forprimes(i, i+inc - 1, {|p|
+            is_emirp(p) && (n << p)
+        })
+        (i, inc) = (i+inc, int(inc * 1.03) + 1000)
+    }
+    n.splice(count)
+    return n
+}
+ 
+say ("First 20: ", emirp_list(20).join(' '))
+say ("Between 7700 and 8000: ", gather {
+        forprimes(7700, 8000, {|p| is_emirp(p) && take(p) })
+    }.join(' '))
+say ("The 10,000'th emirp: ", emirp_list(10000)[-1])
+
+====PYTHON=====
+from __future__ import print_function
+from prime_decomposition import primes, is_prime
+from heapq import *
+from itertools import islice
+ 
+def emirp():
+    largest = set()
+    emirps = []
+    heapify(emirps)
+    for pr in primes():
+        while emirps and pr > emirps[0]:
+            yield heappop(emirps)
+        if pr in largest:
+            yield pr
+        else:
+            rp = int(str(pr)[::-1])
+            if rp > pr and is_prime(rp):
+                heappush(emirps, pr)
+                largest.add(rp)
+ 
+print('First 20:\n  ', list(islice(emirp(), 20)))
+print('Between 7700 and 8000:\n  [', end='')
+for pr in emirp():
+    if pr >= 8000: break
+    if pr >= 7700: print(pr, end=', ')
+print(']')
+print('10000th:\n  ', list(islice(emirp(), 10000-1, 10000)))
+

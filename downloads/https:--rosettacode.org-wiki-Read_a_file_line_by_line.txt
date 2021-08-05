@@ -1,0 +1,49 @@
+====RUBY=====
+IO.foreach "foobar.txt" do |line|
+  # Do something with line.
+  puts line
+end
+
+====RUBY=====
+# File inherits from IO, so File.foreach also works.
+File.foreach("foobar.txt") {|line| puts line}
+
+====RUBY=====
+# IO.foreach and File.foreach can also read a subprocess.
+IO.foreach "| grep afs3 /etc/services" do |line|
+  puts line
+end
+
+====RUBY=====
+filename = "|strange-name.txt"
+File.open(filename) do |file|
+  file.each {|line| puts line}
+end
+
+====RUBY=====
+File(__FILE__).open_r.each { |line|
+    print line
+}
+
+====RUBY=====
+var fh = File(__FILE__).open_r
+while (fh.readline(\var line)) {
+    print line
+}
+
+====PYTHON=====
+for line in lines open('input.txt'):
+    print line
+ 
+
+====PYTHON=====
+with open("foobar.txt") as f:
+    for line in f:
+        process(line)
+
+====PYTHON=====
+import fileinput
+for line in fileinput.input():
+    process(line)
+ 
+

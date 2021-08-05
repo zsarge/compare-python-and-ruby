@@ -1,0 +1,137 @@
+====RUBY=====
+ 
+require 'prime'
+ 
+prime_array, sppair2, sppair3, sppair4, sppair5 = Array.new(5) {Array.new()} # arrays for prime numbers and index number to array for each pair.
+unsexy, i, start = [2], 0, Time.now
+Prime.each(1_000_100) {|prime| prime_array.push prime}
+ 
+while prime_array[i] < 1_000_035
+  i+=1
+  unsexy.push(i) if prime_array[(i+1)..(i+2)].include?(prime_array[i]+6) == false && prime_array[(i-2)..(i-1)].include?(prime_array[i]-6) == false && prime_array[i]+6 < 1_000_035
+  prime_array[(i+1)..(i+4)].include?(prime_array[i]+6) && prime_array[i]+6 < 1_000_035 ? sppair2.push(i) : next
+  prime_array[(i+2)..(i+5)].include?(prime_array[i]+12) && prime_array[i]+12 < 1_000_035 ? sppair3.push(i) : next
+  prime_array[(i+3)..(i+6)].include?(prime_array[i]+18) && prime_array[i]+18 < 1_000_035 ? sppair4.push(i) : next
+  prime_array[(i+4)..(i+7)].include?(prime_array[i]+24) && prime_array[i]+24 < 1_000_035 ? sppair5.push(i) : next
+end
+ 
+puts "\nSexy prime pairs: #{sppair2.size} found:"
+sppair2.last(5).each {|prime| print [prime_array[prime], prime_array[prime]+6].join(" - "), "\n"}
+puts "\nSexy prime triplets: #{sppair3.size} found:"
+sppair3.last(5).each {|prime| print [prime_array[prime], prime_array[prime]+6, prime_array[prime]+12].join(" - "), "\n"}
+puts "\nSexy prime quadruplets: #{sppair4.size} found:"
+sppair4.last(5).each {|prime| print [prime_array[prime], prime_array[prime]+6, prime_array[prime]+12, prime_array[prime]+18].join(" - "), "\n"}
+puts "\nSexy prime quintuplets: #{sppair5.size} found:"
+sppair5.last(5).each {|prime| print [prime_array[prime], prime_array[prime]+6, prime_array[prime]+12, prime_array[prime]+18, prime_array[prime]+24].join(" - "), "\n"}
+ 
+puts "\nUnSexy prime: #{unsexy.size} found. Last 10 are:"
+unsexy.last(10).each {|item| print prime_array[item], " "}
+print "\n\n", Time.now - start, " seconds"
+ 
+
+====RUBY=====
+var limit  = 1e6+35
+var primes = limit.primes
+ 
+say "Total number of primes <= #{limit.commify} is #{primes.len.commify}."
+say "Sexy k-tuple primes <= #{limit.commify}:\n"
+ 
+(2..5).each {|k|
+    var groups = []
+    primes.each {|p|
+        var group = (1..^k -> map {|j| 6*j + p })
+        if (group.all{.is_prime} && (group[-1] <= limit)) {
+            groups << [p, group...]
+        }
+    }
+ 
+    say "...total number of sexy #{k}-tuple primes = #{groups.len.commify}"
+    say "...where last 5 tuples are: #{groups.last(5).map{'('+.join(' ')+')'}.join(' ')}\n"
+}
+ 
+var unsexy_primes = primes.grep {|p| is_prime(p+6) || is_prime(p-6) -> not }
+say "...total number of unsexy primes = #{unsexy_primes.len.commify}"
+say "...where last 10 unsexy primes are: #{unsexy_primes.last(10)}"
+
+====PYTHON=====
+LIMIT = 1_000_035
+def primes2(limit=LIMIT):
+    if limit < 2: return []
+    if limit < 3: return [2]
+    lmtbf = (limit - 3) // 2
+    buf = [True] * (lmtbf + 1)
+    for i in range((int(limit ** 0.5) - 3) // 2 + 1):
+        if buf[i]:
+            p = i + i + 3
+            s = p * (i + 1) + i
+            buf[s::p] = [False] * ((lmtbf - s) // p + 1)
+    return [2] + [i + i + 3 for i, v in enumerate(buf) if v]
+ 
+primes = primes2(LIMIT +6)
+primeset = set(primes)
+primearray = [n in primeset for n in range(LIMIT)]
+ 
+#%%
+s = [[] for x in range(4)]
+unsexy = []
+ 
+for p in primes:
+    if p > LIMIT:
+        break
+    if p + 6 in primeset and p + 6 < LIMIT:
+        s[0].append((p, p+6))
+    elif p + 6 in primeset:
+        break
+    else:
+        if p - 6 not in primeset:
+            unsexy.append(p)
+        continue
+    if p + 12 in primeset and p + 12 < LIMIT:
+        s[1].append((p, p+6, p+12))
+    else:
+        continue
+    if p + 18 in primeset and p + 18 < LIMIT:
+        s[2].append((p, p+6, p+12, p+18))
+    else:
+        continue
+    if p + 24 in primeset and p + 24 < LIMIT:
+        s[3].append((p, p+6, p+12, p+18, p+24))
+ 
+#%%
+print('"SEXY" PRIME GROUPINGS:')
+for sexy, name in zip(s, 'pairs triplets quadruplets quintuplets'.split()):
+    print(f'  {len(sexy)} {na (not isPrime(n-6))))) |> Array.ofSeq
+printfn "There are %d unsexy primes less than 1,000,035. The last 10 are:" n.Length
+Array.skip (n.Length-10) n |> Array.iter(fun n->printf "%d " n); printfn ""
+let ni=pCache |> Seq.takeWhile(fun n->nme} ending with ...')
+    for sx in sexy[-5:]:
+        print('   ',sx)
+ 
+print(f'\nThere are {len(unsexy)} unsexy primes ending with ...')
+for usx in unsexy[-10:]:
+    print(' ',usx)
+
+====PYTHON=====
+ 
+#Functional Sexy Primes. Nigel Galloway: October 5th., 2018
+from itertools import *
+z=primes()
+n=frozenset(takewhile(lambda x: x<1000035,z))
+ni=sorted(list(filter(lambda g: n.__contains__(g+6) ,n)))
+print ("There are",len(ni),"sexy prime pairs all components of which are less than 1,000,035. The last 5 are:")
+for g in islice(ni,max(len(ni)-5,0),len(ni)): print(format("(%d,%d) " % (g,g+6)))
+nig=list(filter(lambda g: n.__contains__(g+12) ,ni))
+print ("There are",len(nig),"sexy prime triplets all components of which are less than 1,000,035. The last 5 are:")
+for g in islice(nig,max(len(nig)-5,0),len(nig)): print(format("(%d,%d,%d) " % (g,g+6,g+12)))
+nige=list(filter(lambda g: n.__contains__(g+18) ,nig))
+print ("There are",len(nige),"sexy prime quadruplets all components of which are less than 1,000,035. The last 5 are:")
+for g in islice(nige,max(len(nige)-5,0),len(nige)): print(format("(%d,%d,%d,%d) " % (g,g+6,g+12,g+18)))
+nigel=list(filter(lambda g: n.__contains__(g+24) ,nige))
+print ("There are",len(nigel),"sexy prime quintuplets all components of which are less than 1,000,035. The last 5 are:")
+for g in islice(nigel,max(len(nigel)-5,0),len(nigel)): print(format("(%d,%d,%d,%d,%d) " % (g,g+6,g+12,g+18,g+24)))
+un=frozenset(takewhile(lambda x: x<1000050,z)).union(n)
+unsexy=sorted(list(filter(lambda g: not un.__contains__(g+6) and not un.__contains__(g-6),n)))
+print ("There are",len(unsexy),"unsexy primes less than 1,000,035. The last 10 are:")
+for g in islice(unsexy,max(len(unsexy)-10,0),len(unsexy)): print(g)
+ 
+

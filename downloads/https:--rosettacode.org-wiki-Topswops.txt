@@ -1,0 +1,127 @@
+====RUBY=====
+def f1(a)
+  i = 0
+  while (a0 = a[0]) > 1
+    a[0...a0] = a[0...a0].reverse
+    i += 1
+  end
+  i
+end
+ 
+def fannkuch(n)
+  [*1..n].permutation.map{|a| f1(a)}.max
+end
+ 
+for n in 1..10
+  puts "%2d : %d" % [n, fannkuch(n)]
+end
+
+====RUBY=====
+def try_swaps(deck, f, d, n)
+  @best[n] = d  if d > @best[n]
+  (n-1).downto(0) do |i|
+    break  if deck[i] == -1 || deck[i] == i
+    return if d + @best[i] <= @best[n]
+  end
+  deck2 = deck.dup
+  for i in 1...n
+    k = 1 << i
+    if deck2[i] == -1
+      next  if f & k != 0
+    elsif deck2[i] != i
+      next
+    end
+    deck2[0] = i
+    deck2[1..i] = deck[0...i].reverse
+    try_swaps(deck2, f | k, d+1, n)
+  end
+end
+ 
+def topswops(n)
+  @best[n] = 0
+  deck0 = [-1] * (n + 1)
+  try_swaps(deck0, 1, 0, n)
+  @best[n]
+end
+ 
+@best = [0] * 16
+for i in 1..10
+  puts "%2d : %d" % [i, topswops(i)]
+end
+
+====PYTHON=====
+>>> from itertools import permutations
+>>> def f1(p):
+	i = 0
+	while True:
+		p0  = p[0]
+		if p0 == 1: break
+		p[:p0] = p[:p0][::-1]
+		i  += 1
+	return i
+ 
+>>> def fannkuch(n):
+	return max(f1(list(p)) for p in permutations(range(1, n+1)))
+ 
+>>> for n in range(1, 11): print(n,fannkuch(n))
+ 
+1 0
+2 1
+3 2
+4 4
+5 7
+6 10
+7 16
+8 22
+9 30
+10 38
+>>> 
+
+====PYTHON=====
+try:
+    import psyco
+    psyco.full()
+except ImportError:
+    pass
+ 
+best = [0] * 16
+ 
+def try_swaps(deck, f, s, d, n):
+    if d > best[n]:
+        best[n] = d
+ 
+    i = 0
+    k = 1 << s
+    while s:
+        k >>= 1
+        s -= 1
+        if deck[s] == -1 or deck[s] == s:
+            break
+        i |= k
+        if (i & f) == i and d + best[s] <= best[n]:
+            return d
+    s += 1
+ 
+    deck2 = list(deck)
+    k = 1
+    for i2 in xrange(1, s):
+        k <<= 1
+        if deck2[i2] == -1:
+            if f & k: continue
+        elif deck2[i2] != i2:
+            continue
+ 
+        deck[i2] = i2
+        deck2[:i2 + 1] = reversed(deck[:i2 + 1])
+        try_swaps(deck2, f | k, s, 1 + d, n)
+ 
+def topswops(n):
+    best[n] = 0
+    deck0 = [-1] * 16
+    deck0[0] = 0
+    try_swaps(deck0, 1, n, 0, n)
+    return best[n]
+ 
+for i in xrange(1, 13):
+    print "%2d: %d" % (i, topswops(i))
+

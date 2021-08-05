@@ -1,0 +1,19 @@
+====RUBY=====
+puts "Hello,How,Are,You,Today".split(',').join('.')
+
+====RUBY=====
+'Hello,How,Are,You,Today'.split(',').join('.').say;
+
+====PYTHON=====
+let text = 'Hello,How,Are,You,Today'
+let tokens = text.split(||,||)
+print tokens.join(with: '.')
+
+====PYTHON=====
+text = "Hello,How,Are,You,Today"
+tokens = text.split(',')
+print ('.'.join(tokens))
+
+====PYTHON=====
+print ('.'.join('Hello,How,Are,You,Today'.split(',')))
+

@@ -1,0 +1,107 @@
+====RUBY=====
+def order_disjoint(m,n)
+  print "#{m} | #{n} -> "
+  m, n = m.split, n.split
+  from = 0
+  n.each_slice(2) do |x,y|
+    next unless y
+    sd = m[from..-1]
+    if x > y && (sd.include? x) && (sd.include? y) && (sd.index(x) > sd.index(y))
+      new_from = m.index(x)+1
+      m[m.index(x)+from], m[m.index(y)+from] = m[m.index(y)+from], m[m.index(x)+from]
+      from = new_from
+    end
+  end
+  puts m.join(' ')
+end
+ 
+[
+  ['the cat sat on the mat', 'mat cat'],
+  ['the cat sat on the mat', 'cat mat'],
+  ['A B C A B C A B C'     , 'C A C A'],
+  ['A B C A B D A B E'     , 'E A D A'],
+  ['A B'                   , 'B'      ],
+  ['A B'                   , 'B A'    ],
+  ['A B B A'               , 'B A'    ]
+].each {|m,n| order_disjoint(m,n)}
+
+====RUBY=====
+ar = [
+  ['the cat sat on the mat', 'mat cat'],
+  ['the cat sat on the mat', 'cat mat'],
+  ['A B C A B C A B C'     , 'C A C A'],
+  ['A B C A B D A B E'     , 'E A D A'],
+  ['A B'                   , 'B'      ],
+  ['A B'                   , 'B A'    ],
+  ['A B B A'               , 'B A'    ]
+]
+ 
+res  = ar.map do |m,n|
+  mm = m.dup
+  nn = n.split
+  nn.each {|item| mm.sub!(item, "%s")} #sub! only subs the first match
+  mm % nn #"the %s sat on the %s" % [mat", "cat"] #does what you hope it does.
+end
+ 
+puts res
+ 
+
+====RUBY=====
+func dsort(m, n) {
+    var h = Hash()
+    n.each {|item| h{item} := 0 ++ }
+    m.map  {|item| h{item} := 0 -- > 0 ? n.shift : item}
+}
+ 
+<<'EOT'.lines.each { |line|
+        the cat sat on the mat  | mat cat
+        the cat sat on the mat  | cat mat
+        A B C A B C A B C       | C A C A
+        A B C A B D A B E       | E A D A
+        A B                     | B
+        A B                     | B A
+        A B B A                 | B A
+EOT
+        var (a, b) = line.split('|').map{.words}...
+        say "#{a.to_s} | #{b.to_s} -> #{dsort(a.clone, b.clone).to_s}"
+}
+
+====PYTHON=====
+from __future__ import print_function
+ 
+def order_disjoint_list_items(data, items):
+    #Modifies data list in-place
+    itemindices = []
+    for item in set(items):
+        itemcount = items.count(item)
+        #assert data.count(item) >= itemcount, 'More of %r than in data' % item
+        lastindex = [-1]
+        for i in range(itemcount):
+            lastindex.append(data.index(item, lastindex[-1] + 1))
+        itemindices += lastindex[1:]
+    itemindices.sort()
+    for index, item in zip(itemindices, items):
+        data[index] = item
+ 
+if __name__ == '__main__':
+    tostring = ' '.join
+    for data, items in [ (str.split('the cat sat on the mat'), str.split('mat cat')),
+                         (str.split('the cat sat on the mat'), str.split('cat mat')),
+                         (list('ABCABCABC'), list('CACA')),
+                         (list('ABCABDABE'), list('EADA')),
+                         (list('AB'), list('B')),
+                         (list('AB'), list('BA')),
+                         (list('ABBA'), list('BA')),
+                         (list(''), list('')),
+                         (list('A'), list('A')),
+                         (list('AB'), list('')),
+                         (list('ABBA'), list('AB')),
+                         (list('ABAB'), list('AB')),
+                         (list('ABAB'), list('BABA')),
+                         (list('ABCCBA'), list('ACAC')),
+                         (list('ABCCBA'), list('CACA')),
+                       ]:
+        print('Data M: %-24r Order N: %-9r' % (tostring(data), tostring(items)), end=' ')
+        order_disjoint_list_items(data, items)
+        print("-> M' %r" % tostring(data))
+

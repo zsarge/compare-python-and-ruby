@@ -1,0 +1,116 @@
+====RUBY=====
+require 'webrick'
+server = WEBrick::HTTPServer.new(:Port => 8080)
+server.mount_proc('/') {|request, response| response.body = "Goodbye, World!"}
+trap("INT") {server.shutdown}
+server.start
+
+====RUBY=====
+require 'webrick'
+WEBrick::HTTPServer.new(:Port => 80).tap {|srv|
+    srv.mount_proc('/') {|request, response| response.body = "Goodbye, World!"}
+}.start
+
+====RUBY=====
+require 'sinatra'
+get("/") { "Goodbye, World!" }
+
+====RUBY=====
+var port = 8080;
+var protocol = Socket.getprotobyname("tcp");
+ 
+var sock = (Socket.open(Socket.PF_INET, Socket.SOCK_STREAM, protocol) || die "couldn't open a socket: #{$!}");
+  # PF_INET to indicate that this socket will connect to the internet domain
+  # SOCK_STREAM indicates a TCP stream, SOCK_DGRAM would indicate UDP communication
+ 
+sock.setsockopt(Socket.SOL_SOCKET, Socket.SO_REUSEADDR, 1) || die "couldn't set socket options: #{$!}";
+  # SOL_SOCKET to indicate that we are setting an option on the socket instead of the protocol
+  # mark the socket reusable
+ 
+sock.bind(Socket.sockaddr_in(port, Socket.INADDR_ANY)) || die "couldn't bind socket to port #{port}: #{$!}";
+  # bind our socket to $port, allowing any IP to connect
+ 
+sock.listen(Socket.SOMAXCONN) || die "couldn't listen to port #{port}: #{$!}";
+  # start listening for incoming connections
+ 
+while (var client = sock.accept) {
+  client.print ("HTTP/1.1 200 OK\r\n" +
+               "Content-Type: text/html; charset=UTF-8\r\n\r\n" +
+               "<html><head><title>Goodbye, world!</title></head>" +
+               "<body>Goodbye, world!</body></html>\r\n");
+  client.close;
+}
+
+====RUBY=====
+var inet = require('IO::Socket::INET');
+ 
+var sock = inet.new( LocalAddr => "127.0.0.1:8080",
+                     Listen    => 1,
+                     Reuse     => 1,
+            );
+ 
+while (var client = sock.accept) {
+    client.print ("HTTP/1.1 200 OK\r\n" +
+                "Content-Type: text/html; charset=UTF-8\r\n\r\n" +
+                "<html><head><title>Goodbye, world!</title></head>" +
+                "<body>Goodbye, world!</body></html>\r\n");
+    client.close;
+}
+
+====PYTHON=====
+from wsgiref.simple_server import make_server
+ 
+def app(environ, start_response):
+    start_response('200 OK', [('Content-Type','text/html')])
+    yield b"<h1>Goodbye, World!</h1>"
+ 
+server = make_server('127.0.0.1', 8080, app)
+server.serve_forever()
+
+====PYTHON=====
+import threading
+ 
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 
+ 
+class HelloHTTPRequestHandler(BaseHTTPRequestHandler):
+ 
+  message = 'Hello World! 今日は'
+ 
+  def do_GET(self):
+    self.send_response(200)
+    self.send_header('Content-type', 'text/html; charset=UTF-8')
+    self.end_headers()
+    self.wfile.write(self.message.encode('utf-8'))
+    self.close_connection = True
+ 
+ 
+def serve(addr, port):
+  with ThreadingHTTPServer((addr, port), HelloHTTPRequestHandler) as server:
+    server.serve_forever(poll_interval=None)
+ 
+ 
+if __name__ == '__main__':
+ 
+  addr, port = ('localhost', 80)
+ 
+  threading.Thread(target=serve, args=(addr, port), daemon=True).start()
+ 
+  try:
+    while True:
+      # handle Ctrl+C
+      input()
+ 
+  except KeyboardInterrupt:
+    pass
+ 
+
+====PYTHON=====
+with server_socket socket :port 4000
+  accepting client :from socket
+    making stdout outfile+fd.client
+      prn "HTTP/1.0 200 OK"
+      prn "Content-type: text/plain"
+      prn ""
+      prn "Hello, world!"
+

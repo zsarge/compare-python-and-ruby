@@ -1,0 +1,160 @@
+====RUBY=====
+class PCG32
+  MASK64 = (1 << 64) - 1
+  MASK32 = (1 << 32) - 1
+  CONST  = 6364136223846793005
+ 
+  def seed(seed_state, seed_sequence)
+    @state = 0
+    @inc = ((seed_sequence << 1) | 1) & MASK64
+    next_int
+    @state = @state + seed_state
+    next_int
+  end
+ 
+  def next_int
+    old = @state
+    @state = ((old * CONST) + @inc) & MASK64
+    xorshifted = (((old >> 18) ^ old) >> 27) & MASK32
+    rot = (old >> 59) & MASK32
+    answer = (xorshifted >> rot) | (xorshifted << ((-rot) & 31))
+    answer & MASK32
+  end
+ 
+  def next_float
+    next_int.fdiv(1 << 32)
+  end
+ 
+end
+ 
+random_gen = PCG32.new
+random_gen.seed(42, 54)
+5.times{puts random_gen.next_int}
+ 
+random_gen.seed(987654321, 1)
+p 100_000.times.each{(random_gen.next_float * 5).floor}.tally.sort.to_h
+ 
+
+====RUBY=====
+class PCG32(seed, incr) {
+ 
+    has state
+ 
+    define (
+        mask32 = (2**32 - 1),
+        mask64 = (2**64 - 1),
+        N      = 6364136223846793005,
+    )
+ 
+    method init {
+        seed := 1
+        incr := 2
+        incr  = (((incr << 1) | 1) & mask64)
+        state = (((incr + seed)*N + incr) & mask64)
+    }
+ 
+    method next_int {
+        var shift  = ((((state >> 18) ^ state) >> 27) & mask32)
+        var rotate = ((state >> 59) & mask32)
+            state  = ((state*N + incr) & mask64)
+        ((shift >> rotate) | (shift << (32-rotate))) & mask32
+    }
+ 
+    method next_float {
+        self.next_int / (mask32+1)
+    }
+}
+ 
+say "Seed: 42, Increment: 54, first 5 values:";
+var rng = PCG32(seed: 42, incr: 54)
+say 5.of { rng.next_int }
+ 
+say "\nSeed: 987654321, Increment: 1, values histogram:";
+var rng = PCG32(seed: 987654321, incr: 1)
+var histogram = Bag(1e5.of { floor(5*rng.next_float) }...)
+histogram.pairs.sort.each { .join(": ").say }
+
+====PYTHON=====
+mask64 = (1 << 64) - 1
+mask32 = (1 << 32) - 1
+CONST = 6364136223846793005
+ 
+ 
+class PCG32():
+ 
+    def __init__(self, seed_state=None, seed_sequence=None):
+        if all(type(x) == int for x in (seed_state, seed_sequence)):
+            self.seed(seed_state, seed_sequence)
+        else:
+            self.state = self.inc = 0
+ 
+    def seed(self, seed_state, seed_sequence):
+        self.state = 0
+        self.inc = ((seed_sequence << 1) | 1) & mask64
+        self.next_int()
+        self.state = (self.state + seed_state)
+        self.next_int()
+ 
+    def next_int(self):
+        "return random 32 bit unsigned int"
+        old = self.state
+        self.state = ((old * CONST) + self.inc) & mask64
+        xorshifted = (((old >> 18) ^ old) >> 27) & mask32
+        rot = (old >> 59) & mask32
+        answer = (xorshifted >> rot) | (xorshifted << ((-rot) & 31))
+        answer = answer &mask32
+ 
+        return answer
+ 
+    def  next_float(self):
+        "return random float between 0 and 1"
+        return self.next_int() / (1 << 32)
+ 
+ 
+if __name__ == '__main__':
+    random_gen = PCG32()
+    random_gen.seed(42, 54)
+    for i in range(5):
+        print(random_gen.next_int())
+ 
+    random_gen.seed(987654321, 1)
+    hist = {i:0 for i in range(5)}
+    for i in range(100_000):
+        hist[int(random_gen.next_float() *5)] += 1
+    print(hist)
+
+====PYTHON=====
+def pcg32(seed_state=None, seed_sequence=None, as_int=True):
+    def next_int():
+        "return random 32 bit unsigned int"
+        nonlocal state, inc
+ 
+        state, xorshifted, rot = (((state * CONST) + inc) & mask64,
+                                  (((state >> 18) ^ state) >> 27) & mask32,
+                                  (state >> 59) & mask32)
+        answer = (((xorshifted >> rot) | (xorshifted << ((-rot) & 31)))
+                  & mask32)
+        return answer
+ 
+    # Seed
+    state = inc = 0
+    if all(type(x) == int for x in (seed_state, seed_sequence)):
+        inc = ((seed_sequence << 1) | 1) & mask64
+        next_int()
+        state += seed_state
+        next_int()
+ 
+    while True:
+        yield next_int() if as_int else next_int() / (1 << 32)
+ 
+ 
+if  __name__ == '__main__':
+    from itertools import islice
+ 
+    for i in islice(pcg32(42, 54), 5):
+        print(i)
+    hist = {i:0 for i in range(5)}
+    for i in islice(pcg32(987654321, 1, as_int=False), 100_000):
+        hist[int(i * 5)] += 1
+    print(hist)
+

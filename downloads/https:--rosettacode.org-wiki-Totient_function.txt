@@ -1,0 +1,55 @@
+====RUBY=====
+ 
+require "prime"
+ 
+def 𝜑(n)
+  n.prime_division.inject(1) {|res, (pr, exp)| res *= (pr-1) * pr**(exp-1) } 
+end
+ 
+1.upto 25 do |n|
+  tot = 𝜑(n)
+  puts "#{n}\t #{tot}\t #{"prime" if n-tot==1}"
+end
+ 
+[100, 1_000, 10_000, 100_000].each do |u|
+  puts "Number of primes up to #{u}: #{(1..u).count{|n| n-𝜑(n) == 1} }"
+end
+ 
+
+====RUBY=====
+func 𝜑(n) {
+    n.factor_exp.prod {|p|
+        (p[0]-1) * p[0]**(p[1]-1)
+    }
+}
+
+====RUBY=====
+for n in (1..25) {
+    var totient = 𝜑(n)
+    printf("𝜑(%2s) = %3s%s\n", n, totient, totient==(n-1) ? ' - prime' : '')
+}
+
+====RUBY=====
+[100, 1_000, 10_000, 100_000].each {|limit|
+    var pi = (1..limit -> count_by {|n| 𝜑(n) == (n-1) })
+    say "Number of primes <= #{limit}: #{pi}"
+}
+
+====PYTHON=====
+from math import gcd
+ 
+def  φ(n):
+    return sum(1 for k in range(1, n + 1) if gcd(n, k) == 1)
+ 
+if __name__ == '__main__':
+    def is_prime(n):
+        return φ(n) == n - 1
+ 
+    for n in range(1, 26):
+        print(f" φ({n}) == {φ(n)}{', is prime' if is_prime(n)  else ''}")
+    count = 0
+    for n in range(1, 10_000 + 1):
+        count += is_prime(n)
+        if n in {100, 1000, 10_000}:
+            print(f"Primes up to {n}: {count}")
+

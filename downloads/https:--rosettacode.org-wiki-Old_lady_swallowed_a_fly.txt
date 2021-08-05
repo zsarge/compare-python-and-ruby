@@ -1,0 +1,99 @@
+====RUBY=====
+descriptions = {
+  :fly    => "I don't know why S",
+  :spider => "That wriggled and jiggled and tickled inside her.",
+  :bird   => "Quite absurd T",
+  :cat    => "Fancy that, S",
+  :dog    => "What a hog, S",
+  :goat   => "She opened her throat T",
+  :cow    => "I don't know how S",
+  :horse  => "She's dead, of course.",
+}
+animals = descriptions.keys
+ 
+animals.each_with_index do |animal, idx|
+  puts "There was an old lady who swallowed a #{animal}."
+ 
+  d = descriptions[animal]
+  case d[-1]
+  when "S" then d[-1] = "she swallowed a #{animal}."
+  when "T" then d[-1] = "to swallow a #{animal}."
+  end
+  puts d
+  break if animal == :horse
+ 
+  idx.downto(1) do |i|
+    puts "She swallowed the #{animals[i]} to catch the #{animals[i-1]}."
+    case animals[i-1]
+    when :spider, :fly then puts descriptions[animals[i-1]]
+    end
+  end
+ 
+  print "Perhaps she'll die.\n\n"
+end
+
+====RUBY=====
+var victims = [
+    :fly:    "  I don't know why S—",
+    :spider: "  That wriggled and jiggled and tickled inside her.",
+    :bird:   "  How absurd, T!",
+    :cat:    "  Fancy that, S!",
+    :dog:    "  What a hog, T!",
+    :goat:   "  She just opened her throat, and in walked the goat!",
+    :cow:    "  I don't know how S!",
+    :horse:  "  She's dead, of course...",
+];
+ 
+var history = ["I guess she'll die...\n"];
+ 
+victims.each { |pair|
+    var (victim, verse) = pair...;
+    say "There was an old lady who swallowed a #{victim}...";
+ 
+    verse.sub!(/\bS\b/, "she swallowed the #{victim}");
+    verse.sub!(/\bT\b/, "to swallow a #{victim}!");
+ 
+    say verse;
+    verse ~~ /dead/ && break;
+ 
+    history[0].sub!(/^X/, "She swallowed the #{victim}");
+    history.each{.say};
+    history.len < 5 && history.unshift(verse);
+    history.unshift("X to catch the #{victim},");
+};
+
+====PYTHON=====
+import zlib, base64
+ 
+b64 = b'''
+eNrtVE1rwzAMvedXaKdeRn7ENrb21rHCzmrs1m49K9gOJv9+cko/HBcGg0LHcpOfnq2np0QL
+2FuKgBbICDAoeoiKwEc0hqIUgLAxfV0tQJCdhQM7qh68kheswKeBt5ROYetTemYMCC3rii//
+WMS3WkhXVyuFAaLT261JuBWwu4iDbvYp1tYzHVS68VEIObwFgaDB0KizuFs38aSdqKv3TgcJ
+uPYdn2B1opwIpeKE53qPftxRd88Y6uoVbdPzWxznrQ3ZUi3DudQ/bcELbevqM32iCIrj3IIh
+W6plOJf6L6xaajZjzqW/qAsKIvITBGs9Nm3glboZzkVP5l6Y+0bHLnedD0CttIyrpEU5Kv7N
+Mz3XkPBc/TSN3yxGiqMiipHRekycK0ZwMhM8jerGC9zuZaoTho3kMKSfJjLaF8v8wLzmXMqM
+zJvGew/jnZPzclA08yAkikegDTTUMfzwDXBcwoE='''
+print(zlib.decompress(base64.b64decode(b64)).decode("utf-8", "strict"))
+
+====PYTHON=====
+animals = [
+        ("fly", "I don't know why she swallowed a fly, perhaps she'll die."),
+        ("spider", "It wiggled and jiggled and tickled inside her."),
+        ("bird", "How absurd, to swallow a bird."),
+        ("cat", "Imagine that, she swallowed a cat."),
+        ("dog", "What a hog, to swallow a dog."),
+        ("goat", "She just opened her throat and swallowed a goat."),
+        ("cow", "I don't know how she swallowed a cow."),
+        ("horse", "She's dead, of course.")]
+ 
+for i, (animal, lyric) in enumerate(animals):
+    print "There was an old lady who swallowed a {}.\n{}".format(animal, lyric)
+ 
+    if animal == "horse": break
+ 
+    for (predator, _), (prey, _) in zip(animals[i:0:-1], animals[i-1::-1]):
+        print "\tShe swallowed the {} to catch the {}".format(predator, prey)
+ 
+    if animal != "fly": print animals[0][1]  # fly lyric
+    print  # new line
+

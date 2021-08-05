@@ -1,0 +1,69 @@
+====RUBY=====
+class Array
+  def bubblesort1!
+    length.times do |j|
+      for i in 1...(length - j)
+        if self[i] < self[i - 1]
+          self[i], self[i - 1] = self[i - 1], self[i]
+        end
+      end
+    end
+    self
+  end
+   def bubblesort2!
+    each_index do |index|
+      (length - 1).downto( index ) do |i|
+        self[i-1], self[i] = self[i], self[i-1] if self[i-1] < self[i]
+      end
+    end
+    self
+  end
+end
+ary = [3, 78, 4, 23, 6, 8, 6]
+ary.bubblesort1!
+p ary
+# => [3, 4, 6, 6, 8, 23, 78]
+
+====RUBY=====
+func bubble_sort(arr) {
+    loop {
+        var swapped = false
+        { |i|
+            if (arr[i] > arr[i+1]) {
+                arr[i, i+1] = arr[i+1, i]
+                swapped = true
+            }
+        } << ^arr.end
+        swapped || break
+    }
+    return arr
+}
+
+====PYTHON=====
+def bubble_sort(seq):
+    """Inefficiently sort the mutable sequence (list) in place.
+       seq MUST BE A MUTABLE SEQUENCE.
+ 
+       As with list.sort() and random.shuffle this does NOT return 
+    """
+    changed = True
+    while changed:
+        changed = False
+        for i in xrange(len(seq) - 1):
+            if seq[i] > seq[i+1]:
+                seq[i], seq[i+1] = seq[i+1], seq[i]
+                changed = True
+    return seq
+ 
+if __name__ == "__main__":
+   """Sample usage and simple test suite"""
+ 
+   from random import shuffle
+ 
+   testset = range(100)
+   testcase = testset[:] # make a copy
+   shuffle(testcase)
+   assert testcase != testset  # we've shuffled it
+   bubble_sort(testcase)
+   assert testcase == testset  # we've unshuffled it back into a copy
+

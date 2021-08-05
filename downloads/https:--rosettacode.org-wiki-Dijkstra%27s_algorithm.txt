@@ -1,0 +1,216 @@
+====RUBY=====
+class Graph
+  Vertex = Struct.new(:name, :neighbours, :dist, :prev)
+ 
+  def initialize(graph)
+    @vertices = Hash.new{|h,k| h[k]=Vertex.new(k,[],Float::INFINITY)}
+    @edges = {}
+    graph.each do |(v1, v2, dist)|
+      @vertices[v1].neighbours << v2
+      @vertices[v2].neighbours << v1
+      @edges[[v1, v2]] = @edges[[v2, v1]] = dist
+    end
+    @dijkstra_source = nil
+  end
+ 
+  def dijkstra(source)
+    return  if @dijkstra_source == source
+    q = @vertices.values
+    q.each do |v|
+      v.dist = Float::INFINITY
+      v.prev = nil
+    end
+    @vertices[source].dist = 0
+    until q.empty?
+      u = q.min_by {|vertex| vertex.dist}
+      break if u.dist == Float::INFINITY
+      q.delete(u)
+      u.neighbours.each do |v|
+        vv = @vertices[v]
+        if q.include?(vv)
+          alt = u.dist + @edges[[u.name, v]]
+          if alt < vv.dist
+            vv.dist = alt
+            vv.prev = u.name
+          end
+        end
+      end
+    end
+    @dijkstra_source = source
+  end
+ 
+  def shortest_path(source, target)
+    dijkstra(source)
+    path = []
+    u = target
+    while u
+      path.unshift(u)
+      u = @vertices[u].prev
+    end
+    return path, @vertices[target].dist
+  end
+ 
+  def to_s
+    "#<%s vertices=%p edges=%p>" % [self.class.name, @vertices.values, @edges] 
+  end
+end
+ 
+g = Graph.new([ [:a, :b, 7],
+                [:a, :c, 9],
+                [:a, :f, 14],
+                [:b, :c, 10],
+                [:b, :d, 15],
+                [:c, :d, 11],
+                [:c, :f, 2],
+                [:d, :e, 6],
+                [:e, :f, 9],
+              ])
+ 
+start, stop = :a, :e
+path, dist = g.shortest_path(start, stop)
+puts "shortest path from #{start} to #{stop} has cost #{dist}:"
+puts path.join(" -> ")
+
+====RUBY=====
+class Graph(*args) {
+ 
+    struct Node {
+        String name,
+        Array edges = [],
+        Number dist = Inf,
+        prev = nil,
+        Bool visited = false,
+    }
+ 
+    struct Edge {
+        Number weight,
+        Node vertex,
+    }
+ 
+    has g = Hash()
+ 
+    method init {
+        args.each { |a|
+            self.add_edge(a...)
+        }
+    }
+ 
+    method get(name) {
+        g{name}
+    }
+ 
+    method add_edge(a, b, weight) {
+        g{a} ||= Node(name: a)
+        g{b} ||= Node(name: b)
+        g{a}.edges << Edge(weight, g{b})
+    }
+ 
+    method push_priority(a, v) {
+        var i = 0
+        var j = a.end
+        while (i <= j) {
+            var k = ((i + j) // 2)
+            if (a[k].dist >= v.dist) {
+                j = k-1
+            }
+            else {
+                i = k+1
+            }
+        }
+        a.insert(i, v)
+    }
+ 
+    method dijkstra(a, b) {
+        g{a}.dist = 0
+        var h = []
+        self.push_priority(h, g{a})
+        while (!h.is_empty) {
+            var v = h.shift
+            break if (v.name == b)
+            v.visited = true
+            v.edges.each { |e|
+                var u = e.vertex
+                if (!u.visited && (v.dist+e.weight <= u.dist)) {
+                    u.prev = v
+                    u.dist = (v.dist + e.weight)
+                    self.push_priority(h, u)
+                }
+            }
+        }
+    }
+}
+ 
+var g = Graph(
+    ["a", "b", 7],
+    ["a", "c", 9],
+    ["a", "f", 14],
+    ["b", "c", 10],
+    ["b", "d", 15],
+    ["c", "d", 11],
+    ["c", "f", 2],
+    ["d", "e", 6],
+    ["e", "f", 9],
+)
+ 
+g.dijkstra('a', 'e')
+ 
+var v = g.get('e')
+var a = []
+while (v != nil) {
+    a << v.name
+    v = v.prev
+}
+ 
+var path = a.reverse.join
+say "#{g.get('e').dist} #{path}"
+
+====PYTHON=====
+from collections import namedtuple, deque
+from pprint import pprint as pp
+ 
+ 
+inf = float('inf')
+Edge = namedtuple('Edge', ['start', 'end', 'cost'])
+ 
+class Graph():
+    def __init__(self, edges):
+        self.edges = [Edge(*edge) for edge in edges]
+        # print(dir(self.edges[0]))
+        self.vertices = {e.start for e in self.edges} | {e.end for e in self.edges}
+ 
+    def dijkstra(self, source, dest):
+        assert source in self.vertices
+        dist = {vertex: inf for vertex in self.vertices}
+        previous = {vertex: None for vertex in self.vertices}
+        dist[source] = 0
+        q = self.vertices.copy()
+        neighbours = {vertex: set() for vertex in self.vertices}
+        for start, end, cost in self.edges:
+            neighbours[start].add((end, cost))
+        #pp(neighbours)
+ 
+        while q:
+            # pp(q)
+            u = min(q, key=lambda vertex: dist[vertex])
+            q.remove(u)
+            if dist[u] == inf or u == dest:
+                break
+            for v, cost in neighbours[u]:
+                alt = dist[u] + cost
+                if alt < dist[v]:                                  # Relax (u,v,a)
+                    dist[v] = alt
+                    previous[v] = u
+        #pp(previous)
+        s, u = deque(), dest
+        while previous[u]:
+            s.appendleft(u)
+            u = previous[u]
+        s.appendleft(u)
+        return s
+ 
+ 
+graph = Graph([("a", "b", 7),  ("a", "c", 9),  ("a", "f", 14), ("b", "c", 10),
+               ("b", "d", 15), ("c", "d", 11), ("c", "f", 2),  ("d", "e", 6),
+               ("e", "f", 9)])
+pp(graph.dijkstra("a", "e"))
+

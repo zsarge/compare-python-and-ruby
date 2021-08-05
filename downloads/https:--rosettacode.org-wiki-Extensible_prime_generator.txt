@@ -1,0 +1,100 @@
+====RUBY=====
+require "prime"
+ 
+puts Prime.take(20).join(", ")
+puts Prime.each(150).drop_while{|pr| pr < 100}.join(", ")
+puts Prime.each(8000).drop_while{|pr| pr < 7700}.count
+puts Prime.take(10_000).last
+
+====RUBY=====
+say ("First 20: ", 20.nth_prime.primes.join(' '))
+say ("Between 100 and 150: ", primes(100,150).join(' '))
+say (prime_count(7700,8000), " primes between 7700 and 8000")
+say ("10,000th prime: ", nth_prime(10_000))
+
+====PYTHON=====
+islice(count(7), 0, None, 2)
+
+====PYTHON=====
+from __future__ import print_function
+from prime_decomposition import primes
+from itertools import islice
+ 
+ 
+def p_range(lower_inclusive, upper_exclusive):
+    'Primes in the range'
+    for p in primes():
+        if p >= upper_exclusive: break
+        if p >= lower_inclusive: yield p
+ 
+if __name__ == '__main__':
+    print('The first twenty primes:\n  ', list(islice(primes(),20)))
+    print('The primes between 100 and 150:\n  ', list(p_range(100, 150)))
+    print('The ''number'' of primes between 7,700 and 8,000:\n  ', len(list(p_range(7700, 8000))))
+    print('The 10,000th prime:\n  ', next(islice(primes(),10000-1, 10000)))
+
+====PYTHON=====
+def wsieve():       # ideone.com/mqO25A
+    wh11 = [ 2,4,2,4,6,2,6,4,2,4,6,6, 2,6,4,2,6,4,6,8,4,2,4,2,
+             4,8,6,4,6,2,4,6,2,6,6,4, 2,4,6,2,6,4,2,4,2,10,2,10]
+    cs = accumulate( chain( [11], cycle( wh11)))
+    yield( next( cs))  # cf. ideone.com/WFv4f
+    ps = wsieve()      #     codereview.stackexchange.com/q/92365/9064
+    p = next(ps)       # 11         stackoverflow.com/q/30553925/849891
+    psq = p*p          # 121
+    D = dict( zip( accumulate( chain( [0], wh11)), count(0)))   # start from
+    mults = {}
+    for c in cs:
+        if c in mults:
+            wheel = mults.pop(c)  
+        elif c < psq:              
+            yield c ; continue   
+        else:          # c==psq:  map (p*) (roll wh from p) = roll (wh*p) from (p*p)
+            x = [p*d for d in wh11]
+            i = D[ (p-11) % 210]
+            wheel = accumulate( chain( [psq+x[i]], cycle( x[i+1:] + x[:i+1])))
+            p = next(ps) ; psq = p*p 
+        for m in wheel: 
+            if not m in mults: 
+                break
+        mults[m] = wheel
+ 
+def primes(): 
+	yield from (2, 3, 5, 7)
+	yield from wsieve() 
+ 
+print( list( islice( primes(), 0, 20)))
+print( list( takewhile( lambda x: x<150, 
+                   dropwhile( lambda x: x<100, primes()))))
+print( len( list( takewhile( lambda x: x<8000, 
+                   dropwhile( lambda x: x<7700, primes())))))
+print( list( islice( primes(), 10000-1, 10000))[0])
+
+====PYTHON=====
+from itertools import count, takewhile, islice
+ 
+def prime_sieve():
+    sieved = count(2)
+    prime = next(sieved)
+    yield prime
+    primes = [prime]
+    for x in sieved:
+        possible_prime_divs = takewhile(lambda p: p <= x**0.5, primes)
+        if any(x % prime == 0 for prime in possible_prime_divs):
+            continue
+        yield x
+        primes.append(x)
+ 
+if __name__ == '__main__':
+    def leq_150(x): return x <= 150
+    def leq_8000(x): return x <= 8000
+ 
+    print("Show the first twenty primes.\n   =",
+        list(islice(prime_sieve(), 20)))
+    print("Show the primes between 100 and 150\n   =",
+        [x for x in takewhile(leq_150, prime_sieve()) if x >= 100])
+    print("Show the number of primes between 7,700 and 8,000.\n   =",
+        sum(1 for x in takewhile(leq_8000, prime_sieve()) if x >= 7700))
+    print("Show the 10,000th prime.\n   =",
+        next(islice(prime_sieve(), 10000-1, 10000)))
+

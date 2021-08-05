@@ -1,0 +1,170 @@
+====RUBY=====
+# version 0.21.1
+ 
+def get_code(c : Char)
+  case c
+  when 'B', 'F', 'P', 'V' 
+    "1"
+  when 'C', 'G', 'J', 'K', 'Q', 'S', 'X', 'Z'
+    "2"
+  when 'D', 'T'
+    "3"
+  when 'L'
+    "4"
+  when 'M', 'N'
+    "5"
+  when 'R'
+    "6"
+  when 'H', 'W'
+    "-"
+  else 
+    ""
+  end
+end
+ 
+def soundex(s : String)
+  return "" if s == ""
+  s = s.upcase
+  result = s[0,1] 
+  prev = get_code s[0]
+  s.lchop.each_char {|c|
+    curr = get_code c
+    result += curr if curr != "" && curr != "-" && curr != prev
+    prev = curr unless curr == "-"
+  }
+  result.ljust(4, '0')[0, 4]
+end
+ 
+pairs = [
+          ["Ashcraft"  , "A261"],
+          ["Ashcroft"  , "A261"],
+          ["Gauss"     , "G200"],
+          ["Ghosh"     , "G200"],
+          ["Hilbert"   , "H416"],
+          ["Heilbronn" , "H416"],
+          ["Lee"       , "L000"],
+          ["Lloyd"     , "L300"],
+          ["Moses"     , "M220"],
+          ["Pfister"   , "P236"],
+          ["Robert"    , "R163"],
+          ["Rupert"    , "R163"],
+          ["Rubin"     , "R150"],
+          ["Tymczak"   , "T522"],
+          ["Soundex"   , "S532"],
+          ["Example"   , "E251"] 
+        ]
+ 
+pairs.each { |pair|
+  puts "#{pair[0].ljust(9)} -> #{pair[1]} -> #{soundex(pair[0]) == pair[1]}"
+}
+
+====RUBY=====
+class String
+ 
+  SoundexChars = 'BFPVCGJKQSXZDTLMNR'
+  SoundexNums  = '111122222222334556'
+  SoundexCharsEx = '^' + SoundexChars
+  SoundexCharsDel = '^A-Z'
+ 
+  # desc: http://en.wikipedia.org/wiki/Soundex
+  def soundex(census = true)
+    str = self.upcase.delete(SoundexCharsDel)
+    str[0,1] + str[1..-1].delete(SoundexCharsEx).
+                          tr_s(SoundexChars, SoundexNums)\
+                          [0 .. (census ? 2 : -1)].
+                          ljust(3, '0') rescue ''
+  end
+ 
+  def sounds_like(other)
+    self.soundex == other.soundex
+  end
+end
+ 
+%w(Soundex Sownteks Example Ekzampul foo bar).each_slice(2) do |word1, word2|
+  [word1, word2].each {|word| puts '%-8s -> %s' % [word, word.soundex]}
+ 
+  print "'#{word1}' "
+  print word1.sounds_like(word2) ? "sounds" : "does not sound"
+  print " like '#{word2}'\n"
+end
+
+====RUBY=====
+func soundex(word, length=3) {
+ 
+    # Uppercase the argument passed in to normalize it
+    # and drop any non-alphabetic characters
+    word.uc!.tr!('A-Z', '', 'cd')
+ 
+    # Return if word does not contain 'A-Z'
+    return(nil) if (word.is_empty)
+ 
+    var firstLetter = word.char(0)
+ 
+    # Replace letters with corresponding number values
+    word.tr!('BFPV',     '1', 's')
+    word.tr!('CGJKQSXZ', '2', 's')
+    word.tr!('DT',       '3', 's')
+    word.tr!('L',        '4', 's')
+    word.tr!('MN',       '5', 's')
+    word.tr!('R',        '6', 's')
+ 
+    # Discard the first letter
+    word.ft!(1)
+ 
+    # Remove A, E, H, I, O, U, W, and Y
+    word.tr!('AEHIOUWY', '', 'd')
+ 
+    # Return the soundex code
+    firstLetter + (word.chars + length.of('0') -> first(length).join)
+}
+ 
+func testSoundex {
+ 
+    # Key-value pairs of names and corresponding Soundex codes
+    var sndx = Hash(
+                "Euler"                => "E4600",
+                "Gauss"                => "G2000",
+                "Hilbert"              => "H4163",
+                "Knuth"                => "K5300",
+                "Lloyd"                => "L3000",
+                "Lukasieicz"           => "L2220",
+                'fulkerson'            => 'F4262',
+                'faulkersuhn'          => 'F4262',
+                'fpfffffauhlkkersssin' => 'F4262',
+                'Aaeh'                 => 'A0000',
+               )
+ 
+    sndx.keys.sort.each { |name|
+        var findSdx = soundex(name, 4)
+        say "The soundex for #{name} should be #{sndx{name}} and is #{findSdx}"
+        if (findSdx != sndx{name}) {
+            say "\tHowever, that is incorrect!\n"
+        }
+    }
+}
+ 
+testSoundex()
+
+====PYTHON=====
+from itertools import groupby
+ 
+def soundex(word):
+   codes = ("bfpv","cgjkqsxz", "dt", "l", "mn", "r")
+   soundDict = dict((ch, str(ix+1)) for ix,cod in enumerate(codes) for ch in cod)
+   cmap2 = lambda kar: soundDict.get(kar, '9')
+   sdx =  ''.join(cmap2(kar) for kar in word.lower())
+   sdx2 = word[0].upper() + ''.join(k for k,g in list(groupby(sdx))[1:] if k!='9')
+   sdx3 = sdx2[0:4].ljust(4,'0')
+   return sdx3
+ 
+
+====PYTHON=====
+>>>print soundex("soundex")
+S532
+>>>print soundex("example")
+E251
+>>>print soundex("ciondecks")
+C532
+>>>print soundex("ekzampul")
+E251
+

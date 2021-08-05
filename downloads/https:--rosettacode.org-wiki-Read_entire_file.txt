@@ -1,0 +1,68 @@
+====RUBY=====
+content = File.read("input.txt")
+puts content
+
+====RUBY=====
+content = File.read("input.txt", "UTF-16")
+
+====RUBY=====
+content = File.read("input.txt", encoding: "UTF-16")
+
+====RUBY=====
+content = File.open("input.txt") do |file|
+  file.gets_to_end
+end
+
+====RUBY=====
+file = File.new("input.txt")
+content = file.gets_to_end
+file.close
+
+====RUBY=====
+# Read entire text file.
+str = IO.read "foobar.txt"
+ 
+# It can also read a subprocess.
+str = IO.read "| grep ftp /etc/services"
+
+====RUBY=====
+path = "|strange-name.txt"
+str = File.open(path) {|f| f.read}
+
+====RUBY=====
+# Read entire binary file.
+str = File.open(path, "rb") {|f| f.read}
+
+====RUBY=====
+# Read EUC-JP text from file.
+str = File.open(path, "r:euc-jp") {|f| f.read}
+ 
+# Read EUC-JP text from file; transcode text from EUC-JP to UTF-8.
+str = File.open(path, "r:euc-jp:utf-8") {|f| f.read}
+
+====RUBY=====
+var file = File.new(__FILE__);
+var content = file.open_r.slurp;
+print content;
+
+====RUBY=====
+var file = File(__FILE__)
+var content = file.read(:utf8)
+print content
+
+====PYTHON=====
+open(filename).read()
+
+====PYTHON=====
+open(filename, encoding='utf-8').read()
+
+====PYTHON=====
+with open(filename) as f:
+    data = f.read()
+
+====PYTHON=====
+from pathlib import Path
+ 
+any_string = Path(filename).read_text(encoding='utf-8')
+any_binary_data = Path(filename).read_bytes()
+

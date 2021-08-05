@@ -1,0 +1,98 @@
+====RUBY=====
+a = (print "enter a value for a: "; gets).to_i
+b = (print "enter a value for b: "; gets).to_i
+ 
+puts "#{a} is less than #{b}" if a < b
+puts "#{a} is greater than #{b}" if a > b
+puts "#{a} is equal to #{b}" if a == b
+
+====RUBY=====
+a = (print "enter a value for a: "; gets).to_i
+b = (print "enter a value for b: "; gets).to_i
+ 
+case a <=> b
+when -1; puts "#{a} is less than #{b}"
+when  0; puts "#{a} is equal to #{b}"
+when +1; puts "#{a} is greater than #{b}"
+end
+
+====RUBY=====
+# Function to make prompts nice and simple to abuse
+def prompt str
+  print str, ": "
+  gets.chomp
+end
+ 
+# Get value of a
+a = prompt('Enter value of a').to_i
+# Get value of b
+b = prompt('Enter value of b').to_i
+ 
+# The dispatch hash uses the <=> operator
+# When doing x<=>y:
+# -1 means x is less than y
+# 0 means x is equal to y
+# 1 means x is greater than y
+dispatch = {
+  -1 => "less than",
+  0 => "equal to",
+  1 => "greater than"
+}
+ 
+# I hope you can figure this out
+puts "#{a} is #{dispatch[a<=>b]} #{b}"
+
+====RUBY=====
+var a = read("a: ", Number);
+var b = read("b: ", Number);
+ 
+if (a < b) {
+    say 'Lower';
+}
+elsif (a == b) {
+    say 'Equal';
+}
+elsif (a > b) {
+    say 'Greater';
+}
+
+====PYTHON=====
+let a = input('Enter value of a: ')
+let b = input('Enter value of b: ')
+ 
+if a < b:
+    print 'a is less than b'
+elif a > b:
+    print 'a is greater than b'
+elif a == b:
+    print 'a is equal to b'
+
+====PYTHON=====
+#!/usr/bin/env python
+a = input('Enter value of a: ')
+b = input('Enter value of b: ')
+ 
+if a < b:
+    print 'a is less than b'
+elif a > b:
+    print 'a is greater than b'
+elif a == b:
+    print 'a is equal to b'
+
+====PYTHON=====
+#!/usr/bin/env python
+import sys
+try:
+   a = input('Enter value of a: ')
+   b = input('Enter value of b: ')
+except (ValueError, EnvironmentError), err:
+   print sys.stderr, "Erroneous input:", err
+   sys.exit(1)
+ 
+dispatch = {
+    -1: 'is less than',
+     0: 'is equal to',
+     1: 'is greater than'
+     }
+ print a, dispatch[cmp(a,b)], b
+

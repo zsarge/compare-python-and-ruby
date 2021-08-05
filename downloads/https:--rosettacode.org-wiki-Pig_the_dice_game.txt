@@ -1,0 +1,84 @@
+====RUBY=====
+class PigGame
+  Player = Struct.new(:name, :safescore, :score) do
+    def bust!() self.score = safescore end
+    def stay!() self.safescore = score end
+    def to_s() "#{name} (#{safescore}, #{score})" end
+  end
+ 
+  def initialize(names, maxscore=100, die_sides=6)
+    rotation = names.map {|name| Player.new(name,0,0) }
+ 
+    rotation.cycle do |player|
+      loop do
+        if wants_to_roll?(player)
+          puts "Rolled: #{roll=roll_dice(die_sides)}"
+          if bust?(roll)
+            puts "Busted!",''
+            player.bust!
+            break
+          else
+            player.score += roll
+            if player.score >= maxscore
+              puts player.name + " wins!"
+              return
+            end
+          end
+        else
+          player.stay!
+          puts "Staying with #{player.safescore}!", ''
+          break
+        end
+      end
+    end
+  end
+ 
+  def roll_dice(die_sides) rand(1..die_sides) end
+  def bust?(roll) roll==1 end
+  def wants_to_roll?(player)
+    print "#{player}: Roll? (Y) "
+    ['Y','y',''].include?(gets.chomp)
+  end
+end
+ 
+PigGame.new( %w|Samuel Elizabeth| )
+
+====PYTHON=====
+#!/usr/bin/python3
+ 
+'''
+See: http://en.wikipedia.org/wiki/Pig_(dice)
+ 
+This program scores and throws the dice for a two player game of Pig
+ 
+'''
+ 
+from random import randint
+ 
+playercount = 2
+maxscore = 100
+safescore = [0] * playercount
+player = 0
+score=0
+ 
+while max(safescore) < maxscore:
+    rolling = input("Player %i: (%i, %i) Rolling? (Y) "
+                    % (player, safescore[player], score)).strip().lower() in {'yes', 'y', ''}
+    if rolling:
+        rolled = randint(1, 6)
+        print('  Rolled %i' % rolled)
+        if rolled == 1:
+            print('  Bust! you lose %i but still keep your previous %i'
+                  % (score, safescore[player]))
+            score, player = 0, (player + 1) % playercount
+        else:
+            score += rolled
+    else:
+        safescore[player] += score
+        if safescore[player] >= maxscore:
+            break
+        print('  Sticking with %i' % safescore[player])
+        score, player = 0, (player + 1) % playercount
+ 
+print('\nPlayer %i wins with a score of %i' %(player, safescore[player]))
+

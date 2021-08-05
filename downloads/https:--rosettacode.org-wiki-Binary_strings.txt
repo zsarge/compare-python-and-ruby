@@ -1,0 +1,129 @@
+====RUBY=====
+# string creation
+x = "hello world"
+ 
+# string destruction
+x = nil
+ 
+# string assignment with a null byte
+x = "a\0b"
+x.length  # ==> 3
+ 
+# string comparison
+if x == "hello"
+  puts "equal"
+else
+  puts "not equal"
+end
+y = 'bc'
+if x < y
+  puts "#{x} is lexicographically less than #{y}"
+end
+ 
+# string cloning 
+xx = x.dup
+x == xx       # true, same length and content
+x.equal?(xx)  # false, different objects
+ 
+# check if empty
+if x.empty?
+  puts "is empty"
+end
+ 
+# append a byte
+p x << "\07"
+ 
+# substring
+p xx = x[0..-2]
+x[1,2] = "XYZ"
+p x
+ 
+# replace bytes
+p y = "hello world".tr("l", "L")
+ 
+# join strings
+a = "hel"
+b = "lo w"
+c = "orld"
+p d = a + b + c
+
+====PYTHON=====
+s1 = "A 'string' literal \n"
+s2 = 'You may use any of \' or " as delimiter'
+s3 = """This text 
+   goes over several lines
+       up to the closing triple quote"""
+
+====PYTHON=====
+s = "Hello "
+t = "world!"
+u = s + t   # + concatenates
+
+====PYTHON=====
+assert "Hello" == 'Hello'
+assert '\t' == '\x09'
+assert "one" < "two"
+assert "two" >= "three"
+
+====PYTHON=====
+if x=='': print "Empty string"
+if not x: print "Empty string, provided you know x is a string"
+
+====PYTHON=====
+txt = "Some text"
+txt += '\x07'
+# txt refers now to a new string having "Some text\x07"
+
+====PYTHON=====
+txt = "Some more text"
+assert txt[4] == " "
+assert txt[0:4] == "Some"
+assert txt[:4] == "Some" # you can omit the starting index if 0
+assert txt[5:9] == "more"
+assert txt[5:] == "more text" # omitting the second index means "to the end"
+
+====PYTHON=====
+txt = "Some more text"
+assert txt[-1] == "t"
+assert txt[-4:] == "text"
+
+====PYTHON=====
+v1 = "hello world"
+v2 = v1.replace("l", "L")
+print v2 # prints heLLo worLd
+
+====PYTHON=====
+v1 = "hello" 
+v2 = "world"
+msg = v1 + " " + v2
+
+====PYTHON=====
+items = ["Smith", "John", "417 Evergreen Av", "Chimichurri", "481-3172"]
+joined = ",".join(items)
+print joined
+# output:
+# Smith,John,417 Evergreen Av,Chimichurri,481-3172
+
+====PYTHON=====
+line = "Smith,John,417 Evergreen Av,Chimichurri,481-3172"
+fields = line.split(',')
+print fields
+# output:
+# ['Smith', 'John', '417 Evergreen Av', 'Chimichurri', '481-3172']
+
+====PYTHON=====
+s1 = b"A 'byte string' literal \n"
+s2 = b'You may use any of \' or " as delimiter'
+s3 = b"""This text 
+   goes over several lines
+       up to the closing triple quote"""
+
+====PYTHON=====
+x = b'abc'
+x[0] # evaluates to 97
+
+====PYTHON=====
+x = b'abc'
+list(x) # evaluates to [97, 98, 99]
+bytes([97, 98, 99]) # evaluates to b'abc'
+

@@ -1,0 +1,459 @@
+====RUBY=====
+require "big"
+ 
+module Primes
+  module MillerRabin
+ 
+    def prime?(k = 15)             # increase k for more confidence
+      neg_one_mod = d = self - 1
+      s = 0
+      while d.even?; d >>= 1; s += 1 end  # d is odd after s shifts
+      k.times do
+        b = 2 + rand(self - 4)     # random witness base b
+        y = powmod(b, d, self)     # y = (b**d) mod self
+        next if y == 1 || y == neg_one_mod
+        (s - 1).times do
+          y = (y * y) % self       # y = (y**2) mod self
+          return false if y == 1
+          break if y == neg_one_mod
+        end
+        return false if y != neg_one_mod
+      end
+      true                         # prime (with high probability)
+    end
+ 
+    # Compute b**e mod m
+    private def powmod(b, e, m)
+      r, b = 1, b.to_big_i
+      while e > 0
+        r = (b * r) % m if e.odd?
+        b = (b * b) % m
+        e >>= 1
+      end
+      r
+    end
+  end
+end
+ 
+struct Int; include Primes::MillerRabin end
+ 
+puts 341521.prime?(20) # => true
+puts 341531.prime?     # => false
+
+====RUBY=====
+# For crystal >= 0.31.x, compile without overflow check, as either
+# crystal build miller-rabin.cr -Ddisable_overflow --release
+# crystal build -Ddisable_overflow miller-rabin.cr --release
+ 
+require "big"
+ 
+module Primes
+  module MillerRabin
+ 
+    # Returns true if +self+ is a prime number, else returns false.
+    def primemr?(k = 10)
+      primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47}
+      return primes.includes? self if self <= primes.last
+      modp47 = 614_889_782_588_491_410.to_big_i      # => primes.product, largest < 2^64
+      return false if modp47.gcd(self.to_big_i) != 1 # eliminates 86.2% of all integers
+      # Choose input witness bases: wits = [range, [wit_bases]] or nil
+      wits = WITNESS_RANGES.find { |range, wits| range > self }
+      witnesses = wits && wits[1] || k.times.map{ 2 + rand(self - 4) }
+      miller_rabin_test(witnesses)
+    end
+ 
+    # Returns true if +self+ passes Miller-Rabin Test on witnesses +b+
+    private def miller_rabin_test(witnesses) # list of witnesses for testing
+      neg_one_mod = n = d = self - 1 # these are even as self is always odd
+      d >>= d.trailing_zeros_count   # shift out factors of 2 to make d odd
+      witnesses.each do |b|          # do M-R test with each witness base
+        next if (b % self) == 0      # **skip base if a multiple of input**
+        y = powmod(b, d, self)       # y = (b**d) mod self
+        s = d
+        until y == 1 || y == neg_one_mod || s == n
+          y = (y * y) % self         # y = (y**2) mod self
+          s <<= 1
+        end
+        return false unless y == neg_one_mod || s.odd?
+      end
+      true
+    end
+ 
+    # Best known deterministic witnesses for given range and set of bases
+    # https://miller-rabin.appspot.com/
+    # https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+    private WITNESS_RANGES = {
+      341_531 => {9345883071009581737},
+      1_050_535_501 => {336781006125, 9639812373923155},
+      350_269_456_337 => {4230279247111683200, 14694767155120705706, 16641139526367750375},
+      55_245_642_489_451 => {2, 141889084524735, 1199124725622454117, 11096072698276303650},
+      7_999_252_175_582_851 => {2, 4130806001517, 149795463772692060, 186635894390467037,
+                                3967304179347715805},
+      585_226_005_592_931_977 => {2, 123635709730000, 9233062284813009, 43835965440333360,
+                                  761179012939631437, 1263739024124850375},
+      18_446_744_073_709_551_615 => {2, 325, 9375, 28178, 450775, 9780504, 1795265022},
+      "318665857834031151167461".to_big_i  => {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37},
+      "3317044064679887385961981".to_big_i => {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41}
+    }
+ 
+    # Compute b**e mod m
+    private def powmod(b, e, m)
+      r, b = 1, b.to_big_i
+      while e > 0
+        r = (b * r) % m if e.odd?
+        b = (b * b) % m
+        e >>= 1
+      end
+      r
+    end
+  end
+end
+ 
+struct Int; include Primes::MillerRabin end
+ 
+def tm; t = Time.monotonic; yield; (Time.monotonic - t).total_seconds.round(6) end
+ 
+# 10 digit prime
+n = 2147483647
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 18 digit non-prime
+n = 844674407370955389
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 19 digit prime
+n = 9241386435364257883.to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 20 digit prime; largest < 2^64
+n = 18446744073709551533.to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 58 digit prime
+n = "4547337172376300111955330758342147474062293202868155909489".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 58 digit non-prime
+n = "4547337172376300111955330758342147474062293202868155909393".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 81 digit prime
+n = "100000000000000000000000000000000000000000000000000000000000000000000000001309503".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 81 digit non-prime
+n = "100000000000000000000000000000000000000000000000000000000000000000000000001309509".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 308 digit prime
+n = "94366396730334173383107353049414959521528815310548187030165936229578960209523421808912459795329035203510284576187160076386643700441216547732914250578934261891510827140267043592007225160798348913639472564715055445201512461359359488795427875530231001298552452230535485049737222714000227878890892901228389026881".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "138028649176899647846076023812164793645371887571371559091892986639999096471811910222267538577825033963552683101137782650479906670021895135954212738694784814783986671046107023185842481502719762055887490765764329237651328922972514308635045190654896041748716218441926626988737664133219271115413563418353821396401".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "123301261697053560451930527879636974557474268923771832437126939266601921428796348203611050423256894847735769138870460373141723679005090549101566289920247264982095246187318303659027201708559916949810035265951104246512008259674244307851578647894027803356820480862664695522389066327012330793517771435385653616841".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "119432521682023078841121052226157857003721669633106050345198988740042219728400958282159638484144822421840470442893056822510584029066504295892189315912923804894933736660559950053226576719285711831138657839435060908151231090715952576998400120335346005544083959311246562842277496260598128781581003807229557518839".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "132082885240291678440073580124226578272473600569147812319294626601995619845059779715619475871419551319029519794232989255381829366374647864619189704922722431776563860747714706040922215308646535910589305924065089149684429555813953571007126408164577035854428632242206880193165045777949624510896312005014225526731".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "153410708946188157980279532372610756837706984448408515364579602515073276538040155990230789600191915021209039203172105094957316552912585741177975853552299222501069267567888742458519569317286299134843250075228359900070009684517875782331709619287588451883575354340318132216817231993558066067063143257425853927599".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "103130593592068072608023213244858971741946977638988649427937324034014356815504971087381663169829571046157738503075005527471064224791270584831779395959349442093395294980019731027051356344056416276026592333932610954020105156667883269888206386119513058400355612571198438511950152690467372712488391425876725831041".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = "94366396730334173383107353049414959521528815310548187030165936229578960209523421808912459795329035203510284576187160076386643700441216547732914250578934261891510827140267043592007225160798348913639472564715055445201512461359359488795427875530231001298552452230535485049737222714000227878890892901228389026881".to_big_i
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+
+====RUBY=====
+def miller_rabin_prime?(n, g)
+  d = n - 1
+  s = 0
+  while d % 2 == 0
+    d /= 2
+    s += 1
+  end
+  g.times do
+    a = 2 + rand(n - 4)
+    x = a.pow(d, n)  # x = (a**d) % n
+    next if x == 1 || x == n - 1
+    for r in (1..s - 1)
+      x = x.pow(2, n) # x = (x**2) % n
+      return false if x == 1
+      break if x == n - 1
+    end
+    return false if x != n - 1
+  end
+  true # probably
+end
+ 
+p primes = (3..1000).step(2).find_all {|i| miller_rabin_prime?(i,10)}
+
+====RUBY=====
+puts miller_rabin_prime?(94366396730334173383107353049414959521528815310548187030165936229578960209523421808912459795329035203510284576187160076386643700441216547732914250578934261891510827140267043592007225160798348913639472564715055445201512461359359488795427875530231001298552452230535485049737222714000227878890892901228389026881,1000)
+puts miller_rabin_prime?(138028649176899647846076023812164793645371887571371559091892986639999096471811910222267538577825033963552683101137782650479906670021895135954212738694784814783986671046107023185842481502719762055887490765764329237651328922972514308635045190654896041748716218441926626988737664133219271115413563418353821396401,1000)
+puts miller_rabin_prime?(123301261697053560451930527879636974557474268923771832437126939266601921428796348203611050423256894847735769138870460373141723679005090549101566289920247264982095246187318303659027201708559916949810035265951104246512008259674244307851578647894027803356820480862664695522389066327012330793517771435385653616841,1000)
+puts miller_rabin_prime?(119432521682023078841121052226157857003721669633106050345198988740042219728400958282159638484144822421840470442893056822510584029066504295892189315912923804894933736660559950053226576719285711831138657839435060908151231090715952576998400120335346005544083959311246562842277496260598128781581003807229557518839,1000)
+puts miller_rabin_prime?(132082885240291678440073580124226578272473600569147812319294626601995619845059779715619475871419551319029519794232989255381829366374647864619189704922722431776563860747714706040922215308646535910589305924065089149684429555813953571007126408164577035854428632242206880193165045777949624510896312005014225526731,1000)
+puts miller_rabin_prime?(153410708946188157980279532372610756837706984448408515364579602515073276538040155990230789600191915021209039203172105094957316552912585741177975853552299222501069267567888742458519569317286299134843250075228359900070009684517875782331709619287588451883575354340318132216817231993558066067063143257425853927599,1000)
+puts miller_rabin_prime?(103130593592068072608023213244858971741946977638988649427937324034014356815504971087381663169829571046157738503075005527471064224791270584831779395959349442093395294980019731027051356344056416276026592333932610954020105156667883269888206386119513058400355612571198438511950152690467372712488391425876725831041,1000)
+
+====RUBY=====
+class Integer
+    # Returns true if +self+ is a prime number, else returns false.
+    def primemr?(k = 10)
+      primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]
+      return primes.include? self if self <= primes.last
+      modp47 = 614_889_782_588_491_410      # => primes.reduce(:*), largest < 2^64 
+      return false if self.gcd(modp47) != 1 # eliminates 86.2% of all integers
+      # Choose input witness bases: wits = [range, [wit_bases]] or nil
+      wits = WITNESS_RANGES.find { |range, wits| range > self }
+      witnesses = wits && wits[1] || k.times.map{ 2 + rand(self - 4) }
+      miller_rabin_test(witnesses)
+    end
+ 
+    private
+    # Returns true if +self+ passes Miller-Rabin Test with witness bases +b+
+    def miller_rabin_test(witnesses)    # use witness list to test with
+      neg_one_mod = n = d = self - 1    # these are even as 'self' always odd
+      d >>= 4 while (d & 0xf) == 0                  # suck out factors of 2
+      (d >>= (d & 3)^2; d >>= (d & 1)^1) if d.even? # 4 bits at a time
+      witnesses.each do |b|             # do M-R test with each witness base
+        next if (b % self) == 0         # **skip base if a multiple of input**
+        s = d
+        y = b.pow(d, self)              # y = (b**d) mod self
+        until y == 1 || y == neg_one_mod || s == n
+          y = y.pow(2, self)            # y = (y**2) mod self 
+          s <<= 1
+        end
+        return false unless y == neg_one_mod || s.odd?
+      end
+      true
+    end
+ 
+    # Best known deterministic witnesses for given range and set of bases
+    # https://miller-rabin.appspot.com/
+    # https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+    WITNESS_RANGES = {
+      341_531 => [9345883071009581737],
+      1_050_535_501 => [336781006125, 9639812373923155],
+      350_269_456_337 => [4230279247111683200, 14694767155120705706, 16641139526367750375],
+      55_245_642_489_451 => [2, 141889084524735, 1199124725622454117, 11096072698276303650],
+      7_999_252_175_582_851 => [2, 4130806001517, 149795463772692060, 186635894390467037, 
+                                3967304179347715805],
+      585_226_005_592_931_977 => [2, 123635709730000, 9233062284813009, 43835965440333360, 
+                                  761179012939631437, 1263739024124850375],
+      18_446_744_073_709_551_615 => [2, 325, 9375, 28178, 450775, 9780504, 1795265022],
+      318_665_857_834_031_151_167_461 => [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37],
+      3_317_044_064_679_887_385_961_981 => [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
+    }
+end
+ 
+def tm; t = Time.now; yield; Time.now - t end
+ 
+# 10 digit primes
+n = 2147483647
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 18 digit non-prime
+n = 844674407370955389
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 19 digit primes
+n = 9241386435364257883
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 20 digit primes; largest < 2^64
+n = 18446744073709551533
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 58 digit prime
+n = 4547337172376300111955330758342147474062293202868155909489
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 58 digit non-prime
+n = 4547337172376300111955330758342147474062293202868155909393
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 81 digit prime
+n = 100000000000000000000000000000000000000000000000000000000000000000000000001309503
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 81 digit non-prime
+n = 100000000000000000000000000000000000000000000000000000000000000000000000001309509
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+# 308 digit prime
+n = 94366396730334173383107353049414959521528815310548187030165936229578960209523421808912459795329035203510284576187160076386643700441216547732914250578934261891510827140267043592007225160798348913639472564715055445201512461359359488795427875530231001298552452230535485049737222714000227878890892901228389026881
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 138028649176899647846076023812164793645371887571371559091892986639999096471811910222267538577825033963552683101137782650479906670021895135954212738694784814783986671046107023185842481502719762055887490765764329237651328922972514308635045190654896041748716218441926626988737664133219271115413563418353821396401
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 123301261697053560451930527879636974557474268923771832437126939266601921428796348203611050423256894847735769138870460373141723679005090549101566289920247264982095246187318303659027201708559916949810035265951104246512008259674244307851578647894027803356820480862664695522389066327012330793517771435385653616841
+print "\n number = #{n} is prime "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 119432521682023078841121052226157857003721669633106050345198988740042219728400958282159638484144822421840470442893056822510584029066504295892189315912923804894933736660559950053226576719285711831138657839435060908151231090715952576998400120335346005544083959311246562842277496260598128781581003807229557518839
+print "\n number = #{n} is prime "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 132082885240291678440073580124226578272473600569147812319294626601995619845059779715619475871419551319029519794232989255381829366374647864619189704922722431776563860747714706040922215308646535910589305924065089149684429555813953571007126408164577035854428632242206880193165045777949624510896312005014225526731
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 153410708946188157980279532372610756837706984448408515364579602515073276538040155990230789600191915021209039203172105094957316552912585741177975853552299222501069267567888742458519569317286299134843250075228359900070009684517875782331709619287588451883575354340318132216817231993558066067063143257425853927599
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 103130593592068072608023213244858971741946977638988649427937324034014356815504971087381663169829571046157738503075005527471064224791270584831779395959349442093395294980019731027051356344056416276026592333932610954020105156667883269888206386119513058400355612571198438511950152690467372712488391425876725831041
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+ 
+n = 94366396730334173383107353049414959521528815310548187030165936229578960209523421808912459795329035203510284576187160076386643700441216547732914250578934261891510827140267043592007225160798348913639472564715055445201512461359359488795427875530231001298552452230535485049737222714000227878890892901228389026881
+print "\n number = #{n} is prime? "; print " in ", tm{ print n.primemr? }, " secs"
+puts
+
+====RUBY=====
+func miller_rabin(n, k=10) {
+ 
+    return false if (n <= 1)
+    return true  if (n == 2)
+    return false if (n.is_even)
+ 
+    var t = n-1
+    var s = t.valuation(2)
+    var d = t>>s
+ 
+    k.times {
+        var a = irand(2, t)
+        var x = powmod(a, d, n)
+        next if (x ~~ [1, t])
+ 
+        (s-1).times {
+            x.powmod!(2, n)
+            return false if (x == 1)
+            break if (x == t)
+        }
+ 
+        return false if (x != t)
+    }
+ 
+    return true
+}
+ 
+say miller_rabin.grep(^1000).join(', ')
+
+====PYTHON=====
+ 
+ 
+import random
+ 
+def is_Prime(n):
+    """
+    Miller-Rabin primality test.
+ 
+    A return value of False means n is certainly not prime. A return value of
+    True means n is very likely a prime.
+    """
+    if n!=int(n):
+        return False
+    n=int(n)
+    #Miller-Rabin test for prime
+    if n==0 or n==1 or n==4 or n==6 or n==8 or n==9:
+        return False
+ 
+    if n==2 or n==3 or n==5 or n==7:
+        return True
+    s = 0
+    d = n-1
+    while d%2==0:
+        d>>=1
+        s+=1
+    assert(2**s * d == n-1)
+ 
+    def trial_composite(a):
+        if pow(a, d, n) == 1:
+            return False
+        for i in range(s):
+            if pow(a, 2**i * d, n) == n-1:
+                return False
+        return True  
+ 
+    for i in range(8):#number of trials 
+        a = random.randrange(2, n)
+        if trial_composite(a):
+            return False
+ 
+    return True  
+
+====PYTHON=====
+def _try_composite(a, d, n, s):
+    if pow(a, d, n) == 1:
+        return False
+    for i in range(s):
+        if pow(a, 2**i * d, n) == n-1:
+            return False
+    return True # n  is definitely composite
+ 
+def is_prime(n, _precision_for_huge_n=16):
+    if n in _known_primes:
+        return True
+    if any((n % p) == 0 for p in _known_primes) or n in (0, 1):
+        return False
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d >> 1, s + 1
+    # Returns exact according to http://primes.utm.edu/prove/prove2_3.html
+    if n < 1373653: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3))
+    if n < 25326001: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5))
+    if n < 118670087467: 
+        if n == 3215031751: 
+            return False
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7))
+    if n < 2152302898747: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11))
+    if n < 3474749660383: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13))
+    if n < 341550071728321: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17))
+    # otherwise
+    return not any(_try_composite(a, d, n, s) 
+                   for a in _known_primes[:_precision_for_huge_n])
+ 
+_known_primes = [2, 3]
+_known_primes += [x for x in range(5, 1000, 2) if is_prime(x)]
+

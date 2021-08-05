@@ -1,0 +1,96 @@
+====RUBY=====
+ 
+def tokenize(string, sep, esc)
+  sep = Regexp.escape(sep)
+  esc = Regexp.escape(esc)
+  string.scan(/\G (?:^ | #{sep}) (?: [^#{sep}#{esc}] | #{esc} .)*/x).collect do |m|
+    m.gsub(/#{esc}(.)/, '\1').gsub(/^#{sep}/, '')
+  end
+end
+ 
+p tokenize('one^|uno||three^^^^|four^^^|^cuatro|', '|', '^')
+ 
+ 
+
+====RUBY=====
+func tokenize(string, sep, esc) {
+    var fields = string.split(
+        Regex(esc.escape + '.(*SKIP)(*FAIL)|' + sep.escape, 's'), -1
+    )
+    fields.map{.gsub(Regex(esc.escape + '(.)'), {|s1| s1 }) }
+}
+ 
+tokenize("one^|uno||three^^^^|four^^^|^cuatro|", '|', '^').each { |str|
+    say str.dump
+}
+
+====PYTHON=====
+def token_with_escape(a, escape = '^', separator = '|'):
+    '''
+        Issue  python -m doctest thisfile.py  to run the doctests.
+ 
+        >>> print(token_with_escape('one^|uno||three^^^^|four^^^|^cuatro|'))
+        ['one|uno', '', 'three^^', 'four^|cuatro', '']
+    '''
+    result = []
+    token = ''
+    state = 0
+    for c in a:
+        if state == 0:
+            if c == escape:
+                state = 1
+            elif c == separator:
+                result.append(token)
+                token = ''
+            else:
+                token += c
+        elif state == 1:
+            token += c
+            state = 0
+    result.append(token)
+    return result
+
+====PYTHON=====
+'''Tokenize a string with escaping'''
+ 
+from functools import reduce
+ 
+ 
+# tokenize :: Char -> Char -> String -> [String]
+def tokenize(delim):
+    '''A list of the tokens in a string, given
+       a delimiting char and an escape char.
+    '''
+    def go(esc, s):
+        def chop(a, x):
+            tkn, xs, escaped = a
+            literal = not escaped
+            isEsc = literal and (esc == x)
+            return ([], [tkn] + xs, isEsc) if (
+                literal and (delim == x)
+            ) else (tkn if isEsc else [x] + tkn, xs, isEsc)
+ 
+        tkn, xs, _ = reduce(chop, list(s), ([], [], False))
+ 
+        return list(reversed(
+            [''.join(reversed(x)) for x in [tkn] + xs]
+        ))
+    return lambda esc: lambda s: go(esc, s)
+ 
+ 
+# --------------------------TEST---------------------------
+# main :: IO ()
+def main():
+    '''Test'''
+ 
+    print(
+        tokenize('|')('^')(
+            "one^|uno||three^^^^|four^^^|^cuatro|"
+        )
+    )
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

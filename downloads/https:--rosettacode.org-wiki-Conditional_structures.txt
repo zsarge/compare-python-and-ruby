@@ -1,0 +1,74 @@
+====PYTHON=====
+if x == 0:
+    foo()
+elif x == 1:
+    bar()
+elif x == 2:
+    baz()
+else:
+    qux()
+ 
+match x:
+    0 => foo()
+    1 => bar()
+    2 => baz()
+    _ => qux()
+ 
+(a) ? b : c
+
+====PYTHON=====
+if x == 0:
+    foo()
+elif x == 1:
+    bar()
+elif x == 2:
+    baz()
+else:
+    boz()
+
+====PYTHON=====
+true_value if condition else false_value
+
+====PYTHON=====
+>>> secret='foo'
+>>> print 'got it' if secret=='foo' else 'try again'
+'got it'
+
+====PYTHON=====
+>>> secret = 'foo'
+>>> result = 'got it' if secret=='foo' else 'try again'
+>>> print result
+'got it'
+
+====PYTHON=====
+dispatcher = dict()
+dispatcher[0]=foo  # Not foo(): we bind the dictionary entry to the function's object,
+                   # NOT to the results returned by an invocation of the function
+dispatcher[1]=bar
+dispatcher[2]=baz  # foo,bar, baz, and boz are defined functions.
+ 
+# Then later
+results = dispatcher.get(x, boz)()  # binding results to a name is optional
+# or with no "default" case:
+if x in dispatcher:
+    results=dispatcher[x]()
+
+====PYTHON=====
+# The above, but with a dict literal
+dispatcher = {
+    0: foo,
+    1: bar,
+    2: baz,
+}
+# ...
+results = dispatcher.get(x, boz)()
+
+====PYTHON=====
+# Or without the temp variable
+# (it's up to the reader to decide how "pythonic" this is or isn't)
+results = {
+    0: foo,
+    1: bar,
+    2: baz,
+}.get(x, boz)()
+

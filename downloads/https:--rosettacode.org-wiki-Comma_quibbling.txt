@@ -1,0 +1,72 @@
+====RUBY=====
+def comma_quibbling(a)
+  %w<{ }>.join(a.length < 2 ? a.first :
+               "#{a[0..-2].join(', ')} and #{a[-1]}")
+end
+ 
+[[], %w<ABC>, %w<ABC DEF>, %w<ABC DEF G H>].each do |a|
+  puts comma_quibbling(a)
+end
+
+====RUBY=====
+func comma_quibbling(words) {
+    '{' + ([words.ft(0, -2).join(', ')]-[''] + [words.last] -> join(' and ')) + '}';
+}
+ 
+[<>, <ABC>, <ABC DEF>, <ABC DEF G H>].each { |w|
+    say comma_quibbling(w);
+}
+
+====PYTHON=====
+fun quibble(s):
+    let result = s.join(' and ').replace(|| and ||, ", ", length(s) - 1)
+    return "{ $result }"
+ 
+let s = [
+    []
+    ["ABC"]
+    ["ABC", "DEF"]
+    ["ABC", "DEF", "G", "H"]
+]
+ 
+for i in s:
+    print(quibble i)
+
+====PYTHON=====
+>>> def strcat(sequence):
+    return '{%s}' % ', '.join(sequence)[::-1].replace(',', 'dna ', 1)[::-1]
+ 
+>>> for seq in ([], ["ABC"], ["ABC", "DEF"], ["ABC", "DEF", "G", "H"]):
+    print('Input: %-24r -> Output: %r' % (seq, strcat(seq)))
+ 
+ 
+Input: []                       -> Output: '{}'
+Input: ['ABC']                  -> Output: '{ABC}'
+Input: ['ABC', 'DEF']           -> Output: '{ABC and DEF}'
+Input: ['ABC', 'DEF', 'G', 'H'] -> Output: '{ABC, DEF, G and H}'
+>>> 
+
+====PYTHON=====
+def commaQuibble(s):
+    return '{%s}' % ' and '.join(s).replace(' and ', ', ', len(s) - 2)
+ 
+for seq in ([], ["ABC"], ["ABC", "DEF"], ["ABC", "DEF", "G", "H"]):
+	print('Input: %-24r -> Output: %r' % (seq, commaQuibble(seq)))
+
+====PYTHON=====
+>>> def quibble(s):
+    return ('{' +
+                (', '.join(s[:-1]) + ' and ' if len(s) > 1 else '') +
+	        (s[-1] if s else '') +
+	    '}')
+ 
+>>> for seq in ([], ["ABC"], ["ABC", "DEF"], ["ABC", "DEF", "G", "H"]):
+	print('Input: %-24r -> Output: %r' % (seq, quibble(seq)))
+ 
+ 
+Input: []                       -> Output: '{}'
+Input: ['ABC']                  -> Output: '{ABC}'
+Input: ['ABC', 'DEF']           -> Output: '{ABC and DEF}'
+Input: ['ABC', 'DEF', 'G', 'H'] -> Output: '{ABC, DEF, G and H}'
+>>> 
+

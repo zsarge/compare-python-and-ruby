@@ -1,0 +1,77 @@
+====RUBY=====
+ 
+def select(prompt, items = [])
+  if items.empty?
+    ''
+  else
+    answer = -1
+    until (0...items.length).cover?(answer)
+      items.each_with_index {|i,j| puts "#{j}. #{i}"}
+      print "#{prompt}: "
+      begin
+        answer = Integer(gets)
+      rescue ArgumentError
+        redo
+      end
+    end
+    items[answer]
+  end
+end
+ 
+# test empty list
+response = select('Which is empty')
+puts "empty list returns: >#{response}<\n"
+ 
+# "real" test
+items = ['fee fie', 'huff and puff', 'mirror mirror', 'tick tock']
+response = select('Which is from the three pigs', items)
+puts "you chose: >#{response}<"
+ 
+
+====RUBY=====
+func menu (prompt, arr) {
+    arr.len > 0 || return ''
+    loop {
+        for i in ^arr {
+            say "  #{i}: #{arr[i]}"
+        }
+        var n = Sys.scanln(prompt) \\ return()
+        n ~~ /^[0-9]+\z/ ? Num(n) : next
+        arr.exists(n) && return arr[n]
+    }
+}
+ 
+var list = ['fee fie', 'huff and puff', 'mirror mirror', 'tick tock']
+var prompt = 'Please choose an item number: '
+ 
+var answer = menu(prompt, list)
+say "You choose: #{answer}"
+
+====PYTHON=====
+def _menu(items):
+    for indexitem in enumerate(items):
+        print ("  %2i) %s" % indexitem)
+ 
+def _ok(reply, itemcount):
+    try:
+        n = int(reply)
+        return 0 <= n < itemcount
+    except:
+        return False
+ 
+def selector(items, prompt):
+    'Prompt to select an item from the items'
+    if not items: return ''
+    reply = -1
+    itemcount = len(items)
+    while not _ok(reply, itemcount):
+        _menu(items)
+        # Use input instead of raw_input for Python 3.x
+        reply = raw_input(prompt).strip()
+    return items[int(reply)]
+ 
+if __name__ == '__main__':
+    items = ['fee fie', 'huff and puff', 'mirror mirror', 'tick tock']
+    item = selector(items, 'Which is from the three pigs: ')
+    print ("You chose: " + item)
+

@@ -1,0 +1,56 @@
+====RUBY=====
+require 'thread'
+ 
+nums = ARGV.collect(&:to_i)
+sorted = []
+mutex = Mutex.new
+ 
+threads = nums.collect do |n|
+  Thread.new do
+    sleep 0.01 * n
+    mutex.synchronize {sorted << n}
+  end
+end
+threads.each {|t| t.join}
+ 
+p sorted
+
+====RUBY=====
+ARGV.map{.to_i}.map{ |i|
+    {Sys.sleep(i); say i}.fork;
+}.each{.wait};
+
+====PYTHON=====
+from time import sleep
+from threading import Timer
+ 
+def sleepsort(values):
+    sleepsort.result = []
+    def add1(x):
+        sleepsort.result.append(x)
+    mx = values[0]
+    for v in values:
+        if mx < v: mx = v
+        Timer(v, add1, [v]).start()
+    sleep(mx+1)
+    return sleepsort.result
+ 
+if __name__ == '__main__':
+    x = [3,2,4,7,3,6,9,1]
+    if sleepsort(x) == sorted(x):
+        print('sleep sort worked for:',x)
+    else:
+        print('sleep sort FAILED for:',x)
+
+====PYTHON=====
+#!/usr/bin/env python3
+from asyncio import run, sleep, wait
+from sys import argv
+ 
+async def f(n):
+    await sleep(n)
+    print(n)
+ 
+if __name__ == '__main__': 
+    run(wait(list(map(f, map(int, argv[1:])))))
+

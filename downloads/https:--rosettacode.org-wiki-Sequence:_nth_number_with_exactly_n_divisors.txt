@@ -1,0 +1,188 @@
+====RUBY=====
+def isPrime(n)
+    return false if n < 2
+    return n == 2 if n % 2 == 0
+    return n == 3 if n % 3 == 0
+ 
+    k = 5
+    while k * k <= n
+        return false if n % k == 0
+        k = k + 2
+    end
+ 
+    return true
+end
+ 
+def getSmallPrimes(numPrimes)
+    smallPrimes = [2]
+    count = 0
+    n = 3
+    while count < numPrimes
+        if isPrime(n) then
+            smallPrimes << n
+            count = count + 1
+        end
+        n = n + 2
+    end
+    return smallPrimes
+end
+ 
+def getDivisorCount(n)
+    count = 1
+    while n % 2 == 0
+        n = (n / 2).floor
+        count = count + 1
+    end
+ 
+    d = 3
+    while d * d <= n
+        q = (n / d).floor
+        r = n % d
+        dc = 0
+        while r == 0
+            dc = dc + count
+            n = q
+            q = (n / d).floor
+            r = n % d
+        end
+        count = count + dc
+        d = d + 2
+    end
+    if n != 1 then
+        count = 2 * count
+    end
+    return count
+end
+ 
+MAX = 15
+@smallPrimes = getSmallPrimes(MAX)
+ 
+def OEISA073916(n)
+    if isPrime(n) then
+        return @smallPrimes[n - 1] ** (n - 1)
+    end
+ 
+    count = 0
+    result = 0
+    i = 1
+    while count < n
+        if n % 2 == 1 then
+            # The solution for an odd (non-prime) term is always a square number
+            root = Math.sqrt(i)
+            if root * root != i then
+                i = i + 1
+                next
+            end
+        end
+        if getDivisorCount(i) == n then
+            count = count + 1
+            result = i
+        end
+        i = i + 1
+    end
+    return result
+end
+ 
+n = 1
+while n <= MAX
+    print "A073916(", n, ") = ", OEISA073916(n), "\n"
+    n = n + 1
+end
+
+====RUBY=====
+func f(n {.is_prime}) {
+    n.prime**(n-1)
+}
+ 
+func f(n) {
+    n.th { .sigma0 == n }
+}
+ 
+say 20.of { f(_+1) }
+
+====PYTHON=====
+ 
+def divisors(n):
+    divs = [1]
+    for ii in range(2, int(n ** 0.5) + 3):
+        if n % ii == 0:
+            divs.append(ii)
+            divs.append(int(n / ii))
+    divs.append(n)
+    return list(set(divs))
+ 
+ 
+def is_prime(n):
+    return len(divisors(n)) == 2
+ 
+ 
+def primes():
+    ii = 1
+    while True:
+        ii += 1
+        if is_prime(ii):
+            yield ii
+ 
+ 
+def prime(n):
+    generator = primes()
+    for ii in range(n - 1):
+        generator.__next__()
+    return generator.__next__()
+ 
+ 
+def n_divisors(n):
+    ii = 0
+    while True:
+        ii += 1
+        if len(divisors(ii)) == n:
+            yield ii
+ 
+ 
+def sequence(max_n=None):
+    if max_n is not None:
+        for ii in range(1, max_n + 1):
+            if is_prime(ii):
+                yield prime(ii) ** (ii - 1)
+            else:
+                generator = n_divisors(ii)
+                for jj, out in zip(range(ii - 1), generator):
+                    pass
+                yield generator.__next__()
+    else:
+        ii = 1
+        while True:
+            ii += 1
+            if is_prime(ii):
+                yield prime(ii) ** (ii - 1)
+            else:
+                generator = n_divisors(ii)
+                for jj, out in zip(range(ii - 1), generator):
+                    pass
+                yield generator.__next__()
+ 
+ 
+if __name__ == '__main__':
+    for item in sequence(15):
+        print(item)
+ 
+
+====PYTHON=====
+ 
+1
+3
+25
+14
+14641
+44
+24137569
+70
+1089
+405
+819628286980801
+160
+22563490300366186081
+2752
+9801
+ 
+

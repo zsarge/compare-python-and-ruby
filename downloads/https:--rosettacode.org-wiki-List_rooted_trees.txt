@@ -1,0 +1,204 @@
+====RUBY=====
+TREE_LIST = []
+OFFSET = []
+ 
+for i in 0..31
+    if i == 1 then
+        OFFSET << 1
+    else
+        OFFSET << 0
+    end
+end
+ 
+def append(t)
+    TREE_LIST << (1 | (t << 1))
+end
+ 
+def show(t, l)
+    while l > 0
+        l = l - 1
+        if t % 2 == 1 then
+            print '('
+        else
+            print ')'
+        end
+        t = t >> 1
+    end
+end
+ 
+def listTrees(n)
+    for i in OFFSET[n] .. OFFSET[n + 1] - 1
+        show(TREE_LIST[i], n * 2)
+        print "\n"
+    end
+end
+ 
+def assemble(n, t, sl, pos, rem)
+    if rem == 0 then
+        append(t)
+        return
+    end
+ 
+    if sl > rem then
+        sl = rem
+        pos = OFFSET[sl]
+    elsif pos >= OFFSET[sl + 1] then
+        sl = sl - 1
+        if sl == 0 then
+            return
+        end
+        pos = OFFSET[sl]
+    end
+ 
+    assemble(n, t << (2 * sl) | TREE_LIST[pos], sl, pos, rem - sl)
+    assemble(n, t, sl, pos + 1, rem)
+end
+ 
+def makeTrees(n)
+    if OFFSET[n + 1] != 0 then
+        return
+    end
+    if n > 0 then
+        makeTrees(n - 1)
+    end
+    assemble(n, 0, n - 1, OFFSET[n - 1], n - 1)
+    OFFSET[n + 1] = TREE_LIST.length()
+end
+ 
+def test(n)
+    if n < 1 || n > 12 then
+        raise ArgumentError.new("Argument must be between 1 and 12")
+    end
+ 
+    append(0)
+ 
+    makeTrees(n)
+    print "Number of %d-trees: %d\n" % [n, OFFSET[n + 1] - OFFSET[n]]
+    listTrees(n)
+end
+ 
+test(5)
+
+====RUBY=====
+func bagchain(x, n, bb, start=0) {
+    n || return [x]
+ 
+    var out = []
+    for i in (start .. bb.end) {
+        var (c, s) = bb[i]...
+        if (c <= n) {
+            out += bagchain([x[0] + c, x[1] + s], n-c, bb, i)
+        }
+    }
+ 
+    return out
+}
+ 
+func bags(n) {
+    n || return [[0, ""]]
+    var upto = []
+    for i in (n ^.. 1) { upto += bags(i) }
+    bagchain([0, ""], n-1, upto).map{|p| [p[0]+1, '('+p[1]+')'] }
+}
+ 
+func replace_brackets(s) {
+    var (depth, out) = (0, [])
+    for c in s {
+        if (c == '(') {
+            out.append(<( [ {>[depth%3])
+            ++depth
+        }
+        else {
+            --depth
+            out.append(<) ] }>[depth%3])
+        }
+    }
+    return out.join
+}
+ 
+for x in (bags(5)) {
+    say replace_brackets(x[1])
+}
+
+====PYTHON=====
+def bags(n,cache={}):
+	if not n: return [(0, "")]
+ 
+	upto = sum([bags(x) for x in range(n-1, 0, -1)], [])
+	return [(c+1, '('+s+')') for c,s in bagchain((0, ""), n-1, upto)]
+ 
+def bagchain(x, n, bb, start=0):
+	if not n: return [x]
+ 
+	out = []
+	for i in range(start, len(bb)):
+		c,s = bb[i]
+		if c <= n: out += bagchain((x[0] + c, x[1] + s), n-c, bb, i)
+	return out
+ 
+# Maybe this lessens eye strain. Maybe not.
+def replace_brackets(s):
+	depth,out = 0,[]
+	for c in s:
+		if c == '(':
+			out.append("([{"[depth%3])
+			depth += 1
+		else:
+			depth -= 1
+			out.append(")]}"[depth%3])
+	return "".join(out)
+ 
+for x in bags(5): print(replace_brackets(x[1]))
+
+====PYTHON=====
+treeid = {(): 0}
+ 
+'''
+Successor of a tree.  The predecessor p of a tree t is:
+ 
+  1. if the smallest subtree of t is a single node, then p is t minus that node
+  2. otherwise, p is t with its smalles subtree "m" replaced by m's predecessor
+ 
+Here "smaller" means the tree is generated earlier, as recorded by treeid. Obviously,
+predecessor to a tree is unique.  Since every degree n tree has a
+unique degree (n-1) predecessor, inverting the process leads to the successors
+to tree t:
+ 
+  1. append a single node tree to t's root, or
+  2. replace t's smallest subtree by its successors
+ 
+We need to keep the trees so generated canonical, so when replacing a subtree,
+the replacement must not be larger than the next smallest subtree.
+ 
+Note that trees can be compared by other means, as long as trees with fewer nodes
+are considered smaller, and trees with the same number of nodes have a fixed order.
+'''
+def succ(x):
+    yield(((),) + x)
+    if not x: return
+ 
+    if len(x) == 1:
+        for i in succ(x[0]): yield((i,))
+        return
+ 
+    head,rest = x[0],tuple(x[1:])
+    top = treeid[rest[0]]
+ 
+    for i in [i for i in succ(head) if treeid[i] <= top]:
+        yield((i,) + rest)
+ 
+def trees(n):
+    if n == 1:
+        yield()
+        return
+ 
+    global treeid
+    for x in trees(n-1):
+        for a in succ(x):
+            if not a in treeid: treeid[a] = len(treeid)
+            yield(a)
+ 
+def tostr(x): return "(" + "".join(map(tostr, x)) + ")"
+ 
+for x in trees(5): print(tostr(x))
+

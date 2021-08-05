@@ -1,0 +1,152 @@
+====RUBY=====
+ 
+# run_encode("aaabbbbc") #=> [["a", 3], ["b", 4], ["c", 1]]
+def run_encode(string)
+  string
+    .chars
+    .chunk{|i| i}
+    .map {|kind, array| [kind, array.length]}
+end
+ 
+# run_decode([["a", 3], ["b", 4], ["c", 1]]) #=> "aaabbbbc"
+def run_decode(char_counts)
+  char_counts
+    .map{|char, count| char * count}
+    .join
+end
+ 
+ 
+
+====RUBY=====
+def encode(string)
+  string.scan(/(.)(\1*)/).collect do |char, repeat|
+    [1 + repeat.length, char] 
+  end.join
+end
+ 
+def decode(string)
+  string.scan(/(\d+)(\D)/).collect {|length, char| char * length.to_i}.join
+end
+
+====RUBY=====
+def encode(string)
+  string.scan(/(.)(\1*)/).inject("") do |encoding, (char, repeat)|
+    encoding << (1 + repeat.length).to_s << char
+  end
+end
+ 
+def decode(string)
+  string.scan(/(\d+)(\D)/).inject("") do |decoding, (length, char)|
+    decoding << char * length.to_i
+  end
+end
+
+====RUBY=====
+def encode(str)
+    str.gsub(/(.)\1*/) {$&.length.to_s + $1}
+end
+ 
+def decode(str)
+    str.gsub(/(\d+)(\D)/) {$2 * $1.to_i}
+end
+
+====RUBY=====
+orig = "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW"
+p enc = encode(orig)
+p dec = decode(enc)
+puts "success!" if dec == orig
+
+====RUBY=====
+func encode(str) {
+  str.gsub(/((.)(\2*))/, {|a,b| "#{a.len}#{b}" });
+}
+ 
+func decode(str) {
+  str.gsub(/(\d+)(.)/, {|a,b| b * a.to_i });
+}
+
+====RUBY=====
+func encode(str) {
+    str.gsub(/(.)(\1{0,254})/, {|a,b| b.len+1 -> chr + a});
+}
+ 
+func decode(str) {
+     var chars = str.chars;
+     var r = '';
+     (chars.len/2 -> int).range.each { |i|
+         r += (chars[2*i + 1] * chars[2*i].ord);
+     }
+     return r;
+}
+
+====PYTHON=====
+def encode(input_string):
+    count = 1
+    prev = ''
+    lst = []
+    for character in input_string:
+        if character != prev:
+            if prev:
+                entry = (prev,count)
+                lst.append(entry)
+                #print lst
+            count = 1
+            prev = character
+        else:
+            count += 1
+    else:
+        try:
+            entry = (character,count)
+            lst.append(entry)
+            return (lst, 0)
+        except Exception as e:
+            print("Exception encountered {e}".format(e=e)) 
+            return (e, 1)
+ 
+def decode(lst):
+    q = ""
+    for character, count in lst:
+        q += character * count
+    return q
+ 
+#Method call
+value = encode("aaaaahhhhhhmmmmmmmuiiiiiiiaaaaaa")
+if value[1] == 0:
+    print("Encoded value is {}".format(value[0]))
+    decode(value[0])
+
+====PYTHON=====
+from itertools import groupby
+def encode(input_string):
+    return [(len(list(g)), k) for k,g in groupby(input_string)]
+ 
+def decode(lst):
+    return ''.join(c * n for n,c in lst)
+ 
+encode("aaaaahhhhhhmmmmmmmuiiiiiiiaaaaaa")
+decode([(5, 'a'), (6, 'h'), (7, 'm'), (1, 'u'), (7, 'i'), (6, 'a')])
+
+====PYTHON=====
+from re import sub
+ 
+def encode(text):
+    '''
+    Doctest:
+        >>> encode('WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW')
+        '12W1B12W3B24W1B14W'    
+    '''
+    return sub(r'(.)\1*', lambda m: str(len(m.group(0))) + m.group(1),
+               text)
+ 
+def decode(text):
+    '''
+    Doctest:
+        >>> decode('12W1B12W3B24W1B14W')
+        'WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW'
+    '''
+    return sub(r'(\d+)(\D)', lambda m: m.group(2) * int(m.group(1)),
+               text)
+ 
+textin = "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW"
+assert decode(encode(textin)) == textin
+

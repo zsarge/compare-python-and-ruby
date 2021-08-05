@@ -1,0 +1,92 @@
+====RUBY=====
+require "bigdecimal"
+ 
+testvalues = [[100000000000000.01,           100000000000000.011],
+              [100.01,                       100.011],
+              [10000000000000.001 / 10000.0, 1000000000.0000001000],
+              [0.001,                        0.0010000001],
+              [0.000000000000000000000101,   0.0],
+              [(2**0.5) * (2**0.5),            2.0],
+              [-(2**0.5) * (2**0.5),          -2.0],
+              [BigDecimal("3.14159265358979323846"),       3.14159265358979324],
+              [Float::NAN, Float::NAN,],
+              [Float::INFINITY, Float::INFINITY],
+               ]
+ 
+class  Numeric
+  def close_to?(num, tol = Float::EPSILON)
+    return true  if self == num
+    return false if (self.to_f.nan? or num.to_f.nan?)        # NaN is not even close to itself
+    return false if [self, num].count( Float::INFINITY) == 1 # Infinity is only close to itself
+    return false if [self, num].count(-Float::INFINITY) == 1
+    (self-num).abs <= tol * ([self.abs, num.abs].max)
+  end
+end
+ 
+testvalues.each do |a,b|
+  puts "#{a} #{a.close_to?(b) ? '≈' : '≉'} #{b}"
+end
+ 
+
+====RUBY=====
+[
+    100000000000000.01, 100000000000000.011,
+    100.01, 100.011,
+    10000000000000.001 / 10000.0, 1000000000.0000001000,
+    0.001, 0.0010000001,
+    0.000000000000000000000101, 0.0,
+    sqrt(2) * sqrt(2), 2.0,
+    -sqrt(2) * sqrt(2), -2.0,
+    sqrt(-2) * sqrt(-2), -2.0,
+    cbrt(3)**3, 3,
+    cbrt(-3)**3, -3,
+    100000000000000003.0, 100000000000000004.0,
+    3.14159265358979323846, 3.14159265358979324
+].each_slice(2, {|a,b|
+    say ("#{a} ≅ #{b}: ", a ≅ b)
+})
+
+====RUBY=====
+var a = 100000000000000.01
+var b = 100000000000000.011
+ 
+# Rounding at 2 and 3 decimal places, respectively
+say (round(a, -2) == round(b, -2))      # true
+say (round(a, -3) == round(b, -3))      # false
+
+====RUBY=====
+var a = 22/7
+var b = Num.pi
+ 
+say ("22/7 ≅ π at 2 decimals: ", approx_cmp(a, b, -2) == 0)
+say ("22/7 ≅ π at 3 decimals: ", approx_cmp(a, b, -3) == 0)
+
+====RUBY=====
+say (1.33333333.rat_approx == 4/3)   # true
+say (zeta(-5).rat_approx == -1/252)  # true
+
+====RUBY=====
+for k in (3..19) {
+    var r = Str(Num.pi).first(k)
+    say ("rat_approx(#{r}) = ", Num(r).rat_approx.as_frac)
+}
+
+====PYTHON=====
+from numpy import sqrt
+from math import isclose
+ 
+testvalues = [[100000000000000.01,           100000000000000.011],
+              [100.01,                       100.011],
+              [10000000000000.001 / 10000.0, 1000000000.0000001000],
+              [0.001,                        0.0010000001],
+              [0.000000000000000000000101,   0.0],
+              [sqrt(2) * sqrt(2),            2.0],
+              [-sqrt(2) * sqrt(2),          -2.0],
+              [3.14159265358979323846,       3.14159265358979324]]
+ 
+for (x, y) in testvalues:
+    maybenot = "is" if isclose(x, y) else "is NOT"
+    print(x, maybenot, "approximately equal to ", y)
+ 
+ 
+

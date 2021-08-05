@@ -1,0 +1,142 @@
+====RUBY=====
+module MoveToFront
+ 
+  ABC = ("a".."z").to_a.freeze
+ 
+  def self.encode(str)
+    ar = ABC.dup
+    str.chars.each_with_object([]) do |char, memo|
+      memo << (i = ar.index(char))
+      ar = m2f(ar,i)
+    end
+  end
+ 
+  def self.decode(indices)
+    ar = ABC.dup
+    indices.each_with_object("") do |i, str|
+      str << ar[i]
+      ar = m2f(ar,i)
+    end
+  end
+ 
+  private
+  def self.m2f(ar,i)
+    [ar.delete_at(i)] + ar
+  end
+ 
+end
+ 
+['broood', 'bananaaa', 'hiphophiphop'].each do |word|
+  p word == MoveToFront.decode(p MoveToFront.encode(p word))
+end
+
+====RUBY=====
+func encode(str) {
+    var table = ('a'..'z' -> join);
+    str.chars.map { |c|
+        var s = '';
+        table.sub!(Regex('(.*?)' + c), {|s1| s=s1; c + s1});
+        s.len;
+    }
+}
+ 
+func decode(nums) {
+    var table = ('a'..'z' -> join);
+    nums.map { |n|
+        var s = '';
+        table.sub!(Regex('(.{' + n + '})(.)'), {|s1, s2| s=s2; s2 + s1});
+        s;
+    }.join;
+}
+ 
+%w(broood bananaaa hiphophiphop).each { |test|
+    var encoded = encode(test);
+    say "#{test}: #{encoded}";
+    var decoded = decode(encoded);
+    print "in" if (decoded != test);
+    say "correctly decoded to #{decoded}";
+}
+
+====RUBY=====
+module MoveToFront {
+ 
+  define ABC = @("a".."z")
+ 
+  func m2f(ar,i) {
+    [ar.delete_index(i)] + ar
+  }
+ 
+  func encode(str) {
+    var ar = ABC+[]
+    gather {
+      str.each_char { |char|
+        take(var i = ar.index(char))
+        ar = m2f(ar, i);
+      }
+    }
+  }
+ 
+  func decode(indices) {
+    var ar = ABC+[]
+    gather {
+      indices.each { |i|
+        take ar[i];
+        ar = m2f(ar, i)
+      }
+    }.join
+  }
+}
+ 
+%w(broood bananaaa hiphophiphop).each { |test|
+    var encoded = MoveToFront::encode(test);
+    say "#{test}: #{encoded}";
+    var decoded = MoveToFront::decode(encoded);
+    print "in" if (decoded != test);
+    say "correctly decoded to #{decoded}";
+}
+
+====PYTHON=====
+from __future__ import print_function
+from string import ascii_lowercase
+ 
+SYMBOLTABLE = list(ascii_lowercase)
+ 
+def move2front_encode(strng, symboltable):
+    sequence, pad = [], symboltable[::]
+    for char in strng:
+        indx = pad.index(char)
+        sequence.append(indx)
+        pad = [pad.pop(indx)] + pad
+    return sequence
+ 
+def move2front_decode(sequence, symboltable):
+    chars, pad = [], symboltable[::]
+    for indx in sequence:
+        char = pad[indx]
+        chars.append(char)
+        pad = [pad.pop(indx)] + pad
+    return ''.join(chars)
+ 
+if __name__ == '__main__':
+    for s in ['broood', 'bananaaa', 'hiphophiphop']:
+        encode = move2front_encode(s, SYMBOLTABLE)
+        print('%14r encodes to %r' % (s, encode), end=', ')
+        decode = move2front_decode(encode, SYMBOLTABLE)
+        print('which decodes back to %r' % decode)
+        assert s == decode, 'Whoops!'
+
+====PYTHON=====
+def m2f_e(s, st):
+    return [[st.index(ch), st.insert(0, st.pop(st.index(ch)))][0] for ch in s]
+ 
+def m2f_d(sq, st):
+    return ''.join([st[i], st.insert(0, st.pop(i))][0] for i in sq)
+ 
+ST = list('abcdefghijklmnopqrstuvwxyz')
+for s in ['broood', 'bananaaa', 'hiphophiphop']:
+    encode = m2f_e(s, ST[::])
+    print('%14r encodes to %r' % (s, encode), end=', ')
+    decode = m2f_d(encode, ST[::])
+    print('decodes back to %r' % decode)
+    assert s == decode, 'Whoops!'
+

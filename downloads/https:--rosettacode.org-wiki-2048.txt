@@ -1,0 +1,703 @@
+====RUBY=====
+ 
+#!/usr/bin/ruby
+ 
+require 'io/console'
+ 
+class Board
+  def initialize size=4, win_limit=2048, cell_width = 6
+    @size = size; @cw = cell_width; @win_limit = win_limit
+    @board = Array.new(size) {Array.new(size, 0)}
+    @moved = true; @score = 0; @no_more_moves = false
+    spawn
+  end
+ 
+  def draw
+    print "\n\n" if @r_vert
+    print '    ' if @r_hori
+    print '┌' + (['─' * @cw] * @size).join('┬')  + '┐'
+    @board.each do |row|
+      print "\n"
+      formated = row.map {|num| num == 0 ? ' ' * @cw : format(num)}
+      print '    ' if @r_hori
+      puts '│' + formated.join('│') + '│'
+      print '    ' if @r_hori
+      print '├' + ([' '  * @cw] * @size).join('┼') + '┤'
+    end
+    print "\r"
+    print '    ' if @r_hori
+    puts '└' + (['─' * @cw] * @size).join('┴')  + '┘'
+  end
+ 
+  def move direction
+    case direction
+    when :up
+      @board = column_map {|c| logic(c)}
+      @r_vert = false if $rumble
+    when :down
+      @board = column_map {|c| logic(c.reverse).reverse} 
+      @r_vert = true if $rumble
+    when :left 
+      @board = row_map {|r| logic(r)}
+      @r_hori = false if $rumble
+    when :right
+      @board = row_map {|r| logic(r.reverse).reverse} 
+      @r_hori = true if $rumble
+    end
+    spawn
+    @moved = false
+  end
+ 
+  def print_score
+    puts "Your Score is #@score."
+    puts "Congratulations, you have won!" if to_enum.any? {|e| e >= @win_limit}
+  end
+ 
+  def no_more_moves?; @no_more_moves; end
+  def won?;  to_enum.any? {|e| e >= @win_limit}; end
+  def reset!; initialize @size, @win_limit, @cw; end
+ 
+  private
+ 
+  def set x, y, val
+    @board[y][x] = val
+  end
+ 
+  def spawn 
+    free_pos = to_enum.select{|elem,x,y| elem == 0}.map{|_,x,y| [x,y]}
+    unless free_pos.empty?
+      set *free_pos.sample, rand > 0.1 ? 2 : 4 if @moved
+    else
+      snap = @board
+      unless @stop
+        @stop = true
+        %i{up down left right}.each{|s| move(s)}
+        @no_more_moves = true if snap.flatten == @board.flatten
+        @board = snap
+        @stop = false
+      end
+    end
+  end
+ 
+  def logic list
+    jump = false
+    result =
+    list.reduce([]) do |res, val|
+      if res.last == val && !jump
+	res[-1] += val
+	@score += val
+        jump = true
+      elsif val != 0
+	res.push val
+        jump = false
+      end
+      res
+    end
+    result += [0] * (@size - result.length)
+    @moved ||= list != result
+    result
+  end
+ 
+  def column_map
+    xboard = @board.transpose
+    xboard.map!{|c| yield c }
+    xboard.transpose
+  end
+ 
+  def row_map
+    @board.map {|r| yield r }
+  end
+ 
+  def to_enum
+    @enum ||= Enumerator.new(@size * @size) do |yielder|
+      (@size*@size).times do |i|
+	yielder.yield (@board[i / @size][i % @size]), (i % @size), (i / @size )
+      end
+    end
+    @enum.rewind
+  end
+ 
+  def format(num)
+    if $color
+      cstart = "\e[" + $colors[Math.log(num, 2)] + "m"
+      cend = "\e[0m"
+    else
+      cstart = cend = ""
+    end
+    cstart + num.to_s.center(@cw) + cend
+  end
+end
+ 
+$color = true
+$colors = %W{0 1;97 1;93 1;92 1;96 1;91 1;95 1;94 1;30;47 1;43 1;42
+1;46 1;41 1;45 1;44 1;33;43 1;33;42 1;33;41 1;33;44}
+$rumble = false
+ 
+$check_score = true
+unless ARGV.empty?
+  puts "Usage: #$0 [gridsize] [score-threshold] [padwidth] [--no-color] [--rumble]"; exit if %W[-h --help].include?(ARGV[0])
+  args = ARGV.map(&:to_i).reject{|n| n == 0}
+  b = Board.new(*args) unless args.empty?
+  $rumble = true if ARGV.any?{|a| a =~ /rumble/i }
+  $color = false if ARGV.any?{|a| a =~ /no.?color/i}
+end
+ 
+b ||= Board.new
+puts "\e[H\e[2J"
+b.draw
+puts "Press h for help, q to quit"
+loop do
+  input = STDIN.getch
+  if input == "\e" 
+    2.times {input << STDIN.getch}
+  end
+ 
+  case input
+  when "\e[A", "w" then b.move(:up)
+  when "\e[B", "s" then b.move(:down)
+  when "\e[C", "d" then b.move(:right)
+  when "\e[D", "a" then b.move(:left)
+ 
+  when "q","\u0003","\u0004"  then b.print_score; exit
+ 
+  when "h" 
+    puts <<-EOM.gsub(/^\s*/, '')
+      ┌─                                                                                  ─┐
+      │Use the arrow-keys or WASD on your keyboard to push board in the given direction.   
+      │Tiles with the same number merge into one.                                          
+      │Get a tile with a value of #{ARGV[1] || 2048} to win.                               
+      │In case you cannot move or merge any tiles anymore, you loose.                      
+      │You can start this game with different settings by providing commandline argument:  
+      │For instance:                                                                       
+      │  %> #$0 6 8192 --rumble                                                            
+      └─                                                                                  ─┘
+      PRESS q TO QUIT (or Ctrl-C or Ctrl-D)
+    EOM
+    input = STDIN.getch
+  end
+ 
+  puts "\e[H\e[2J"
+  b.draw
+ 
+  if b.no_more_moves? or $check_score && b.won?
+    b.print_score
+    if b.no_more_moves?
+      puts "No more moves possible"
+      puts "Again? (y/n)"
+      exit if STDIN.gets.chomp.downcase == "n"
+      $check_score = true
+      b.reset!
+      puts "\e[H\e[2J"
+      b.draw
+    else
+      puts "Continue? (y/n)"
+      exit if STDIN.gets.chomp.downcase == "n"
+      $check_score = false
+      puts "\e[H\e[2J"
+      b.draw
+    end
+  end
+end
+ 
+
+====PYTHON=====
+#!/usr/bin/env python3
+ 
+import curses
+from random import randrange, choice # generate and place new tile
+from collections import defaultdict
+ 
+letter_codes = [ord(ch) for ch in 'WASDRQwasdrq']
+actions = ['Up', 'Left', 'Down', 'Right', 'Restart', 'Exit']
+actions_dict = dict(zip(letter_codes, actions * 2))
+ 
+def get_user_action(keyboard):    
+	char = "N"
+	while char not in actions_dict:    
+		char = keyboard.getch()
+	return actions_dict[char]
+ 
+def transpose(field):
+	return [list(row) for row in zip(*field)]
+ 
+def invert(field):
+	return [row[::-1] for row in field]
+ 
+class GameField(object):
+	def __init__(self, height=4, width=4, win=2048):
+		self.height = height
+		self.width = width
+		self.win_value = win
+		self.score = 0
+		self.highscore = 0
+		self.reset()
+ 
+	def reset(self):
+		if self.score > self.highscore:
+			self.highscore = self.score
+		self.score = 0
+		self.field = [[0 for i in range(self.width)] for j in range(self.height)]
+		self.spawn()
+		self.spawn()
+ 
+	def move(self, direction):
+		def move_row_left(row):
+			def tighten(row): # squeese non-zero elements together
+				new_row = [i for i in row if i != 0]
+				new_row += [0 for i in range(len(row) - len(new_row))]
+				return new_row
+ 
+			def merge(row):
+				pair = False
+				new_row = []
+				for i in range(len(row)):
+					if pair:
+						new_row.append(2 * row[i])
+						self.score += 2 * row[i]
+						pair = False
+					else:
+						if i + 1 < len(row) and row[i] == row[i + 1]:
+							pair = True
+							new_row.append(0)
+						else:
+							new_row.append(row[i])
+				assert len(new_row) == len(row)
+				return new_row
+			return tighten(merge(tighten(row)))
+ 
+		moves = {}
+		moves['Left']  = lambda field:								\
+				[move_row_left(row) for row in field]
+		moves['Right'] = lambda field:								\
+				invert(moves['Left'](invert(field)))
+		moves['Up']    = lambda field:								\
+				transpose(moves['Left'](transpose(field)))
+		moves['Down']  = lambda field:								\
+				transpose(moves['Right'](transpose(field)))
+ 
+		if direction in moves:
+			if self.move_is_possible(direction):
+				self.field = moves[direction](self.field)
+				self.spawn()
+				return True
+			else:
+				return False
+ 
+	def is_win(self):
+		return any(any(i >= self.win_value for i in row) for row in self.field)
+ 
+	def is_gameover(self):
+		return not any(self.move_is_possible(move) for move in actions)
+ 
+	def draw(self, screen):
+		help_string1 = '(W)Up (S)Down (A)Left (D)Right'
+		help_string2 = '     (R)Restart (Q)Exit'
+		gameover_string = '           GAME OVER'
+		win_string = '          YOU WIN!'
+		def cast(string):
+			screen.addstr(string + '\n')
+ 
+		def draw_hor_separator():
+			top = '┌' + ('┬──────' * self.width + '┐')[1:]
+			mid = '├' + ('┼──────' * self.width + '┤')[1:]
+			bot = '└' + ('┴──────' * self.width + '┘')[1:]
+			separator = defaultdict(lambda: mid)
+			separator[0], separator[self.height] = top, bot
+			if not hasattr(draw_hor_separator, "counter"):
+				draw_hor_separator.counter = 0
+			cast(separator[draw_hor_separator.counter])
+			draw_hor_separator.counter += 1
+ 
+		def draw_row(row):
+			cast(''.join('│{: ^5} '.format(num) if num > 0 else '|      ' for num in row) + '│')
+ 
+		screen.clear()
+		cast('SCORE: ' + str(self.score))
+		if 0 != self.highscore:
+			cast('HIGHSCORE: ' + str(self.highscore))
+		for row in self.field:
+			draw_hor_separator()
+			draw_row(row)
+		draw_hor_separator()
+		if self.is_win():
+			cast(win_string)
+		else:
+			if self.is_gameover():
+				cast(gameover_string)
+			else:
+				cast(help_string1)
+		cast(help_string2)
+ 
+	def spawn(self):
+		new_element = 4 if randrange(100) > 89 else 2
+		(i,j) = choice([(i,j) for i in range(self.width) for j in range(self.height) if self.field[i][j] == 0])
+		self.field[i][j] = new_element
+ 
+	def move_is_possible(self, direction):
+		def row_is_left_movable(row): 
+			def change(i): # true if there'll be change in i-th tile
+				if row[i] == 0 and row[i + 1] != 0: # Move
+					return True
+				if row[i] != 0 and row[i + 1] == row[i]: # Merge
+					return True
+				return False
+			return any(change(i) for i in range(len(row) - 1))
+ 
+		check = {}
+		check['Left']  = lambda field:								\
+				any(row_is_left_movable(row) for row in field)
+ 
+		check['Right'] = lambda field:								\
+				 check['Left'](invert(field))
+ 
+		check['Up']    = lambda field:								\
+				check['Left'](transpose(field))
+ 
+		check['Down']  = lambda field:								\
+				check['Right'](transpose(field))
+ 
+		if direction in check:
+			return check[direction](self.field)
+		else:
+			return False
+ 
+def main(stdscr):
+	curses.use_default_colors()
+	game_field = GameField(win=32)
+	state_actions = {} # Init, Game, Win, Gameover, Exit
+	def init():
+		game_field.reset()
+		return 'Game'
+ 
+	state_actions['Init'] = init
+ 
+	def not_game(state):
+		game_field.draw(stdscr)
+		action = get_user_action(stdscr)
+		responses = defaultdict(lambda: state)
+		responses['Restart'], responses['Exit'] = 'Init', 'Exit'
+		return responses[action]
+ 
+	state_actions['Win'] = lambda: not_game('Win')
+	state_actions['Gameover'] = lambda: not_game('Gameover')
+ 
+	def game():
+		game_field.draw(stdscr)
+		action = get_user_action(stdscr)
+		if action == 'Restart':
+			return 'Init'
+		if action == 'Exit':
+			return 'Exit'
+		if game_field.move(action): # move successful
+			if game_field.is_win():
+				return 'Win'
+			if game_field.is_gameover():
+				return 'Gameover'
+		return 'Game'
+ 
+	state_actions['Game'] = game
+ 
+	state = 'Init'
+	while state != 'Exit':
+		state = state_actions[state]()
+ 
+curses.wrapper(main)
+ 
+
+====PYTHON=====
+#!/usr/bin/env python3
+ 
+''' Python 3.6.5 code using Tkinter graphical user interface.
+    Option to set goal to powers of 2 from 128 to 2048. '''
+from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk
+import random
+ 
+# ************************************************
+ 
+class Board:
+ 
+    def __init__(self):
+        self.bd = ['']* 16
+        self.goal = 2048
+        self.choices = '2222222224'
+ 
+    # place 2 random squares on empty board:
+    def place_two(self):
+        idx = range(15)
+        a, b = random.sample(idx, 2)
+        self.bd[a] = random.choice(self.choices)        
+        self.bd[b] = random.choice(self.choices)       
+ 
+    # return text on square at index=idx of board:    
+    def get_text(self, idx):
+        return self.bd[idx]
+ 
+    # move squares on board based on arrow key entered:
+    def move_squares(self, key):
+        if key in ('LR'):
+            # generate 4x4 2D array for row processing:
+            rows = [[self.bd[0],  self.bd[1],  self.bd[2],  self.bd[3]],
+                    [self.bd[4],  self.bd[5],  self.bd[6],  self.bd[7]],
+                    [self.bd[8],  self.bd[9],  self.bd[10], self.bd[11]],
+                    [self.bd[12], self.bd[13], self.bd[14], self.bd[15]]]
+        else:
+            # generate transposed 4x4 2D array instead:
+            rows = [[self.bd[0],  self.bd[4],  self.bd[8],  self.bd[12]],
+                    [self.bd[1],  self.bd[5],  self.bd[9],  self.bd[13]],
+                    [self.bd[2],  self.bd[6],  self.bd[10], self.bd[14]],
+                    [self.bd[3],  self.bd[7],  self.bd[11], self.bd[15]]]
+ 
+        # build a new 4x4 array of "moved" rows:
+        nrows = []       
+        for row in rows:
+            if key in 'RD':
+                # reverse these rows and slide to left:
+                row = row[::-1]
+            nrow = self.slide_squares(row)
+            if key in 'RD':
+                # restore reversed rows:
+                nrow = nrow[::-1]
+            nrows.append(nrow)
+        if key in ('UD'):
+            # transpose arrays that were transposed:
+            nrows = list(map(list, zip(*nrows)))
+ 
+        # flatten 4x4 2D array:
+        newbd = []
+        for row in nrows:
+            for r in row:
+                newbd.append(r)
+ 
+        # place a '2' or '4' in random open square of newbd:
+        if newbd != self.bd and '' in newbd:
+            loi = []
+            for i in range(16):
+                if newbd[i] == '':
+                    loi.append(i)
+            i = random.choice(loi)
+            newbd[i] = random.choice(self.choices)
+ 
+        self.bd = newbd
+        return
+ 
+    # slide squares in row to the left:                  
+    def slide_squares(self, row):
+        new = ['']  * 4
+        icmb = -1
+        inew = 0
+        for x in row:
+            if x:
+                if (inew > 0         and
+                    x == new[inew-1] and
+                    icmb != inew-1):
+                    new[inew-1] = str(2*int(x))
+                    icmb = inew-1
+                else:
+                    new[inew] = x
+                    inew += 1
+        return new
+ 
+    # check if game won, lost, or continuing:
+    def is_end(self):
+        if self.goal in self.bd:
+            return 'W'
+        if '' in self.bd:
+            return 'C'
+        for i in [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14]:
+            if self.bd[i] == self.bd[i+1]:
+                return 'C'
+        for i in range(12):
+            if self.bd[i] == self.bd[i+4]:
+                return 'C'
+        return 'L'
+ 
+# ************************************************
+ 
+class Game:
+    def __init__(self, gw):
+        self.window = gw
+ 
+        self.rosybrown1 = '#ffc1c1'
+        self.lemonchiffon = '#fffacd'
+        self.skyblue1 = '#87ceff'
+        self.springgreen = '#00ff7f'
+        self.tomato1 = '#ff6347'
+        self.hotpink = '#ff69b4'
+        self.brilliantlavender = '#edcaf6'
+        self.cobaltgreen = '#3d9140'
+        self.dodgerblue = '#1e90ff'
+        self.darkgoldenrod1 = '#ffb90f'
+        self.yellow = '#ffff00'
+        self.imperialred = '#ed2939'
+        self.navyblue = '#000080'
+        self.lightgreen = '#90ee90'
+        self.lightsteelblue = '#b0c4de'
+        self.white = '#ffffff'
+        self.palegreen4 = '#548b54'
+        self.darkgreen = '#013220'
+        self.black = '#000000'
+ 
+        self.doc = {'':self.rosybrown1,
+                    '2':self.lemonchiffon,
+                    '4':self.skyblue1,
+                    '8':self.springgreen,
+                    '16':self.tomato1,
+                    '32':self.hotpink,
+                    '64':self.brilliantlavender,
+                    '128':self.cobaltgreen,
+                    '256':self.dodgerblue,
+                    '512':self.darkgoldenrod1,
+                    '1024':self.yellow,
+                    '2048':self.imperialred}
+ 
+        # game data:
+        self.bd = None
+        self.playable = False
+ 
+        # top frame:
+        self.top_fr = Frame(gw,
+                            width=600,
+                            height=100,
+                            bg=self.lightgreen)
+        self.top_fr.pack(fill=X)
+ 
+        self.hdg = Label(self.top_fr,
+                         text='  2048  ',
+                         font='arial 22 bold',
+                         fg=self.navyblue,
+                         bg=self.white)
+        self.hdg.place(relx=0.5, rely=0.4,
+                       anchor=CENTER)
+ 
+        self.dir = Label(self.top_fr,
+                 text="(Select a 'Goal' & Click 'New Game')",
+                 font='arial 12 ',
+                 fg=self.navyblue,
+                 bg=self.lightgreen)
+        self.dir.place(relx=0.5, rely=0.8,
+                       anchor=CENTER)
+ 
+        self.play_btn = Button(self.top_fr,
+                               text='New \nGame',
+                               bd=5,
+                               bg=self.palegreen4,
+                               fg=self.white,
+                               font='times 12 bold',
+                               command=self.new_game)
+        self.play_btn.place(relx=0.92, rely=0.5,
+                       anchor=E)
+ 
+        self.lbl_cb = Label(self.top_fr,
+                            text='     Goal',
+                            font='arial 12 bold ',
+                            fg=self.darkgreen,
+                            bg=self.lightgreen)
+        self.lbl_cb.place(relx=0.08, rely=0.35,
+                       anchor=W)
+ 
+        goals = ['2048', '1024', '512', '256', '128']
+        self.cur_goal = StringVar()
+        self.goal_cb = ttk.Combobox(self.top_fr,
+                                    foreground=self.darkgreen,
+                                    values=goals,
+                                    font='times 12 bold',
+                                    justify='left',
+                                    state='readonly',
+                                    textvariable=self.cur_goal, 
+                                    width=7,
+                                    height=30)
+        self.goal_cb.place(relx=0.08, rely=0.6,
+                       anchor=W)
+        self.goal_cb.current(0)
+ 
+        # bottom frame:
+        self.btm_fr = Frame(gw,
+                            width=600,
+                            height=500,
+                            bg=self.lightsteelblue)
+        self.btm_fr.pack(fill=X)
+ 
+        # board frame:
+        self.bd_fr = Frame(self.btm_fr,
+                           width=400+2,
+                           height=400+2,
+                           relief='solid',
+                           bd=1,
+                           bg=self.lemonchiffon)
+        self.bd_fr.place(relx=0.5, rely=0.5,
+                         anchor=CENTER)
+ 
+        self.bd = Board()
+        self.play_game()
+ 
+# ************************************************
+ 
+    # action to take if 'new game' button is clicked
+    # or if 'play again' is chosen after win or loss:
+    def new_game(self):   
+        self.playable = True
+        self.bd = Board()
+        self.bd.place_two()
+        self.bd.goal = self.goal_cb.get()
+        self.goal_cb.config(state='disabled')
+        self.dir.config(text='(Use arrow keys to play game)')
+        self.play_game()
+ 
+    # show current contents of board:
+    def play_game(self):
+        objh = 100  # widget height
+        objw = 100  # widget width
+        objx = 0    # x-position of widget in frame
+        objy = 0    # y-position of widget in frame
+ 
+        i = 0
+        for r in range(4):
+            for c in range(4):
+                txt = self.bd.get_text(i)
+                bg_color = self.doc[txt]         
+                game_sq = Label(self.bd_fr,
+                                text=txt,
+                                relief='solid',
+                                bd=1,
+                                fg=self.black,
+                                bg=bg_color,
+                                font='times 16 bold')
+                game_sq.place(x=objx, y=objy,
+                              height=objh, width=objw)
+                i += 1
+                objx = objx + objw
+            objx = 0
+            objy = objy + objh
+ 
+    # control play when an arrow key is pressed:
+    def key(self, event):
+        if event.keysym in ('Left', 'Right', 'Up', 'Down'):
+            if self.playable:
+                self.bd.move_squares(event.keysym[0])
+                self.play_game()
+                x = self.bd.is_end()
+                if x == 'C':
+                    return
+                elif x == 'W':
+                    msg = 'You won!!!   Play again?'
+                elif x == 'L':
+                    msg = 'You lost!!!   Play again?'
+                ans = messagebox.askquestion(msg)
+                if ans == 'no':
+                    self.window.destroy()
+                else:
+                    self.new_game()
+ 
+# ************************************************
+ 
+root = Tk()
+root.title('2048')
+root.geometry('600x600+100+50')
+root.resizable(False, False)
+g = Game(root)
+root.bind_all('<Key>', g.key)
+root.mainloop()
+ 
+

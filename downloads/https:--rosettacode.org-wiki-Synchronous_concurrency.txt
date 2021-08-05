@@ -1,0 +1,148 @@
+====RUBY=====
+File.write("input.txt", "a\nb\nc")
+ 
+lines = Channel(String).new
+ 
+spawn do
+  File.each_line("input.txt") do |line|
+    lines.send(line)
+  end
+  lines.close
+end
+ 
+while line = lines.receive?
+  puts line
+end
+ 
+File.delete("input.txt")
+
+====RUBY=====
+count = 0
+IO.foreach("input.txt") { |line| print line; count += 1 }
+puts "Printed #{count} lines."
+
+====RUBY=====
+count = 0
+reader = Fiber.new do
+  IO.foreach("input.txt") { |line| Fiber.yield line }
+  puts "Printed #{count} lines."
+  nil
+end
+ 
+# printer
+while line = reader.resume
+  print line
+  count += 1
+end
+
+====RUBY=====
+require 'continuation' unless defined? Continuation
+ 
+count = 0
+reader = proc do |cont|
+  IO.foreach("input.txt") { |line| cont = callcc { |cc| cont[cc, line] }}
+  puts "Printed #{count} lines."
+  cont[nil]
+end
+ 
+# printer
+while array = callcc { |cc| reader[cc] }
+  reader, line = array
+  print line
+  count += 1
+end
+
+====RUBY=====
+require 'thread'
+ 
+counts = Queue.new
+lines = Queue.new
+reader = Thread.new do
+  begin
+    File.foreach("input.txt") { |line| lines << line }
+    lines << :EOF
+    puts "Printed #{counts.pop} lines."
+  ensure
+    lines << nil
+  end
+end
+ 
+# writer
+count = 0
+while line = lines.pop
+  case line
+  when String
+    print line
+    count += 1
+  when :EOF
+    counts << count
+  end
+end
+reader.join
+
+====PYTHON=====
+import sys
+from Queue import Queue
+from threading import Thread
+ 
+lines = Queue(1)
+count = Queue(1)
+ 
+def read(file):
+    try:
+        for line in file:
+            lines.put(line)
+    finally:
+        lines.put(None)
+    print count.get()
+ 
+def write(file):
+    n = 0
+    while 1:
+        line = lines.get()
+        if line is None:
+            break
+        file.write(line)
+        n += 1
+    count.put(n)
+ 
+reader = Thread(target=read, args=(open('input.txt'),))
+writer = Thread(target=write, args=(sys.stdout,))
+reader.start()
+writer.start()
+reader.join()
+writer.join()
+
+====PYTHON=====
+count = 0
+ 
+def reader():
+    for line in open('input.txt'):
+        yield line.rstrip()
+    print('Printed %d lines.' % count)
+ 
+r = reader() 
+# printer
+for line in r:
+    print(line)
+    count += 1
+
+====PYTHON=====
+def reader():
+    for line in open('input.txt'):
+        yield line.rstrip()
+    count = yield None
+    print('Printed %d lines.' % count)
+ 
+r = reader() 
+ 
+# printer
+for count, line in enumerate(r):
+    if line is None:
+        break
+    print(line)
+try: 
+    r.send(count)
+except StopIteration: 
+    pass
+

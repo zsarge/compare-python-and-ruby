@@ -1,0 +1,23 @@
+====RUBY=====
+s = "Hello wo"
+s += "rld" # new string object
+s << "!"   # mutates in place, same object
+puts s
+
+====RUBY=====
+var str = 'Foo';
+str += 'bar';
+say str;
+
+====PYTHON=====
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- #
+ 
+str = "12345678";
+str += "9!";
+print(str)
+
+====PYTHON=====
+s <- "12345678"
+s <- (s + "9!")
+

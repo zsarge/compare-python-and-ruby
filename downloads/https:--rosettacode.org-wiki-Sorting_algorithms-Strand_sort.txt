@@ -1,0 +1,92 @@
+====RUBY=====
+class Array
+  def strandsort
+    a = dup
+    result = []
+    until a.empty?
+      v = a.first
+      sublist, a = a.partition{|val| v=val if v<=val}   # In case of v>val, it becomes nil.
+ 
+      result.each_index do |idx|
+        break if sublist.empty?
+        result.insert(idx, sublist.shift) if sublist.first < result[idx]
+      end
+      result += sublist
+    end
+    result
+  end
+ 
+  def strandsort!
+    replace(strandsort)
+  end
+end
+ 
+p [1, 6, 3, 2, 1, 7, 5, 3].strandsort
+
+====RUBY=====
+func merge(x, y) {
+    var out = [];
+    while (x && y) {
+        given (x[-1] <=> y[-1]) {
+            when ( 1) { out.prepend(x.pop) }
+            when (-1) { out.prepend(y.pop) }
+            default   { out.prepend(x.pop, y.pop) }
+        }
+    }
+    x + y + out;
+}
+ 
+func strand(x) {
+    x || return [];
+    var out = [x.shift];
+    if (x.len) {
+        for i in (-x.len .. -1) {
+            if (x[i] >= out[-1]) {
+                out.append(x.pop_at(i));
+            }
+        }
+    }
+    return out;
+}
+ 
+func strand_sort(x) {
+    var out = [];
+    while (var strd = strand(x)) {
+        out = merge(out, strd);
+    }
+    return out;
+}
+ 
+var a = 10.of { 100.irand };
+say "Before: #{a}";
+say "After: #{strand_sort(a)}";
+
+====PYTHON=====
+def merge_list(a, b):
+	out = []
+	while len(a) and len(b):
+		if a[0] < b[0]:
+			out.append(a.pop(0))
+		else:
+			out.append(b.pop(0))
+	out += a
+	out += b
+	return out
+ 
+def strand(a):
+	i, s = 0, [a.pop(0)]
+	while i < len(a):
+		if a[i] > s[-1]:
+			s.append(a.pop(i))
+		else:
+			i += 1
+	return s
+ 
+def strand_sort(a):
+	out = strand(a)
+	while len(a):
+		out = merge_list(out, strand(a))
+	return out
+ 
+print strand_sort([1, 6, 3, 2, 1, 7, 5, 3])
+

@@ -1,0 +1,392 @@
+====RUBY=====
+X, Y, Z = 6, 2, 3
+DIR = {"-" => [1,0], "|" => [0,1], "/" => [1,1]}
+ 
+def cuboid(nx, ny, nz)
+  puts "cuboid %d %d %d:" % [nx, ny, nz]
+  x, y, z = X*nx, Y*ny, Z*nz
+  area = Array.new(y+z+1){" " * (x+y+1)}
+  draw_line = lambda do |n, sx, sy, c|
+    dx, dy = DIR[c]
+    (n+1).times do |i|
+      xi, yi = sx+i*dx, sy+i*dy
+      area[yi][xi] = (area[yi][xi]==" " ? c : "+")
+    end
+  end
+  nz    .times {|i| draw_line[x,     0,   Z*i, "-"]}
+  (ny+1).times {|i| draw_line[x,   Y*i, z+Y*i, "-"]}
+  nx    .times {|i| draw_line[z,   X*i,     0, "|"]}
+  (ny+1).times {|i| draw_line[z, x+Y*i,   Y*i, "|"]}
+  nz    .times {|i| draw_line[y,     x,   Z*i, "/"]}
+  (nx+1).times {|i| draw_line[y,   X*i,     z, "/"]}
+  puts area.reverse
+end
+ 
+cuboid(2, 3, 4)
+cuboid(1, 1, 1)
+cuboid(6, 2, 1)
+cuboid(2, 4, 1)
+
+====RUBY=====
+const dirs = Hash("-" => [1,0], "|" => [0,1], "/" => [1,1])
+ 
+func cuboid(nx, ny, nz) {
+  say("cuboid %d %d %d:" % [nx, ny, nz])
+  var(x, y, z) = (8*nx, 2*ny, 4*nz)
+  var area = []
+  var line = func(n, sx, sy, c) {
+    var(dx, dy) = dirs{c}...
+    for i (0..n) {
+      var (xi, yi) = (sx + i*dx, sy + i*dy)
+      area[yi] \\= [" "]*(x+y+1)
+      area[yi][xi] = (area[yi][xi] == " " ? c : '+')
+    }
+  }
+ 
+  0 .. nz-1 -> each {|i| line(x,       0,     4*i, "-") }
+  0 .. ny   -> each {|i| line(x,     2*i, z + 2*i, "-") }
+  0 .. nx-1 -> each {|i| line(z,     8*i,       0, "|") }
+  0 .. ny   -> each {|i| line(z, x + 2*i,     2*i, "|") }
+  0 .. nz-1 -> each {|i| line(y,       x,     4*i, "/") }
+  0 .. nx   -> each {|i| line(y,     8*i,       z, "/") }
+ 
+  area.reverse.each { |line|
+     say line.join('')
+  }
+}
+ 
+cuboid(2, 3, 4)
+cuboid(1, 1, 1)
+cuboid(6, 2, 1)
+cuboid(2, 4, 1)
+
+====RUBY=====
+func cuboid (x=1,y=1,z=1,s=' ',c='+',h='-',v='|',d='/') {
+    say("cuboid %d %d %d:" % (x, y, z))
+    ' ' * z+1 + c + h*x + c -> say
+ 
+    { |i|
+        ' ' * (z - i + 1) + d + s*x + d +
+              (s * (i - (i > y ? i-y : 1))) +
+              (i - 1 == y ? c : (i > y ? d : v)) -> say
+    }.for(1..z)
+ 
+    c + h*x + c + (s * (z < y ? z : y) +
+        (z < y ? v : (z == y ? c : d))) -> say
+ 
+    { |i|
+        v + s*x + v + (z > y
+            ? (i >= z ? (s*x + c) : (s * y-i + d))
+            : (y - i > z
+                ? (s * z + v)
+                : (s * y-i + (y-i == z ? c : d))
+               )
+        ) -> say;
+    }.for(1..y)
+ 
+    c + h*x + c -> say
+}
+ 
+cuboid(2, 3, 4)
+cuboid(1, 1, 1)
+cuboid(6, 2, 1)
+cuboid(2, 4, 1)
+
+====PYTHON=====
+def _pr(t, x, y, z):
+    txt = '\n'.join(''.join(t[(n,m)] for n in range(3+x+z)).rstrip()
+                    for m in reversed(range(3+y+z)))
+    return txt
+ 
+def cuboid(x,y,z):
+    t = {(n,m):' ' for n in range(3+x+z) for m in range(3+y+z)}
+    xrow = ['+'] + ['%i' % (i % 10) for i in range(x)] + ['+']
+    for i,ch in enumerate(xrow):
+        t[(i,0)] = t[(i,1+y)] = t[(1+z+i,2+y+z)] = ch
+    if _debug: print(_pr(t, x, y, z))
+    ycol = ['+'] + ['%i' % (j % 10) for j in range(y)] + ['+']
+    for j,ch in enumerate(ycol):
+        t[(0,j)] = t[(x+1,j)] = t[(2+x+z,1+z+j)] = ch
+    zdepth = ['+'] + ['%i' % (k % 10) for k in range(z)] + ['+']
+    if _debug: print(_pr(t, x, y, z))
+    for k,ch in enumerate(zdepth):
+        t[(k,1+y+k)] = t[(1+x+k,1+y+k)] = t[(1+x+k,k)] = ch
+ 
+    return _pr(t, x, y, z)
+ 
+ 
+_debug = False
+if __name__ == '__main__':
+    for dim in ((2,3,4), (3,4,2), (4,2,3)):
+        print("CUBOID%r" % (dim,), cuboid(*dim), sep='\n')
+
+====PYTHON=====
+from visual import *
+mybox = box(pos=(0,0,0), length=4, height=2, width=3, axis=(-0.1,-0.1,0.1) ) 
+scene.title = "VPython: cuboid"
+
+====PYTHON=====
+ 
+from __future__ import print_function, division
+from visual import *
+import itertools
+ 
+title = "VPython: Draw a cuboid"
+scene.title = title
+print( "%s\n" % title )
+ 
+msg = """
+Drag with right mousebutton to rotate view.
+Drag up+down with middle mousebutton to zoom.
+Left mouseclick to show info.
+ 
+Press x,X, y,Y, z,Z to rotate the box in single steps.
+Press b, c,o,m to change background, color, opacity, material.
+Press r,R to rotate, d,a for demo, automatic,  space to stop.
+Press h to show this help,  ESC or q to quit.
+"""
+ 
+#...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+ 
+## Rotate one step per keypress:
+ 
+def rotX(obj, a) :
+    obj.rotate( angle=a, axis=(1,0,0) )
+def rotY(obj, a) :
+    obj.rotate( angle=a, axis=(0,1,0) )
+def rotZ(obj, a) :
+    obj.rotate( angle=a, axis=(0,0,1) )
+ 
+## Selection of background-colors:
+ 
+bg_list = [color.gray(0.2), color.gray(0.4), color.gray(0.7), color.gray(0.9)]
+bg = itertools.cycle(bg_list)
+def backgr() :
+    b = next(bg)
+    print("BackgroundColor=",b)
+    scene.background = b
+ 
+## Selection of colors:
+ 
+col_list = [color.white, color.red,  color.orange, color.yellow,  
+            color.green, color.blue, color.cyan,   color.magenta, 
+            color.black]
+col = itertools.cycle(col_list)
+#c = col.next()
+#c = next(col)
+def paint(obj) :
+    c = next(col)
+    print("Color=",c)
+    obj.color = c
+ 
+## Selection of opacity / transparancy :
+ 
+opa_list = [1.0, 0.7, 0.5, 0.2]
+opa = itertools.cycle(opa_list)
+def solid(obj) :
+    o = next(opa)
+    print("opacity =",o)
+    obj.opacity = o
+ 
+## Selection of materials:
+ 
+mName_list = ["None",
+              "wood",
+              "rough",
+              "bricks",
+              "glass",
+              "earth",
+              "plastic",
+              "ice",
+              "diffuse",
+              "marble" ]
+mat_list  = [ None,
+              materials.wood,
+              materials.rough,
+              materials.bricks,
+              materials.glass,
+              materials.earth,
+              materials.plastic,
+              materials.ice,
+              materials.diffuse,
+              materials.marble ]
+mName = itertools.cycle(mName_list)
+mat   = itertools.cycle(mat_list)
+def surface(obj) :
+    mM = next(mat)
+    mN = next(mName)
+    print("Material:", mN)
+    obj.material = mM
+    obj.mat      = mN
+ 
+## Selection for rotation-angle & axis :
+ 
+rotAng_list = [ 0.0, 0.005, 0.0, -0.005 ]
+rotDir_list = [ (1,0,0), (0,1,0), (0,0,1) ]
+ 
+rotAng = itertools.cycle(rotAng_list)
+rotDir = itertools.cycle(rotDir_list)
+ 
+rotAn = next(rotAng)     # rotAn = 0.005
+rotAx = next(rotDir)     # rotAx = (1,0,0)
+ 
+def rotAngle() :
+    global rotAn
+    rotAn = next(rotAng)
+    print("RotateAngle=",rotAn)
+ 
+def rotAxis() :
+    global rotAx
+    rotAx = next(rotDir)
+    print("RotateAxis=",rotAx)
+ 
+## List of keypresses for demo:
+ 
+#demoC_list = [ "h", "c", "a", "o", "m", "b" ]
+demoCmd_list = "rcbr"+"robr"+"rmR_r?"
+demoCmd = itertools.cycle(demoCmd_list)
+def demoStep() :
+    k = next(demoCmd)
+    print("Demo:",k)
+    cmd(k)
+ 
+#...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+ 
+def objCount():
+    n=0
+    for obj in scene.objects:
+        n=n+1
+    return n
+ 
+def objInfo(obj) :
+    print( "\nObject:", obj )
+    print( "Pos:",  obj.pos,   "Size:", obj.size )
+    print( "Axis:", obj.axis,  "Up:",   obj.up )
+    print( "Color", obj.color, obj.opacity )
+    print( "Mat:",  obj.mat,   obj.material )
+ 
+def sceneInfo(sc) :
+    print( "\nScene:",  sc )
+    print( ".width x height:",   sc.width, "x", sc.height )
+    print( ".range:",   sc.range, ".scale:", sc.scale )
+    print( ".center:",  sc.center )    # Camera
+    print( ".forward:", sc.forward, ".fov:", sc.fov )
+    print( "Mouse:",    sc.mouse.camera, "ray:", sc.mouse.ray )
+    print( ".ambient:", sc.ambient )
+    print( "Lights:",   sc.lights  )    # distant_light
+    print( "objects:", objCount(), scene.objects )
+ 
+#...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+ 
+scene.width  = 600
+scene.height = 400
+scene.range  = 4
+#scene.autocenter = True
+#scene.background = color.gray(0.2)
+scene.background = next(bg)
+ 
+autoDemo = -1
+ 
+print( msg )
+ 
+ 
+## Create cuboid (aka "box") :
+ 
+# c = box()     # using default-values --> cube
+# c = box(pos=(0,0,0), length=4, height=2, width=3, axis=(-0.1,-0.1,0.1) )
+##c  = box(pos =( 0.0, 0.0, 0.0 ),
+##         size=( 4, 2, 3 ),            # L,H,W
+##         axis=( 1.0, 0.0, 0.0 ),
+##         up  =( 0.0, 1.0, 0.0 ),
+##         color   = color.orange,
+##         opacity = 1.0,
+##         material= materials.marble
+##         )
+c  = box(pos =( 0.0, 0.0, 0.0 ),
+         size=( 4, 2, 3 ),            # L,H,W
+         axis=( 1.0, 0.0, 0.0 ),
+         up  =( 0.0, 1.0, 0.0 )
+         )
+print("Box:", c)
+paint(c)     # c.color    = color.red
+solid(c)     # c.opacity  = 1.0
+surface(c)   # c.material = materials.marble
+ 
+rotX(c,0.4)         # rotate box, to bring three faces into view
+rotY(c,0.6)
+ 
+#sceneInfo(scene)
+#objInfo(c)
+print("\nPress 'a' to start auto-running demo.")
+ 
+#...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+ 
+ 
+## Processing of input:
+ 
+cCount = 0
+def click():
+    global cCount
+    cCount=cCount+1
+    sceneInfo(scene)
+    objInfo(c)
+scene.bind( 'click', click )
+ 
+def keyInput():
+    key = scene.kb.getkey()
+    print( 'Key: "%s"' % key )
+ 
+    if ( (key == 'esc') or (key == 'q') ) :
+        print( "Bye!" )
+        exit(0)
+    else :
+        cmd(key)
+scene.bind('keydown', keyInput)
+ 
+def cmd(key):
+    global autoDemo
+    if (key == 'h') :  print( msg )
+    if (key == '?') :  print( msg )
+    if (key == 's') :  sceneInfo(scene)
+    if (key == 'i') :  objInfo(c)
+ 
+    if (key == 'x') :  rotX(c, 0.1)
+    if (key == 'X') :  rotX(c,-0.1)
+    if (key == 'y') :  rotY(c, 0.1)
+    if (key == 'Y') :  rotY(c,-0.1)
+    if (key == 'z') :  rotZ(c, 0.1)
+    if (key == 'Z') :  rotZ(c,-0.1)
+ 
+    if (key == 'c') :  paint(c)
+    if (key == 'o') :  solid(c)
+    if (key == 'm') :  surface(c)
+ 
+    if (key == 'b') :  backgr()
+    if (key == 'r') :  rotAngle()
+    if (key == 'R') :  rotAxis()
+    if (key == 'd') :  demoStep()
+    if (key == 'a') :  autoDemo = -autoDemo
+    if (key == 'A') :  autoDemo = -autoDemo
+    if (key == ' ') :  stop()
+ 
+def stop() :
+    global autoDemo, rotAn
+    autoDemo = -1
+    while rotAn <> 0 :
+      rotAngle() 
+    print("**Stop**")
+ 
+r=100
+t=0
+while True:                 # Animation-loop
+    rate(50)
+    t = t+1
+    if rotAn != 0 :
+        c.rotate( angle=rotAn, axis=rotAx )
+ 
+    if t>=r :
+        t=0
+        if autoDemo>0 :
+            demoStep()
+ 
+

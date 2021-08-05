@@ -1,0 +1,159 @@
+====RUBY=====
+def merge_sort(a : Array(Int32)) : Array(Int32)
+  return a if a.size <= 1
+  m = a.size // 2
+  lt = merge_sort(a[0 ... m])
+  rt = merge_sort(a[m .. -1])
+  return merge(lt, rt)
+end
+ 
+def merge(lt : Array(Int32), rt : Array(Int32)) : Array(Int32)
+  result = Array(Int32).new
+  until lt.empty? || rt.empty?
+    result << (lt.first < rt.first ? lt.shift : rt.shift)
+  end
+  return result + lt + rt
+end
+ 
+a = [7, 6, 5, 9, 8, 4, 3, 1, 2, 0]
+puts merge_sort(a) # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+====RUBY=====
+def merge_sort(m)
+  return m if m.length <= 1
+ 
+  middle = m.length / 2
+  left = merge_sort(m[0...middle])
+  right = merge_sort(m[middle..-1])
+  merge(left, right)
+end
+ 
+def merge(left, right)
+  result = []
+  until left.empty? || right.empty?
+    result << (left.first<=right.first ? left.shift : right.shift)
+  end
+  result + left + right
+end
+ 
+ary = [7,6,5,9,8,4,3,1,2,0]
+p merge_sort(ary)                  # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+====RUBY=====
+class Array
+  def mergesort(&comparitor)
+    return self if length <= 1
+    comparitor ||= proc{|a, b| a <=> b}
+    middle = length / 2
+    left  = self[0...middle].mergesort(&comparitor)
+    right = self[middle..-1].mergesort(&comparitor)
+    merge(left, right, comparitor) 
+  end
+ 
+  private
+  def merge(left, right, comparitor)
+    result = []
+    until left.empty? || right.empty?
+      # change the direction of this comparison to change the direction of the sort
+      if comparitor[left.first, right.first] <= 0
+        result << left.shift
+      else
+        result << right.shift
+      end
+    end
+    result + left + right
+  end
+end
+ 
+ary = [7,6,5,9,8,4,3,1,2,0]
+p ary.mergesort                    # => [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+p ary.mergesort {|a, b| b <=> a}   # => [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+ 
+ary = [["UK", "London"], ["US", "New York"], ["US", "Birmingham"], ["UK", "Birmingham"]]
+p ary.mergesort
+# => [["UK", "Birmingham"], ["UK", "London"], ["US", "Birmingham"], ["US", "New York"]]
+p ary.mergesort {|a, b| a[1] <=> b[1]}
+# => [["US", "Birmingham"], ["UK", "Birmingham"], ["UK", "London"], ["US", "New York"]]
+
+====RUBY=====
+func merge(left, right) {
+    var result = []
+    while (left && right) {
+        result << [right,left].min_by{.first}.shift
+    }
+    result + left + right
+}
+ 
+func mergesort(array) {
+    var len = array.len
+    len < 2 && return array
+ 
+    var (left, right) = array.part(len//2)
+ 
+    left  = __FUNC__(left)
+    right = __FUNC__(right)
+ 
+    merge(left, right)
+}
+ 
+# Numeric sort
+var nums = rand(1..100, 10)
+say mergesort(nums)
+ 
+# String sort
+var strings = rand('a'..'z', 10)
+say mergesort(strings)
+
+====PYTHON=====
+fun mergesort(m):
+    if m.lenght <= 1: return m
+    let middle = floor m.lenght / 2
+    let left = merge(m[:middle])
+    let right = merge(m[middle-1:]);
+ 
+fun merge(left, right):
+    let result = []
+    while not (left.isempty or right.isempty):
+        if left[1] <= right[1]:
+            result.push! left.shift!()
+        else:
+            result.push! right.shift!()
+    result.push! left.push! right
+ 
+let arr = [7, 6, 5, 9, 8, 4, 3, 1, 2, 0]
+print mergesort arr
+
+====PYTHON=====
+from heapq import merge
+ 
+def merge_sort(m):
+    if len(m) <= 1:
+        return m
+ 
+    middle = len(m) // 2
+    left = m[:middle]
+    right = m[middle:]
+ 
+    left = merge_sort(left)
+    right = merge_sort(right)
+    return list(merge(left, right))
+
+====PYTHON=====
+def merge(left, right):
+    result = []
+    left_idx, right_idx = 0, 0
+    while left_idx < len(left) and right_idx < len(right):
+        # change the direction of this comparison to change the direction of the sort
+        if left[left_idx] <= right[right_idx]:
+            result.append(left[left_idx])
+            left_idx += 1
+        else:
+            result.append(right[right_idx])
+            right_idx += 1
+ 
+    if left_idx < len(left):
+        result.extend(left[left_idx:])
+    if right_idx < len(right):
+        result.extend(right[right_idx:])
+    return result
+

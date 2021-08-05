@@ -1,0 +1,27 @@
+====RUBY=====
+str = "llo world"
+str.prepend("He")
+p str #=> "Hello world"
+
+====RUBY=====
+var str = 'llo!';
+str.sub!(/^/, 'He');
+say str;
+
+====RUBY=====
+var str = 'llo!';
+str.prepend!('He');
+say str;
+
+====PYTHON=====
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+ 
+s = "12345678"
+s = "0" + s  # by concatenation
+print(s)
+
+====PYTHON=====
+s <- "12345678"
+s <- ("0" + s)
+

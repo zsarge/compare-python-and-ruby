@@ -1,0 +1,242 @@
+====RUBY=====
+require "big"
+ 
+def prime?(n)                     # P3 Prime Generator primality test
+  return n | 1 == 3 if n < 5      # n: 2,3|true; 0,1,4|false 
+  return false if n.gcd(6) != 1   # this filters out 2/3 of all integers
+  pc = typeof(n).new(5)           # first P3 prime candidates sequence value
+  until pc*pc > n
+    return false if n % pc == 0 || n % (pc + 2) == 0  # if n is composite
+    pc += 6                       # 1st prime candidate for next residues group
+  end
+  true
+end
+ 
+def gen_primes(a, b)
+    (a..b).select { |pc| pc if prime? pc }
+end
+ 
+def nsmooth(n, limit)
+    raise "Exception(n or limit)" if n < 2 || n > 521 || limit < 1
+    raise "Exception(must be a prime number: n)" unless prime? n
+ 
+    primes = gen_primes(2, n)
+    ns = [0.to_big_i] * limit
+    ns[0] = 1.to_big_i
+    nextp = primes[0..primes.index(n)].map { |prm| prm.to_big_i }
+ 
+    indices = [0] * nextp.size
+    (1...limit).each do |m|
+        ns[m] = nextp.min
+        (0...indices.size).each do |i|
+            if ns[m] == nextp[i]
+                indices[i] += 1
+                nextp[i] = primes[i] * ns[indices[i]]
+            end
+        end
+    end
+    ns
+end
+ 
+gen_primes(2, 29).each do |prime|
+    print "The first 25 #{prime}-smooth numbers are: \n"
+    print nsmooth(prime, 25)
+    puts
+end
+puts
+gen_primes(3, 29).each do |prime|
+    print "The 3000 to 3202 #{prime}-smooth numbers are: "
+    print nsmooth(prime, 3002)[2999..]
+    puts
+end
+puts
+gen_primes(503, 521).each do |prime|
+    print "The 30,000 to 30,019 #{prime}-smooth numbers are: \n"
+    print nsmooth(prime, 30019)[29999..]
+    puts
+end
+
+====RUBY=====
+def prime?(n)                     # P3 Prime Generator primality test
+  return n | 1 == 3 if n < 5      # n: 2,3|true; 0,1,4|false 
+  return false if n.gcd(6) != 1   # this filters out 2/3 of all integers
+  sqrtN = Integer.sqrt(n)
+  pc = -1                         # initial P3 prime candidates value
+  until (pc += 6) > sqrtN         # is resgroup 1st prime candidate > sqrtN
+    return false if n % pc == 0 || n % (pc + 2) == 0  # if n is composite
+  end
+  true
+end
+ 
+def gen_primes(a, b)
+    (a..b).select { |pc| pc if prime? pc }
+end
+ 
+def nsmooth(n, limit)
+    raise "Exception(n or limit)" if n < 2 || n > 521 || limit < 1
+    raise "Exception(must be a prime number: n)" unless prime? n
+ 
+    primes = gen_primes(2, n)
+    ns = [0] * limit
+    ns[0] = 1
+    nextp = primes[0..primes.index(n)]
+ 
+    indices = [0] * nextp.size
+    (1...limit).each do |m|
+        ns[m] = nextp.min
+        (0...indices.size).each do |i|
+            if ns[m] == nextp[i]
+                indices[i] += 1
+                nextp[i] = primes[i] * ns[indices[i]]
+            end
+        end
+    end
+    ns
+end
+ 
+gen_primes(2, 29).each do |prime|
+    print "The first 25 #{prime}-smooth numbers are: \n"
+    print nsmooth(prime, 25)
+    puts
+end
+puts
+gen_primes(3, 29).each do |prime|
+    print "The 3000 to 3202 #{prime}-smooth numbers are: "
+    print nsmooth(prime, 3002)[2999..-1]    # for ruby >= 2.6: (..)[2999..]
+    puts
+end
+puts
+gen_primes(503, 521).each do |prime|
+    print "The 30,000 to 30,019 #{prime}-smooth numbers are: \n"
+    print nsmooth(prime, 30019)[29999..-1]  # for ruby >= 2.6: (..)[29999..]
+    puts
+end
+
+====RUBY=====
+func smooth_generator(primes) {
+    var s = primes.len.of { [1] }
+    {
+        var n = s.map { .first }.min
+        { |i|
+            s[i].shift if (s[i][0] == n)
+            s[i] << (n * primes[i])
+        } * primes.len
+        n
+    }
+}
+ 
+for p in (primes(2,29)) {
+    var g = smooth_generator(p.primes)
+    say ("First 25 #{'%2d'%p}-smooth numbers: ", 25.of { g.run }.join(' '))
+}
+ 
+say ''
+ 
+for p in (primes(3,29)) {
+    var g = smooth_generator(p.primes)
+    say ("3,000th through 3,002nd #{'%2d'%p}-smooth numbers: ", 3002.of { g.run }.last(3).join(' '))
+}
+
+====RUBY=====
+func is_smooth_over_prod(n, k) {
+ 
+    return true  if (n == 1)
+    return false if (n <= 0)
+ 
+    for (var g = gcd(n,k); g > 1; g = gcd(n,k)) {
+        n /= g**valuation(n,g)        # remove any divisibility by g
+        return true if (n == 1)       # smooth if n == 1
+    }
+ 
+    return false
+}
+ 
+for p in (503, 509, 521) {
+    var k = p.primorial
+    var a = {|n| is_smooth_over_prod(n, k) }.first(30_019).last(20)
+    say ("30,000th through 30,019th #{p}-smooth numbers: ", a.join(' '))
+}
+
+====PYTHON=====
+primes = [2, 3, 5, 7, 11, 13, 17, 19, 23]
+ 
+def isPrime(n):
+    if n < 2:
+        return False
+ 
+    for i in primes:
+        if n == i:
+            return True
+        if n % i == 0:
+            return False
+        if i * i > n:
+            return True
+    print "Oops,", n, " is too large"
+ 
+def init():
+    s = 24
+    while s < 600:
+        if isPrime(s - 1) and s - 1 > primes[-1]:
+            primes.append(s - 1)
+        if isPrime(s + 1) and s + 1 > primes[-1]:
+            primes.append(s + 1)
+        s += 6
+ 
+def nsmooth(n, size):
+    if n < 2 or n > 521:
+        raise Exception("n")
+    if size < 1:
+        raise Exception("n")
+ 
+    bn = n
+    ok = False
+    for prime in primes:
+        if bn == prime:
+            ok = True
+            break
+    if not ok:
+        raise Exception("must be a prime number: n")
+ 
+    ns = [0] * size
+    ns[0] = 1
+ 
+    next = []
+    for prime in primes:
+        if prime > bn:
+            break
+        next.append(prime)
+ 
+    indicies = [0] * len(next)
+    for m in xrange(1, size):
+        ns[m] = min(next)
+        for i in xrange(0, len(indicies)):
+            if ns[m] == next[i]:
+                indicies[i] += 1
+                next[i] = primes[i] * ns[indicies[i]]
+ 
+    return ns
+ 
+def main():
+    init()
+ 
+    for p in primes:
+        if p >= 30:
+            break
+        print "The first", p, "-smooth numbers are:"
+        print nsmooth(p, 25)
+        print
+ 
+    for p in primes[1:]:
+        if p >= 30:
+            break
+        print "The 3000 to 3202", p, "-smooth numbers are:"
+        print nsmooth(p, 3002)[2999:]
+        print
+ 
+    for p in [503, 509, 521]:
+        print "The 30000 to 3019", p, "-smooth numbers are:"
+        print nsmooth(p, 30019)[29999:]
+        print
+ 
+main()
+

@@ -1,0 +1,75 @@
+====RUBY=====
+def sum(var, lo, hi, term, context)
+  sum = 0.0
+  lo.upto(hi) do |n|
+    sum += eval "#{var} = #{n}; #{term}", context
+  end
+  sum
+end
+p sum "i", 1, 100, "1.0 / i", binding   # => 5.18737751763962
+
+====RUBY=====
+def sum2(lo, hi)
+  lo.upto(hi).inject(0.0) {|sum, n| sum += yield n}
+end
+p sum2(1, 100) {|i| 1.0/i}  # => 5.18737751763962
+
+====RUBY=====
+ 
+def sum lo, hi, &term
+  (lo..hi).sum(&term)
+end
+p sum(1,100){|i| 1.0/i}   # => 5.187377517639621
+# or using Rational:
+p sum(1,100){|i| Rational(1,i)}  # => 14466636279520351160221518043104131447711 / 2788815009188499086581352357412492142272
+ 
+
+====RUBY=====
+var i;
+func sum (i, lo, hi, term) {
+    var temp = 0;
+    for (*i = lo; *i <= hi; (*i)++) {
+        temp += term.run;
+    };
+    return temp;
+};
+say sum(\i, 1, 100, { 1 / i });
+
+====PYTHON=====
+class Ref(object):
+    def __init__(self, value=None):
+        self.value = value
+ 
+def harmonic_sum(i, lo, hi, term):
+    # term is passed by-name, and so is i
+    temp = 0
+    i.value = lo
+    while i.value <= hi:  # Python "for" loop creates a distinct which
+        temp += term() # would not be shared with the passed "i"
+        i.value += 1   # Here the actual passed "i" is incremented.
+    return temp
+ 
+i = Ref()
+ 
+# note the correspondence between the mathematical notation and the
+# call to sum it's almost as good as sum(1/i for i in range(1,101))
+print harmonic_sum(i, 1, 100, lambda: 1.0/i.value)
+
+====PYTHON=====
+ 
+def harmonic_sum(i, lo, hi, term):
+    return sum(term() for i[0] in range(lo, hi + 1))
+ 
+i = [0]
+print(harmonic_sum(i, 1, 100, lambda: 1.0 / i[0]))
+ 
+
+====PYTHON=====
+ 
+def harmonic_sum(i, lo, hi, term):
+    return sum(eval(term) for i[0] in range(lo, hi + 1))
+ 
+i = [0]
+print(harmonic_sum(i, 1, 100, "1.0 / i[0]"))
+ 
+

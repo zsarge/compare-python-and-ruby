@@ -1,0 +1,38 @@
+====RUBY=====
+ 
+puts "ha" * 5
+ 
+
+====RUBY=====
+strrep("ha", 5)
+
+====RUBY=====
+"ha" * 5  # ==> "hahahahaha"
+
+====RUBY=====
+'ha' * 5;  # ==> 'hahahahaha'
+
+====PYTHON=====
+def setup():
+    rep = repeat("ha", 5)
+    println(rep)
+ 
+def repeat(s, times):
+    return s * times
+
+====PYTHON=====
+"ha" * 5  # ==> "hahahahaha"
+
+====PYTHON=====
+5 * "ha"  # ==> "hahahahaha"
+
+====PYTHON=====
+def repeat(s, times):
+    return s * times
+ 
+print(repeat("ha", 5))
+
+====PYTHON=====
+x = lambda a: a * 5
+print(x("ha"))
+

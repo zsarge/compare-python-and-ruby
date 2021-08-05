@@ -1,0 +1,62 @@
+====RUBY=====
+x =  'lions, tigers, and'
+y =  'bears, oh my!'
+z =  '(from the "Wizard of OZ")'
+x, y, z = [x, y, z].sort
+puts x, y, z
+ 
+x, y, z = 7.7444e4, -12, 18/2r # Float, Integer, Rational; taken from Perl 6
+x, y, z = [x, y, z].sort
+puts x, y, z
+ 
+
+====RUBY=====
+func sort_refs(*arr) {
+    arr.map{ *_ }.sort ~Z arr -> each { *_[1] = _[0] }
+}
+ 
+var x = 77444
+var y =   -12
+var z =     0
+ 
+sort_refs(\x, \y, \z)
+ 
+say x
+say y
+say z
+
+====RUBY=====
+var x = 77444
+var y =   -12
+var z =     0
+ 
+(x, y) = (y, x) if (x > y)
+(x, z) = (z, x) if (x > z)
+(y, z) = (z, y) if (y > z)
+ 
+say x
+say y
+say z
+
+====PYTHON=====
+ 
+#python2 Code for Sorting 3 values
+a= raw_input("Enter values one by one ..\n1.").strip()
+b=raw_input("2.").strip()
+c=raw_input("3.").strip()
+if a>b :
+   a,b = b,a 
+if a>c:
+   a,c = c,a 
+if b>c:
+   b,c = c,b 
+print(str(a)+" "+str(b)+" "+str(c))
+ 
+
+====PYTHON=====
+while True:
+    x, y, z = eval(input('Three Python values: '))
+    print(f'As read: x = {x!r}; y = {y!r}; z = {z!r}')
+    x, y, z = sorted((x, y, z))
+    print(f' Sorted: x = {x!r}; y = {y!r}; z = {z!r}')
+

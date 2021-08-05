@@ -1,0 +1,44 @@
+====RUBY=====
+strings.uniq.one?                 # all equal?
+strings == strings.uniq.sort      # ascending?
+
+====RUBY=====
+strings.all?{|str| str == strings.first} # all equal?
+strings.each_cons(2).all?{|str1, str2| str1 < str2} # ascending?
+
+====RUBY=====
+1..arr.end -> all{ arr[0] == arr[_] }   # all equal
+1..arr.end -> all{ arr[_-1] < arr[_] }  # strictly ascending
+
+====RUBY=====
+arr.uniq.len == 1      # all equal
+arr == arr.uniq.sort   # strictly ascending
+
+====PYTHON=====
+all(a == nexta for a, nexta in zip(strings, strings[1:])) # All equal
+all(a < nexta for a, nexta in zip(strings, strings[1:])) # Strictly ascending
+ 
+len(set(strings)) == 1  # Concise all equal
+sorted(strings, reverse=True) == strings  # Concise (but not particularly efficient) ascending
+ 
+
+====PYTHON=====
+from operator import (eq, lt)
+ 
+ 
+xs = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta",
+      "eta", "theta", "iota", "kappa", "lambda", "mu"]
+ 
+ys = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta",
+      "eta", "theta", "iota", "kappa", "lambda", "mu"]
+ 
+az = sorted(xs)
+ 
+print (
+    all(map(eq, xs, ys)),
+ 
+    all(map(lt, xs, xs[1:])),
+ 
+    all(map(lt, az, az[1:]))
+)
+

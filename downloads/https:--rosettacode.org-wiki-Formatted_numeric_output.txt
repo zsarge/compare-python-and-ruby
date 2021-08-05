@@ -1,0 +1,41 @@
+====RUBY=====
+r = 7.125
+printf " %9.3f\n",   r          #=>      7.125
+printf " %09.3f\n",  r          #=>  00007.125
+printf " %09.3f\n", -r          #=>  -0007.125
+printf " %+09.3f\n", r          #=>  +0007.125
+puts " %9.3f"  %  r             #=>      7.125
+puts " %09.3f" %  r             #=>  00007.125
+puts " %09.3f" % -r             #=>  -0007.125
+puts " %+09.3f" % r             #=>  +0007.125
+
+====RUBY=====
+printf("%09.3f\n", 7.125);
+
+====RUBY=====
+say ("%09.3f" % 7.125);
+
+====PYTHON=====
+from math import pi, exp
+r = exp(pi)-pi
+print r
+print "e=%e f=%f g=%g G=%G s=%s r=%r!"%(r,r,r,r,r,r)
+print "e=%9.4e f=%9.4f g=%9.4g!"%(-r,-r,-r)
+print "e=%9.4e f=%9.4f g=%9.4g!"%(r,r,r)
+print "e=%-9.4e f=%-9.4f g=%-9.4g!"%(r,r,r)
+print "e=%09.4e f=%09.4f g=%09.4g!"%(-r,-r,-r)
+print "e=%09.4e f=%09.4f g=%09.4g!"%(r,r,r)
+print "e=%-09.4e f=%-09.4f g=%-09.4g!"%(r,r,r)
+
+====PYTHON=====
+from math import pi, exp
+r = exp(pi)-pi
+print(r)
+print("e={0:e} f={0:f} g={0:g} G={0:G} s={0!s} r={0!r}!".format(r))
+print("e={0:9.4e} f={0:9.4f} g={0:9.4g}!".format(-r))
+print("e={0:9.4e} f={0:9.4f} g={0:9.4g}!".format(r))
+print("e={0:-9.4e} f={0:-9.4f} g={0:-9.4g}!".format(r))
+print("e={0:09.4e} f={0:09.4f} g={0:09.4g}!".format(-r))
+print("e={0:09.4e} f={0:09.4f} g={0:09.4g}!".format(r))
+print("e={0:-09.4e} f={0:-09.4f} g={0:-09.4g}!".format(r))
+

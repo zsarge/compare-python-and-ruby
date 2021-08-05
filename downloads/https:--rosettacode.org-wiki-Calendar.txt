@@ -1,0 +1,170 @@
+====RUBY=====
+require 'date'
+ 
+# Creates a calendar of _year_. Returns this calendar as a multi-line
+# string fit to _columns_.
+def cal(year, columns)
+ 
+  # Start at January 1.
+  #
+  # Date::ENGLAND marks the switch from Julian calendar to Gregorian
+  # calendar at 1752 September 14. This removes September 3 to 13 from
+  # year 1752. (By fortune, it keeps January 1.)
+  #
+  date = Date.new(year, 1, 1, Date::ENGLAND)
+ 
+  # Collect calendars of all 12 months.
+  months = (1..12).collect do |month|
+    rows = [Date::MONTHNAMES[month].center(20), "Su Mo Tu We Th Fr Sa"]
+ 
+    # Make array of 42 days, starting with Sunday.
+    days = []
+    date.wday.times { days.push "  " }
+    while date.month == month
+      days.push("%2d" % date.mday)
+      date += 1
+    end
+    (42 - days.length).times { days.push "  " }
+ 
+    days.each_slice(7) { |week| rows.push(week.join " ") }
+    next rows
+  end
+ 
+  # Calculate months per row (mpr).
+  #  1. Divide columns by 22 columns per month, rounded down. (Pretend
+  #     to have 2 extra columns; last month uses only 20 columns.)
+  #  2. Decrease mpr if 12 months would fit in the same months per
+  #     column (mpc). For example, if we can fit 5 mpr and 3 mpc, then
+  #     we use 4 mpr and 3 mpc.
+  mpr = (columns + 2).div 22
+  mpr = 12.div((12 + mpr - 1).div mpr)
+ 
+  # Use 20 columns per month + 2 spaces between months.
+  width = mpr * 22 - 2
+ 
+  # Join months into calendar.
+  rows = ["[Snoopy]".center(width), "#{year}".center(width)]
+  months.each_slice(mpr) do |slice|
+    slice[0].each_index do |i|
+      rows.push(slice.map {|a| a[i]}.join "  ")
+    end
+  end
+  return rows.join("\n")
+end
+ 
+ 
+ARGV.length == 1 or abort "usage: #{$0} year"
+ 
+# Guess width of terminal.
+#  1. Obey environment variable COLUMNS.
+#  2. Try to require 'io/console' from Ruby 1.9.3.
+#  3. Try to run `tput co`.
+#  4. Assume 80 columns.
+columns = begin Integer(ENV["COLUMNS"] || "")
+          rescue
+            begin require 'io/console'; IO.console.winsize[1]
+            rescue LoadError
+              begin Integer(`tput cols`)
+              rescue
+                80; end; end; end
+ 
+puts cal(Integer(ARGV[0]), columns)
+
+====RUBY=====
+require('DateTime')
+ 
+define months_per_col = 3
+define week_day_names = <Mo Tu We Th Fr Sa Su>
+define month_names = <Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec>
+ 
+func fmt_month (year, month) {
+    var str = sprintf("%-20s\n", month_names[month-1])
+    str += week_day_names.join(' ')+"\n"
+ 
+    var dt = %s<DateTime>
+    var date = dt.new(year => year, month => month)
+    var week_day = date.day_of_week
+    str += (week_day-1 `of` "  " -> join(" "))
+ 
+    var last_day = dt.last_day_of_month(year => year, month => month).day
+    for day (date.day .. last_day) {
+        date = dt.new(year => year, month => month, day => day)
+        str += " " if (week_day ~~ (2..7))
+        if (week_day == 8) {
+            str += "\n"
+            week_day = 1
+        }
+        str += sprintf("%2d", day)
+        ++week_day
+    }
+    str += " " if (week_day < 8)
+    str += (8-week_day `of` "  " -> join(" "))
+    str += "\n"
+}
+ 
+func fmt_year (year) {
+    var month_strs = 12.of {|i| fmt_month(year, i+1).lines }
+ 
+    var str = (' '*30 + year + "\n")
+    for month (0..11 `by` months_per_col) {
+        while (month_strs[month]) {
+            for i (1..months_per_col) {
+                month_strs[month + i - 1] || next
+                str += month_strs[month + i - 1].shift
+                str += ' '*3
+            }
+            str += "\n"
+        }
+        str += "\n"
+    }
+ 
+    return str
+}
+ 
+print fmt_year(ARGV ? Number(ARGV[0]) : 1969)
+
+====PYTHON=====
+>>> import calendar
+>>> help(calendar.prcal)
+Help on method pryear in module calendar:
+ 
+pryear(self, theyear, w=0, l=0, c=6, m=3) method of calendar.TextCalendar instance
+    Print a years calendar.
+ 
+>>> calendar.prcal(1969)
+                                  1969
+ 
+      January                   February                   March
+Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su
+       1  2  3  4  5                      1  2                      1  2
+ 6  7  8  9 10 11 12       3  4  5  6  7  8  9       3  4  5  6  7  8  9
+13 14 15 16 17 18 19      10 11 12 13 14 15 16      10 11 12 13 14 15 16
+20 21 22 23 24 25 26      17 18 19 20 21 22 23      17 18 19 20 21 22 23
+27 28 29 30 31            24 25 26 27 28            24 25 26 27 28 29 30
+                                                    31
+ 
+       April                      May                       June
+Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su
+    1  2  3  4  5  6                1  2  3  4                         1
+ 7  8  9 10 11 12 13       5  6  7  8  9 10 11       2  3  4  5  6  7  8
+14 15 16 17 18 19 20      12 13 14 15 16 17 18       9 10 11 12 13 14 15
+21 22 23 24 25 26 27      19 20 21 22 23 24 25      16 17 18 19 20 21 22
+28 29 30                  26 27 28 29 30 31         23 24 25 26 27 28 29
+                                                    30
+ 
+        July                     August                  September
+Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su
+    1  2  3  4  5  6                   1  2  3       1  2  3  4  5  6  7
+ 7  8  9 10 11 12 13       4  5  6  7  8  9 10       8  9 10 11 12 13 14
+14 15 16 17 18 19 20      11 12 13 14 15 16 17      15 16 17 18 19 20 21
+21 22 23 24 25 26 27      18 19 20 21 22 23 24      22 23 24 25 26 27 28
+28 29 30 31               25 26 27 28 29 30 31      29 30
+ 
+      October                   November                  December
+Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su      Mo Tu We Th Fr Sa Su
+       1  2  3  4  5                      1  2       1  2  3  4  5  6  7
+ 6  7  8  9 10 11 12       3  4  5  6  7  8  9       8  9 10 11 12 13 14
+13 14 15 16 17 18 19      10 11 12 13 14 15 16      15 16 17 18 19 20 21
+20 21 22 23 24 25 26      17 18 19 20 21 22 23      22 23 24 25 26 27 28
+27 28 29 30 31            24 25 26 27 28 29 30      29 30 31
+

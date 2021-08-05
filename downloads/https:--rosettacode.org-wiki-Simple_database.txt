@@ -1,0 +1,299 @@
+====RUBY=====
+require 'date'
+require 'json'
+require 'securerandom'
+ 
+class SimpleDatabase
+  def initialize(dbname, *fields)
+    @dbname = dbname
+    @filename = @dbname + ".dat"
+    @fields = fields
+    @maxl = @fields.collect {|f| f.length}.max
+    @data = {
+      'fields' => fields,
+      'items' => {},
+      'history' => [],
+      'tags' => {},
+    }
+  end
+  attr_reader :dbname, :fields
+ 
+  def self.open(dbname)
+    db = new(dbname)
+    db.read
+    db
+  end
+ 
+  def read()
+    if not File.exists?(@filename)
+      raise ArgumentError, "Database #@dbname has not been created"
+    end
+    @data = JSON.parse(File.read(@filename))
+    @fields = @data['fields']
+    @maxl = @fields.collect {|f| f.length}.max
+  end
+ 
+  def write()
+    File.open(@filename, 'w') {|f| f.write(JSON.generate(@data))}
+  end
+ 
+  def add(*values)
+    id = SecureRandom.uuid
+    @data['items'][id] = Hash[ @fields.zip(values) ]
+    @data['history'] << [Time.now.to_f, id]
+    id
+  end
+ 
+  def tag(id, *tags)
+    tags.each do |tag|
+      if @data['tags'][tag].nil?
+        @data['tags'][tag] = [id]
+      else
+        @data['tags'][tag] << id
+      end
+    end
+    id
+  end
+ 
+  def latest
+    @data['history'].sort_by {|val| val[0]}.last.last
+  end
+ 
+  def get_item(id)
+    @data['items'][id]
+  end
+ 
+  def tags()
+    @data['tags'].keys.sort
+  end
+ 
+  def ids_for_tag(tag)
+    @data['tags'][tag]
+  end
+ 
+  def tags_for_id(id)
+    @data['tags'].keys.inject([]) do |tags, tag| 
+      tags << tag if @data['tags'][tag].include?(id)
+      tags
+    end
+  end
+ 
+  def display(id)
+    item = get_item(id)
+    fmt = "%#{@maxl}s - %s\n"
+    puts fmt % ['id', id]
+    @fields.each {|f| print fmt % [f, item[f]]}
+    puts fmt % ['tags', tags_for_id(id).join(',')]
+    added = @data['history'].find {|x| x[1] == id}.first
+    puts fmt % ['date added', Time.at(added).ctime]
+    puts ""
+  end
+ 
+  def each()
+    @data['history'].each {|time, id| yield id}
+  end
+ 
+  def each_item_with_tag(tag)
+    @data['tags'][tag].each {|id| yield id}
+  end
+end
+def usage()
+  puts <<END
+usage: #{$0} command args ...
+ 
+commands:
+  help 
+  create dbname field ...
+  fields dbname
+  add dbname value ...
+  tag dbname id tag ...
+  tags dbname
+  list dbname [tag ...]
+  latest dbname
+  latest_by_tag dbname
+END
+end
+ 
+def open_database(args)
+  dbname = args.shift
+  begin
+    SimpleDatabase.open(dbname)
+  rescue ArgumentError => e
+    STDERR.puts e.message
+    exit 1
+  end
+end
+ 
+def process_command_line(command, *args)
+  case command
+  when 'help'
+    usage
+ 
+  when 'create'
+    db = SimpleDatabase.new(*args)
+    db.write
+    puts "Database #{args[0]} created"
+ 
+  when 'fields'
+    db = open_database(args)
+    puts "Database #{db.dbname} fields:"
+    puts db.fields.join(',')
+ 
+  when 'add'
+    db = open_database(args)
+    id = db.add(*args)
+    db.write
+    puts "Database #{db.dbname} added id #{id}"
+ 
+  when 'tag'
+    db = open_database(args)
+    id = args.shift
+    db.tag(id, *args)
+    db.write
+    db.display(id)
+ 
+  when 'tags'
+    db = open_database(args)
+    puts "Database #{db.dbname} tags:"
+    puts db.tags.join(',')
+ 
+  when 'list'
+    db = open_database(args)
+    if args.empty?
+      db.each {|id| db.display(id)}
+    else
+      args.each do |tag| 
+        puts "Items tagged #{tag}"
+        db.each_item_with_tag(tag) {|id| db.display(id)}
+      end
+    end
+ 
+  when 'latest'
+    db = open_database(args)
+    db.display(db.latest)
+ 
+  when 'latest_by_tag'
+    db = open_database(args)
+    db.tags.each do |tag|
+      puts tag
+      db.display(db.ids_for_tag(tag).last)
+    end
+ 
+  else
+    puts "Error: unknown command '#{command}'"
+    usage
+  end
+end
+ 
+process_command_line *ARGV
+
+====PYTHON=====
+#!/usr/bin/python3
+ 
+'''\
+Simple database for: http://rosettacode.org/wiki/Simple_database
+ 
+'''
+ 
+import argparse
+from argparse import Namespace
+import datetime
+import shlex
+ 
+ 
+def parse_args():
+    'Set up, parse, and return arguments'
+ 
+    parser = argparse.ArgumentParser(epilog=globals()['__doc__'])
+ 
+    parser.add_argument('command', choices='add pl plc pa'.split(),
+                        help='''\
+add: Add a new entry
+pl:  Print the latest entry
+plc: Print the latest entry for each category/tag
+pa:  Print all entries sorted by a date''')
+    parser.add_argument('-d', '--description',
+                        help='A description of the item. (e.g., title, name)')
+    parser.add_argument('-t', '--tag',
+                        help=('''A category or tag (genre, topic, relationship '''
+                              '''such as “friend” or “family”)'''))
+    parser.add_argument('-f', '--field', nargs=2, action='append', 
+                        help='Other optional fields with value (can be repeated)')
+ 
+    return parser
+ 
+def do_add(args, dbname):
+    'Add a new entry'
+    if args.description is None:
+        args.description = ''
+    if args.tag is None:
+        args.tag = ''
+    del args.command
+    print('Writing record to %s' % dbname)
+    with open(dbname, 'a') as db:
+        db.write('%r\n' % args)
+ 
+def do_pl(args, dbname):
+    'Print the latest entry'
+    print('Getting last record from %s' % dbname)
+    with open(dbname, 'r') as db:
+        for line in db: pass
+    record = eval(line)
+    del record._date
+    print(str(record))
+ 
+def do_plc(args, dbname):
+    'Print the latest entry for each category/tag'
+    print('Getting latest record for each tag from %s' % dbname)
+    with open(dbname, 'r') as db:
+        records = [eval(line) for line in db]
+    tags = set(record.tag for record in records)
+    records.reverse()
+    for record in records:
+        if record.tag in tags:
+            del record._date
+            print(str(record))
+            tags.discard(record.tag)
+            if not tags: break
+ 
+def do_pa(args, dbname):
+    'Print all entries sorted by a date'
+    print('Getting all records by date from %s' % dbname)
+    with open(dbname, 'r') as db:
+        records = [eval(line) for line in db]
+    for record in records:
+        del record._date
+        print(str(record))
+ 
+def test():
+    import time
+    parser = parse_args()
+    for cmdline in [
+                    """-d Book -f title 'Windy places' -f type hardback --tag DISCOUNT add""",
+                    """-d Book -f title 'RC spammers'  -f type paperback -t   DISCOUNT add""",
+                    """-d Book -f title 'Splat it' -f type hardback -f special 'first edition' -t PREMIUM add""",
+                    """pl""",
+                    """plc""",
+                    ]:
+        args = parser.parse_args(shlex.split(cmdline))
+        now = datetime.datetime.utcnow()
+        args._date = now.isoformat()
+        do_command[args.command](args, dbname)
+        time.sleep(0.5)
+ 
+ 
+ 
+do_command = dict(add=do_add, pl=do_pl, plc=do_plc, pa=do_pa)
+dbname = '_simple_db_db.py'
+ 
+ 
+if __name__ == '__main__':
+    if 0:
+        test()
+    else:
+        parser = parse_args()
+        args = parser.parse_args()
+        now = datetime.datetime.utcnow()
+        args._date = now.isoformat()
+        do_command[args.command](args, dbname)
+

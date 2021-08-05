@@ -1,0 +1,141 @@
+====RUBY=====
+require 'priority_queue'
+ 
+def huffman_encoding(str)
+  char_count = Hash.new(0)
+  str.each_char {|c| char_count[c] += 1}
+ 
+  pq = CPriorityQueue.new
+  # chars with fewest count have highest priority
+  char_count.each {|char, count| pq.push(char, count)}
+ 
+  while pq.length > 1
+    key1, prio1 = pq.delete_min
+    key2, prio2 = pq.delete_min
+    pq.push([key1, key2], prio1 + prio2)
+  end
+ 
+  Hash[*generate_encoding(pq.min_key)]
+end
+ 
+def generate_encoding(ary, prefix="")
+  case ary
+  when Array
+    generate_encoding(ary[0], "#{prefix}0") + generate_encoding(ary[1], "#{prefix}1")
+  else
+    [ary, prefix]
+  end
+end
+ 
+def encode(str, encoding)
+  str.each_char.collect {|char| encoding[char]}.join
+end
+ 
+def decode(encoded, encoding)
+  rev_enc = encoding.invert
+  decoded = ""
+  pos = 0
+  while pos < encoded.length
+    key = ""
+    while rev_enc[key].nil?
+      key << encoded[pos]
+      pos += 1
+    end
+    decoded << rev_enc[key]
+  end
+  decoded
+end
+ 
+str = "this is an example for huffman encoding"
+encoding = huffman_encoding(str)
+encoding.to_a.sort.each {|x| p x}
+ 
+enc = encode(str, encoding)
+dec = decode(enc, encoding)
+puts "success!" if str == dec
+
+====RUBY=====
+func walk(n, s, h) {
+    if (n.contains(:a)) {
+        h{n{:a}} = s
+        say "#{n{:a}}: #{s}"
+        return nil
+    }
+    walk(n{:0}, s+'0', h)
+    walk(n{:1}, s+'1', h)
+}
+ 
+func make_tree(text) {
+    var letters = Hash()
+    text.each { |c| letters{c} := 0 ++ }
+    var nodes = letters.keys.map { |l|
+        Hash(a => l, freq => letters{l})
+    }
+ 
+    var n = Hash()
+    while (nodes.sort_by!{|c| c{:freq} }.len > 1) {
+        n = Hash(:0 => nodes.shift, :1 => nodes.shift)
+        n{:freq} = (n{:0}{:freq} + n{:1}{:freq})
+        nodes.append(n)
+    }
+ 
+    walk(n, "", n{:tree} = Hash())
+    return n
+}
+ 
+func encode(s, t) {
+    t = t{:tree}
+    s.chars.map{|c| t{c} }.join
+}
+ 
+func decode (enc, tree) {
+    var n = tree
+    var out = ""
+ 
+    enc.each {|bit|
+        n = n{bit}
+        if (n.contains(:a)) {
+            out += n{:a}
+            n = tree
+        }
+    }
+ 
+    return out
+}
+ 
+var text = "this is an example for huffman encoding"
+var tree = make_tree(text)
+var enc = encode(text, tree)
+ 
+say enc
+say decode(enc, tree)
+
+====PYTHON=====
+from heapq import heappush, heappop, heapify
+from collections import defaultdict
+ 
+def encode(symb2freq):
+    """Huffman encode the given dict mapping symbols to weights"""
+    heap = [[wt, [sym, ""]] for sym, wt in symb2freq.items()]
+    heapify(heap)
+    while len(heap) > 1:
+        lo = heappop(heap)
+        hi = heappop(heap)
+        for pair in lo[1:]:
+            pair[1] = '0' + pair[1]
+        for pair in hi[1:]:
+            pair[1] = '1' + pair[1]
+        heappush(heap, [lo[0] + hi[0]] + lo[1:] + hi[1:])
+    return sorted(heappop(heap)[1:], key=lambda p: (len(p[-1]), p))
+ 
+txt = "this is an example for huffman encoding"
+symb2freq = defaultdict(int)
+for ch in txt:
+    symb2freq[ch] += 1
+# in Python 3.1+:
+# symb2freq = collections.Counter(txt)
+huff = encode(symb2freq)
+print "Symbol\tWeight\tHuffman Code"
+for p in huff:
+    print "%s\t%s\t%s" % (p[0], symb2freq[p[0]], p[1])
+

@@ -1,0 +1,77 @@
+====RUBY=====
+require 'abbrev'
+ 
+dirs = %w( /home/user1/tmp/coverage/test /home/user1/tmp/covert/operator /home/user1/tmp/coven/members )
+ 
+common_prefix = dirs.abbrev.keys.min_by {|key| key.length}.chop  # => "/home/user1/tmp/cove"
+common_directory = common_prefix.sub(%r{/[^/]*$}, '')            # => "/home/user1/tmp"
+
+====RUBY=====
+separator = '/'
+path0, *paths = dirs.collect {|dir| dir.split(separator)}
+uncommon_idx = path0.zip(*paths).index {|dirnames| dirnames.uniq.length > 1}
+uncommon_idx = path0.length  unless uncommon_idx                # if uncommon_idx==nil
+common_directory = path0[0...uncommon_idx].join(separator)      # => "/home/user1/tmp"
+
+====RUBY=====
+def common_directory_path(dirs, separator='/')
+  dir1, dir2 = dirs.minmax.map{|dir| dir.split(separator)}
+  dir1.zip(dir2).take_while{|dn1,dn2| dn1==dn2}.map(&:first).join(separator)
+end
+ 
+p common_directory_path(dirs)           #=> "/home/user1/tmp"
+
+====RUBY=====
+var dirs = %w(
+    /home/user1/tmp/coverage/test
+    /home/user1/tmp/covert/operator
+    /home/user1/tmp/coven/members
+);
+ 
+var unique_pref = dirs.map{.split('/')}.abbrev.min_by{.len};
+var common_dir  = [unique_pref, unique_pref.pop][0].join('/');
+say common_dir;   # => /home/user1/tmp
+
+====PYTHON=====
+>>> import os
+>>> os.path.commonpath(['/home/user1/tmp/coverage/test', 
+                        '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members'])
+'/home/user1/tmp'
+
+====PYTHON=====
+>>> import os
+>>> os.path.commonprefix(['/home/user1/tmp/coverage/test', 
+                          '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members'])
+'/home/user1/tmp/cove'
+
+====PYTHON=====
+>>> def commonprefix(args, sep='/'):
+	return os.path.commonprefix(args).rpartition(sep)[0]
+ 
+>>> commonprefix(['/home/user1/tmp/coverage/test', 
+                  '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members'])
+'/home/user1/tmp'
+
+====PYTHON=====
+>>> paths = ['/home/user1/tmp/coverage/test', '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members']
+>>> os.path.dirname(os.path.commonprefix(paths))
+'/home/user1/tmp'
+
+====PYTHON=====
+>>> from itertools import takewhile
+>>> def allnamesequal(name):
+	return all(n==name[0] for n in name[1:])
+ 
+>>> def commonprefix(paths, sep='/'):
+	bydirectorylevels = zip(*[p.split(sep) for p in paths])
+	return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
+ 
+>>> commonprefix(['/home/user1/tmp/coverage/test', 
+                  '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members'])
+'/home/user1/tmp'
+>>> # And also
+>>> commonprefix(['/home/user1/tmp', '/home/user1/tmp/coverage/test',
+                  '/home/user1/tmp/covert/operator', '/home/user1/tmp/coven/members'])
+'/home/user1/tmp'
+>>> 
+

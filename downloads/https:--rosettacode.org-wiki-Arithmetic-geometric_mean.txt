@@ -1,0 +1,82 @@
+====RUBY=====
+# The flt package (http://flt.rubyforge.org/) is useful for high-precision floating-point math.
+# It lets us control 'context' of numbers, individually or collectively -- including precision
+# (which adjusts the context's value of epsilon accordingly).
+ 
+require 'flt'
+include Flt
+ 
+BinNum.Context.precision = 512  # default 53 (bits)
+ 
+def agm(a,g)
+  new_a = BinNum a
+  new_g = BinNum g
+  while new_a - new_g > new_a.class.Context.epsilon do
+    old_g = new_g
+    new_g = (new_a * new_g).sqrt
+    new_a = (old_g + new_a) * 0.5
+  end
+  new_g
+end
+ 
+puts agm(1, 1 / BinNum(2).sqrt)
+
+====RUBY=====
+require 'bigdecimal'
+ 
+PRECISION = 100
+EPSILON = 0.1 ** (PRECISION/2)
+BigDecimal::limit(PRECISION)
+ 
+def agm(a,g)
+  while a - g > EPSILON
+    a, g = (a+g)/2, (a*g).sqrt(PRECISION)
+  end
+  [a, g]
+end
+ 
+a = BigDecimal(1)
+g = 1 / BigDecimal(2).sqrt(PRECISION)
+puts agm(a, g)
+
+====RUBY=====
+func agm(a, g) {
+    loop {
+        var (a1, g1) = ((a+g)/2, sqrt(a*g))
+        [a1,g1] == [a,g] && return a
+        (a, g) = (a1, g1)
+    }
+}
+ 
+say agm(1, 1/sqrt(2))
+
+====PYTHON=====
+from math import sqrt
+ 
+def agm(a0, g0, tolerance=1e-10):
+    """
+    Calculating the arithmetic-geometric mean of two numbers a0, g0.
+ 
+    tolerance     the tolerance for the converged 
+                  value of the arithmetic-geometric mean
+                  (default value = 1e-10)
+    """
+    an, gn = (a0 + g0) / 2.0, sqrt(a0 * g0)
+    while abs(an - gn) > tolerance:
+        an, gn = (an + gn) / 2.0, sqrt(an * gn)
+    return an
+ 
+print agm(1, 1 / sqrt(2))
+
+====PYTHON=====
+from decimal import Decimal, getcontext
+ 
+def agm(a, g, tolerance=Decimal("1e-65")):
+    while True:
+        a, g = (a + g) / 2, (a * g).sqrt()
+        if abs(a - g) < tolerance:
+            return a
+ 
+getcontext().prec = 70
+print agm(Decimal(1), 1 / Decimal(2).sqrt())
+

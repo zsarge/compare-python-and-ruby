@@ -1,0 +1,55 @@
+====RUBY=====
+string = `ls`
+# runs command and returns its STDOUT as a string
+string = %x{ls}
+# ditto, alternative syntax
+ 
+system "ls"
+# runs command and returns its exit status; its STDOUT gets output to our STDOUT
+ 
+print `ls`
+#The same, but with back quotes
+ 
+exec "ls"
+# replace current process with another
+ 
+# call system command and read output asynchronously
+io = IO.popen('ls')
+# ... later
+io.each {|line| puts line}
+
+====RUBY=====
+# Pipe in read-only mode
+%p(ls).open_r.each { |line|
+    print line;
+};
+ 
+var str1 = `ls`;         # backtick: returns a string
+var str2 = %x(ls);       # ditto, alternative syntax
+ 
+Sys.system('ls');   # system: executes a command and prints the result
+Sys.exec('ls');     # replaces current process with another
+
+====PYTHON=====
+import os
+exit_code = os.system('ls')       # Just execute the command, return a success/fail code
+output    = os.popen('ls').read() # If you want to get the output data. Deprecated.
+
+====PYTHON=====
+import subprocess
+# if the exit code was non-zero these commands raise a CalledProcessError
+exit_code = subprocess.check_call(['ls', '-l'])   # Python 2.5+
+assert exit_code == 0
+output    = subprocess.check_output(['ls', '-l']) # Python 2.7+
+
+====PYTHON=====
+from subprocess import PIPE, Popen, STDOUT
+p = Popen('ls', stdout=PIPE, stderr=STDOUT)
+print p.communicate()[0]
+
+====PYTHON=====
+import commands
+stat, out = commands.getstatusoutput('ls')
+if not stat:
+    print out
+

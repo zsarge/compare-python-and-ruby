@@ -1,0 +1,25 @@
+====RUBY=====
+def spinning_rod
+  begin
+    printf("\033[?25l") # Hide cursor
+    %w[| / - \\].cycle do |rod|
+      print rod
+      sleep 0.25
+      print "\b"
+    end
+  ensure
+    printf("\033[?25h") # Restore cursor
+  end
+end
+ 
+puts "Ctrl-c to stop."
+spinning_rod
+ 
+
+====PYTHON=====
+from time import sleep
+while True:
+    for rod in r'\|/-':
+        print(rod, end='\r')
+        sleep(0.25)
+

@@ -1,0 +1,329 @@
+====RUBY=====
+$op_priority = {"+" => 0, "-" => 0, "*" => 1, "/" => 1}
+ 
+class TreeNode
+  OP_FUNCTION = {
+    "+" => lambda {|x, y| x + y},
+    "-" => lambda {|x, y| x - y},
+    "*" => lambda {|x, y| x * y},
+    "/" => lambda {|x, y| x / y}}
+  attr_accessor :info, :left, :right
+ 
+  def initialize(info)
+    @info = info
+  end
+ 
+  def leaf?
+    @left.nil? and @right.nil?
+  end
+ 
+  def to_s(order)
+    if leaf?
+      @info
+    else
+      left_s, right_s = @left.to_s(order), @right.to_s(order)
+ 
+      strs = case order
+             when :prefix  then [@info, left_s, right_s]
+             when :infix   then [left_s, @info, right_s]
+             when :postfix then [left_s, right_s, @info]
+             else               []
+             end
+ 
+      "(" + strs.join(" ") + ")"
+    end
+  end
+ 
+  def eval
+    if !leaf? and operator?(@info)
+      OP_FUNCTION[@info].call(@left.eval, @right.eval)
+    else
+      @info.to_f
+    end
+  end
+end
+ 
+def tokenize(exp)
+  exp
+    .gsub('(', ' ( ')
+    .gsub(')', ' ) ')
+    .gsub('+', ' + ')
+    .gsub('-', ' - ')
+    .gsub('*', ' * ')
+    .gsub('/', ' / ')
+    .split(' ')
+end
+ 
+def operator?(token)
+  $op_priority.has_key?(token)
+end
+ 
+def pop_connect_push(op_stack, node_stack)
+  temp = op_stack.pop
+  temp.right = node_stack.pop
+  temp.left = node_stack.pop
+  node_stack.push(temp)
+end
+ 
+def infix_exp_to_tree(exp)
+  tokens = tokenize(exp)
+  op_stack, node_stack = [], []
+ 
+  tokens.each do |token|
+    if operator?(token)
+      # clear stack of higher priority operators
+      until (op_stack.empty? or
+             op_stack.last.info == "(" or
+             $op_priority[op_stack.last.info] < $op_priority[token])
+        pop_connect_push(op_stack, node_stack)
+      end
+ 
+      op_stack.push(TreeNode.new(token))
+    elsif token == "("
+      op_stack.push(TreeNode.new(token))
+    elsif token == ")"
+      while op_stack.last.info != "("
+        pop_connect_push(op_stack, node_stack)
+      end
+ 
+      # throw away the '('
+      op_stack.pop
+    else
+      node_stack.push(TreeNode.new(token))
+    end
+  end
+ 
+  until op_stack.empty?
+    pop_connect_push(op_stack, node_stack)
+  end
+ 
+  node_stack.last
+end
+
+====RUBY=====
+exp = "1 + 2 - 3 * (4 / 6)"
+puts("Original: " + exp)
+ 
+tree = infix_exp_to_tree(exp)
+puts("Prefix: " + tree.to_s(:prefix))
+puts("Infix: " + tree.to_s(:infix))
+puts("Postfix: " + tree.to_s(:postfix))
+puts("Result: " + tree.eval.to_s)
+
+====RUBY=====
+func evalArithmeticExp(s) {
+ 
+    func evalExp(s) {
+ 
+        func operate(s, op) {
+           s.split(op).map{|c| Number(c) }.reduce(op)
+        }
+ 
+        func add(s) {
+            operate(s.sub(/^\+/,'').sub(/\++/,'+'), '+')
+        }
+ 
+        func subtract(s) {
+            s.gsub!(/(\+-|-\+)/,'-')
+ 
+            if (s ~~ /--/) {
+                return(add(s.sub(/--/,'+')))
+            }
+ 
+            var b = s.split('-')
+            b.len == 3 ? (-1*Number(b[1]) - Number(b[2]))
+                       : operate(s, '-')
+        }
+ 
+        s.gsub!(/[()]/,'').gsub!(/-\+/, '-')
+ 
+        var reM  = /\*/
+        var reMD = %r"(\d+\.?\d*\s*[*/]\s*[+-]?\d+\.?\d*)"
+ 
+        var reA  = /\d\+/
+        var reAS = /(-?\d+\.?\d*\s*[+-]\s*[+-]?\d+\.?\d*)/
+ 
+        while (var match = reMD.match(s)) {
+            match[0] ~~ reM
+                ? s.sub!(reMD, operate(match[0], '*').to_s)
+                : s.sub!(reMD, operate(match[0], '/').to_s)
+        }
+ 
+        while (var match = reAS.match(s)) {
+            match[0] ~~ reA
+                ? s.sub!(reAS,      add(match[0]).to_s)
+                : s.sub!(reAS, subtract(match[0]).to_s)
+        }
+ 
+        return s
+    }
+ 
+    var rePara = /(\([^\(\)]*\))/
+    s.split!.join!('').sub!(/^\+/,'')
+ 
+    while (var match = s.match(rePara)) {
+        s.sub!(rePara, evalExp(match[0]))
+    }
+ 
+    return Number(evalExp(s))
+}
+
+====RUBY=====
+for expr,res in [
+     ['2+3'                                      =>        5],
+     ['-4-3'                                     =>       -7],
+     ['-+2+3/4'                                  =>    -1.25],
+     ['2*3-4'                                    =>        2],
+     ['2*(3+4)+2/4'                              => 2/4 + 14],
+     ['2*-3--4+-0.25'                            =>    -2.25],
+     ['2 * (3 + (4 * 5 + (6 * 7) * 8) - 9) * 10' =>     7000],
+] { 
+    var num = evalArithmeticExp(expr)
+    assert_eq(num, res)
+    "%-45s == %10g\n".printf(expr, num)
+}
+
+====PYTHON=====
+import operator
+ 
+class AstNode(object):
+   def __init__( self, opr, left, right ):
+      self.opr = opr
+      self.l = left
+      self.r = right
+ 
+   def eval(self):
+      return self.opr(self.l.eval(), self.r.eval())
+ 
+class LeafNode(object):
+   def __init__( self, valStrg ):
+      self.v = int(valStrg)
+ 
+   def eval(self):
+      return self.v
+ 
+class Yaccer(object):
+   def __init__(self):
+      self.operstak = []
+      self.nodestak =[]
+      self.__dict__.update(self.state1)
+ 
+   def v1( self, valStrg ):
+      # Value String
+      self.nodestak.append( LeafNode(valStrg))
+      self.__dict__.update(self.state2)
+      #print 'push', valStrg
+ 
+   def o2( self, operchar ):
+      # Operator character or open paren in state1
+      def openParen(a,b):
+         return 0		# function should not be called
+ 
+      opDict= { '+': ( operator.add, 2, 2 ),
+         '-': (operator.sub, 2, 2 ),
+         '*': (operator.mul, 3, 3 ),
+         '/': (operator.div, 3, 3 ),
+         '^': ( pow,         4, 5 ),  # right associative exponentiation for grins
+         '(': ( openParen,   0, 8 )
+         }
+      operPrecidence = opDict[operchar][2]
+      self.redeuce(operPrecidence)
+ 
+      self.operstak.append(opDict[operchar])
+      self.__dict__.update(self.state1)
+      # print 'pushop', operchar
+ 
+   def syntaxErr(self, char ):
+      # Open Parenthesis 
+      print 'parse error - near operator "%s"' %char
+ 
+   def pc2( self,operchar ):
+      # Close Parenthesis
+      # reduce node until matching open paren found 
+      self.redeuce( 1 )
+      if len(self.operstak)>0:
+         self.operstak.pop()		# pop off open parenthesis
+      else:
+         print 'Error - no open parenthesis matches close parens.'
+      self.__dict__.update(self.state2)
+ 
+   def end(self):
+      self.redeuce(0)
+      return self.nodestak.pop()
+ 
+   def redeuce(self, precidence):
+      while len(self.operstak)>0:
+         tailOper = self.operstak[-1]
+         if tailOper[1] < precidence: break
+ 
+         tailOper = self.operstak.pop()
+         vrgt = self.nodestak.pop()
+         vlft= self.nodestak.pop()
+         self.nodestak.append( AstNode(tailOper[0], vlft, vrgt))
+         # print 'reduce'
+ 
+   state1 = { 'v': v1, 'o':syntaxErr, 'po':o2, 'pc':syntaxErr }
+   state2 = { 'v': syntaxErr, 'o':o2, 'po':syntaxErr, 'pc':pc2 }
+ 
+ 
+def Lex( exprssn, p ):
+   bgn = None
+   cp = -1
+   for c in exprssn:
+      cp += 1
+      if c in '+-/*^()':         # throw in exponentiation (^)for grins
+         if bgn is not None:
+            p.v(p, exprssn[bgn:cp])
+            bgn = None
+         if c=='(': p.po(p, c)
+         elif c==')':p.pc(p, c)
+         else: p.o(p, c)
+      elif c in ' \t':
+         if bgn is not None:
+            p.v(p, exprssn[bgn:cp])
+            bgn = None
+      elif c in '0123456789':
+         if bgn is None:
+            bgn = cp
+      else:
+         print 'Invalid character in expression'
+         if bgn is not None:
+            p.v(p, exprssn[bgn:cp])
+            bgn = None
+ 
+   if bgn is not None:
+      p.v(p, exprssn[bgn:cp+1])
+      bgn = None
+   return p.end()
+ 
+ 
+expr = raw_input("Expression:")
+astTree = Lex( expr, Yaccer())
+print expr, '=',astTree.eval()
+
+====PYTHON=====
+>>> import ast
+>>> 
+>>> expr="2 * (3 -1) + 2 * 5"
+>>> node = ast.parse(expr, mode='eval')
+>>> print(ast.dump(node).replace(',', ',\n'))
+Expression(body=BinOp(left=BinOp(left=Num(n=2),
+ op=Mult(),
+ right=BinOp(left=Num(n=3),
+ op=Sub(),
+ right=Num(n=1))),
+ op=Add(),
+ right=BinOp(left=Num(n=2),
+ op=Mult(),
+ right=Num(n=5))))
+>>> code_object = compile(node, filename='<string>', mode='eval')
+>>> eval(code_object)
+14
+>>> # lets modify the AST by changing the 5 to a 6
+>>> node.body.right.right.n
+5
+>>> node.body.right.right.n = 6
+>>> code_object = compile(node, filename='<string>', mode='eval')
+>>> eval(code_object)
+16
+

@@ -1,0 +1,173 @@
+====RUBY=====
+filename = "readings.txt"
+total = { "num_readings" => 0, "num_good_readings" => 0, "sum_readings" => 0.0 }
+invalid_count = 0
+max_invalid_count = 0
+invalid_run_end = ""
+ 
+File.new(filename).each do |line|
+  num_readings = 0
+  num_good_readings = 0
+  sum_readings = 0.0
+ 
+  fields = line.split
+  fields[1..-1].each_slice(2) do |reading, flag|
+    num_readings += 1
+    if Integer(flag) > 0
+      num_good_readings += 1
+      sum_readings += Float(reading)
+      invalid_count = 0
+    else
+      invalid_count += 1
+      if invalid_count > max_invalid_count
+        max_invalid_count = invalid_count
+        invalid_run_end = fields[0]
+      end
+    end
+  end
+ 
+  printf "Line: %11s  Reject: %2d  Accept: %2d  Line_tot: %10.3f  Line_avg: %10.3f\n",
+    fields[0], num_readings - num_good_readings, num_good_readings, sum_readings,
+    num_good_readings > 0 ? sum_readings/num_good_readings : 0.0
+ 
+  total["num_readings"] += num_readings
+  total["num_good_readings"] += num_good_readings
+  total["sum_readings"] += sum_readings
+end
+ 
+puts ""
+puts "File(s)  = #{filename}"
+printf "Total    = %.3f\n", total['sum_readings']
+puts "Readings = #{total['num_good_readings']}"
+printf "Average  = %.3f\n", total['sum_readings']/total['num_good_readings']
+puts ""
+puts "Maximum run(s) of #{max_invalid_count} consecutive false readings ends at #{invalid_run_end}"
+
+====RUBY=====
+Reading = Struct.new(:date, :value, :flag)
+ 
+DailyReading = Struct.new(:date, :readings) do
+  def good() readings.select(&:flag) end
+  def bad() readings.reject(&:flag) end
+  def sum() good.map(&:value).inject(0.0) {|sum, val| sum + val } end
+  def avg() good.size > 0 ? (sum / good.size) : 0 end
+  def print_status
+    puts "%11s:  good: %2d  bad: %2d  total: %8.3f  avg: %6.3f" % [date, good.count, bad.count, sum, avg]
+    self
+  end
+end
+ 
+daily_readings = IO.foreach(ARGV.first).map do |line|
+  (date, *parts) = line.chomp.split(/\s/)
+  readings = parts.each_slice(2).map {|pair| Reading.new(date, pair.first.to_f, pair.last.to_i > 0)}
+  DailyReading.new(date, readings).print_status
+end
+ 
+all_readings = daily_readings.flat_map(&:readings)
+good_readings = all_readings.select(&:flag)
+all_streaks = all_readings.slice_when {|bef, aft| bef.flag != aft.flag }
+worst_streak = all_streaks.reject {|grp| grp.any?(&:flag)}.sort_by(&:size).last
+ 
+total = good_readings.map(&:value).reduce(:+)
+num_readings = good_readings.count
+puts
+puts "Total: %.3f" % total
+puts "Readings: #{num_readings}"
+puts "Average  %.3f" % total./(num_readings)
+puts
+puts "Max run of #{worst_streak.count} consecutive false readings from #{worst_streak.first.date} until #{worst_streak.last.date}"
+ 
+
+====RUBY=====
+var gaps = [];
+var previous = :valid;
+ 
+ARGF.each { |line|
+    var (date, *readings) = line.words...;
+    var valid = [];
+    var hour = 0;
+    readings.map{.to_n}.each_slice(2, { |slice|
+        var(reading, flag) = slice...;
+        if (flag > 0) {
+            valid << reading;
+            if (previous == :invalid) {
+                gaps[-1]{:end} = "#{date} #{hour}:00";
+                previous = :valid;
+            }
+        }
+        else {
+            if (previous == :valid) {
+                gaps << Hash(start => "#{date} #{hour}:00");
+            }
+            gaps[-1]{:count} := 0 ++;
+            previous = :invalid;
+        }
+        ++hour;
+    })
+    say ("#{date}: #{ '%8s' % (valid ? ('%.3f' % Math.avg(valid...)) : 0) }",
+         " mean from #{ '%2s' % valid.len } valid.");
+}
+ 
+var longest = gaps.sort_by{|a| -a{:count} }.first;
+ 
+say ("Longest period of invalid readings was #{longest{:count}} hours,\n",
+    "from #{longest{:start}} till #{longest{:end}}.");
+
+====PYTHON=====
+import fileinput
+import sys
+ 
+nodata = 0;             # Current run of consecutive flags<0 in lines of file
+nodata_max=-1;          # Max consecutive flags<0 in lines of file
+nodata_maxline=[];      # ... and line number(s) where it occurs
+ 
+tot_file = 0            # Sum of file data
+num_file = 0            # Number of file data items with flag>0
+ 
+infiles = sys.argv[1:]
+ 
+for line in fileinput.input():
+  tot_line=0;             # sum of line data
+  num_line=0;             # number of line data items with flag>0
+ 
+  # extract field info
+  field = line.split()
+  date  = field[0]
+  data  = [float(f) for f in field[1::2]]
+  flags = [int(f)   for f in field[2::2]]
+ 
+  for datum, flag in zip(data, flags):
+    if flag<1:
+      nodata += 1
+    else:
+      # check run of data-absent fields
+      if nodata_max==nodata and nodata>0:
+        nodata_maxline.append(date)
+      if nodata_max<nodata and nodata>0:
+        nodata_max=nodata
+        nodata_maxline=[date]
+      # re-initialise run of nodata counter
+      nodata=0; 
+      # gather values for averaging
+      tot_line += datum
+      num_line += 1
+ 
+  # totals for the file so far
+  tot_file += tot_line
+  num_file += num_line
+ 
+  print "Line: %11s  Reject: %2i  Accept: %2i  Line_tot: %10.3f  Line_avg: %10.3f" % (
+        date, 
+        len(data) -num_line, 
+        num_line, tot_line, 
+        tot_line/num_line if (num_line>0) else 0)
+ 
+print ""
+print "File(s)  = %s" % (", ".join(infiles),)
+print "Total    = %10.3f" % (tot_file,)
+print "Readings = %6i" % (num_file,)
+print "Average  = %10.3f" % (tot_file / num_file,)
+ 
+print "\nMaximum run(s) of %i consecutive false readings ends at line starting with date(s): %s" % (
+    nodata_max, ", ".join(nodata_maxline))
+

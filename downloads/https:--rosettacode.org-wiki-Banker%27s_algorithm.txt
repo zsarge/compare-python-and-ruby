@@ -1,0 +1,52 @@
+====PYTHON=====
+ 
+def main():
+    resources = int(input("Cantidad de recursos: "))
+    processes = int(input("Cantidad de procesos: "))
+    max_resources = [int(i) for i in input("Recursos máximos: ").split()]
+ 
+    print("\n-- recursos asignados para cada proceso  --")
+    currently_allocated = [[int(i) for i in input(f"proceso {j + 1}: ").split()] for j in range(processes)]
+ 
+    print("\n--- recursos máximos para cada proceso  ---")
+    max_need = [[int(i) for i in input(f"proceso {j + 1}: ").split()] for j in range(processes)]
+ 
+    allocated = [0] * resources
+    for i in range(processes):
+        for j in range(resources):
+            allocated[j] += currently_allocated[i][j]
+    print(f"\nRecursos totales asignados  : {allocated}")
+ 
+    available = [max_resources[i] - allocated[i] for i in range(resources)]
+    print(f"Recursos totales disponibles: {available}\n")
+ 
+    running = [True] * processes
+    count = processes
+    while count != 0:
+        safe = False
+        for i in range(processes):
+            if running[i]:
+                executing = True
+                for j in range(resources):
+                    if max_need[i][j] - currently_allocated[i][j] > available[j]:
+                        executing = False
+                        break
+                if executing:
+                    print(f"proceso {i + 1} ejecutándose")
+                    running[i] = False
+                    count -= 1
+                    safe = True
+                    for j in range(resources):
+                        available[j] += currently_allocated[i][j]
+                    break
+        if not safe:
+            print("El proceso está en un estado inseguro.")
+            break
+ 
+        print(f"El proceso está en un estado seguro.\nRecursos disponibles: {available}\n")
+ 
+ 
+if __name__ == '__main__':
+    main()
+ 
+

@@ -1,0 +1,100 @@
+====RUBY=====
+def entropy(s)
+  counts = Hash.new(0.0)
+  s.each_char { |c| counts[c] += 1 }
+  leng = s.length
+ 
+  counts.values.reduce(0) do |entropy, count|
+    freq = count / leng
+    entropy - freq * Math.log2(freq)
+  end
+end
+ 
+p entropy("1223334444")
+
+====RUBY=====
+def entropy2(s)
+  s.each_char.group_by(&:to_s).values.map { |x| x.length / s.length.to_f }.reduce(0) { |e, x| e - x*Math.log2(x) }
+end
+
+====RUBY=====
+func entropy(s) {
+  var counts = Hash.new;
+  s.each { |c| counts{c} := 0 ++ };
+  var len = s.len;
+  [0, counts.values.map {|count|
+    var freq = count/len; freq * freq.log2 }...
+  ]«-»;
+}
+ 
+say entropy("1223334444");
+
+====PYTHON=====
+from __future__ import division
+import math
+ 
+def hist(source):
+    hist = {}; l = 0;
+    for e in source:
+        l += 1
+        if e not in hist:
+            hist[e] = 0
+        hist[e] += 1
+    return (l,hist)
+ 
+def entropy(hist,l):
+    elist = []
+    for v in hist.values():
+        c = v / l
+        elist.append(-c * math.log(c ,2))
+    return sum(elist)
+ 
+def printHist(h):
+    flip = lambda (k,v) : (v,k)
+    h = sorted(h.iteritems(), key = flip)
+    print 'Sym\thi\tfi\tInf'
+    for (k,v) in h:
+        print '%s\t%f\t%f\t%f'%(k,v,v/l,-math.log(v/l, 2))
+ 
+ 
+ 
+source = "1223334444"
+(l,h) = hist(source);
+print '.[Results].'
+print 'Length',l
+print 'Entropy:', entropy(h, l)
+printHist(h)
+
+====PYTHON=====
+>>> import math
+>>> from collections import Counter
+>>> 
+>>> def entropy(s):
+...     p, lns = Counter(s), float(len(s))
+...     return -sum( count/lns * math.log(count/lns, 2) for count in p.values())
+... 
+>>> entropy("1223334444")
+1.8464393446710154
+>>> 
+
+====PYTHON=====
+def Entropy(text):
+    import math
+    log2=lambda x:math.log(x)/math.log(2)
+    exr={}
+    infoc=0
+    for each in text:
+        try:
+            exr[each]+=1
+        except:
+            exr[each]=1
+    textlen=len(text)
+    for k,v in exr.items():
+        freq  =  1.0*v/textlen
+        infoc+=freq*log2(freq)
+    infoc*=-1
+    return infoc
+ 
+while True:
+    print Entropy(raw_input('>>>'))
+

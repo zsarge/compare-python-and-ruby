@@ -1,0 +1,35 @@
+====RUBY=====
+"alphaBETA".downcase # => "alphabeta"
+"alphaBETA".upcase # => "ALPHABETA"
+ 
+"alphaBETA".swapcase # => "ALPHAbeta"
+"alphaBETA".capitalize # => "Alphabeta"
+
+====RUBY=====
+'ĥåçýджк'.upcase  # => "ĤÅÇÝДЖК"
+
+====RUBY=====
+say "alphaBETA".lc;             #=> alphabeta
+say "alphaBETA".uc;             #=> ALPHABETA
+say "alphaBETA".tc;             #=> AlphaBETA
+say "alpha BETA".wc;            #=> Alpha Beta
+say "alpha BETA".tc;            #=> Alpha BETA
+say "alpha BETA".tclc;          #=> Alpha beta
+
+====PYTHON=====
+s = "alphaBETA"
+print s.upper() # => "ALPHABETA"
+print s.lower() # => "alphabeta"
+ 
+print s.swapcase() # => "ALPHAbeta"
+ 
+print "fOo bAR".capitalize() # => "Foo bar"
+print "fOo bAR".title() # => "Foo Bar"
+ 
+import string
+print string.capwords("fOo bAR") # => "Foo Bar"
+
+====PYTHON=====
+print "foo's bar".title()          # => "Foo'S Bar"
+print string.capwords("foo's bar") # => "Foo's Bar"
+

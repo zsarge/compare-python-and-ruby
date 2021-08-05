@@ -1,0 +1,53 @@
+====RUBY=====
+class ListNode
+  def insert_after(search_value, new_value)
+    if search_value == value
+      self.succ = self.class.new(new_value, succ)
+    elsif self.succ.nil?
+      raise StandardError, "value #{search_value} not found in list"
+    else
+      self.succ.insert_after(search_value, new_value)
+    end
+  end
+end
+ 
+list = ListNode.new(:a, ListNode.new(:b))
+list.insert_after(:a, :c)
+
+====RUBY=====
+func insert_after(a,b) {
+    b{:next} = a{:next};
+    a{:next} = b;
+}
+ 
+var B = Hash.new(
+    data => 3,
+    next => nil,    # not a circular list
+);
+var A = Hash.new(
+    data => 1,
+    next => B,
+);
+var C = Hash.new(
+    data => 2,
+);
+ 
+insert_after(A, C);
+
+====PYTHON=====
+def chain_insert(lst, at, item):
+    while lst is not None:
+        if lst[0] == at:
+            lst[1] = [item, lst[1]]
+            return
+        else:
+            lst = lst[1]
+    raise ValueError(str(at) + " not found")
+ 
+chain = ['A', ['B', None]]
+chain_insert(chain, 'A', 'C')
+print chain
+
+====PYTHON=====
+['A', ['C', ['B', None]]]
+

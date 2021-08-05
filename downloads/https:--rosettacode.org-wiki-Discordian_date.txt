@@ -1,0 +1,106 @@
+====RUBY=====
+require 'date'
+ 
+class DiscordianDate
+  SEASON_NAMES = ["Chaos","Discord","Confusion","Bureaucracy","The Aftermath"]
+  DAY_NAMES = ["Sweetmorn","Boomtime","Pungenday","Prickle-Prickle","Setting Orange"]
+  YEAR_OFFSET = 1166
+  DAYS_PER_SEASON = 73
+  DAYS_PER_WEEK = 5
+  ST_TIBS_DAY_OF_YEAR = 60
+ 
+  def initialize(year, month, day)
+    gregorian_date = Date.new(year, month, day)
+    @day_of_year = gregorian_date.yday
+ 
+    @st_tibs = false
+    if gregorian_date.leap?
+      if @day_of_year == ST_TIBS_DAY_OF_YEAR
+        @st_tibs = true
+      elsif @day_of_year > ST_TIBS_DAY_OF_YEAR
+        @day_of_year -= 1
+      end
+    end
+ 
+    @season, @day = (@day_of_year-1).divmod(DAYS_PER_SEASON)
+    @day += 1     #←              ↑ fixes of-by-one error (only visible at season changes)
+    @year = gregorian_date.year + YEAR_OFFSET
+  end
+  attr_reader :year, :day
+ 
+  def season
+    SEASON_NAMES[@season]
+  end
+ 
+  def weekday
+    if @st_tibs
+      "St. Tib's Day"
+    else
+      DAY_NAMES[(@day_of_year - 1) % DAYS_PER_WEEK]
+    end
+  end
+ 
+  def to_s
+    %Q{#{@st_tibs ? "St. Tib's Day" : "%s, %s %d" % [weekday, season, day]}, #{year} YOLD}
+  end
+end
+
+====RUBY=====
+[[2012, 2, 28], [2012, 2, 29], [2012, 3, 1], [2011, 10, 5], [2015, 10, 19]].each do |date|
+  dd = DiscordianDate.new(*date)
+  puts "#{"%4d-%02d-%02d" % date} => #{dd}"
+end
+
+====RUBY=====
+require('Time::Piece');
+ 
+var seasons = %w(Chaos Discord Confusion Bureaucracy The\ Aftermath);
+var week_days = %w(Sweetmorn Boomtime Pungenday Prickle-Prickle Setting\ Orange);
+ 
+func ordinal (n) {
+    "#{n}" + (n % 100 ~~ [11,12,13] ? 'th'
+                                    : <th st nd rd th th th th th th>[n % 10])
+}
+ 
+func ddate(ymd) {
+    var d = %s'Time::Piece'.strptime(ymd, '%Y-%m-%d');
+    var yold = "in the YOLD #{d.year + 1166}";
+ 
+    var day_of_year0 = d.day_of_year;
+ 
+    if (d.is_leap_year) {
+        return "St. Tib's Day, #{yold}" if ([d.mon, d.mday] == [2, 29]);
+        day_of_year0-- if (day_of_year0 >= 60); # Compensate for St. Tib's Day
+    }
+ 
+    var weekday = week_days[day_of_year0 % week_days.len];
+    var season = seasons[day_of_year0 / 73];
+    var season_day = ordinal(day_of_year0 % 73 + 1);
+ 
+    return "#{weekday}, the #{season_day} day of #{season} #{yold}";
+}
+ 
+%w(2010-07-22 2012-02-28 2012-02-29 2012-03-01).each { |ymd|
+    say "#{ymd} is #{ddate(ymd)}"
+}
+
+====PYTHON=====
+import datetime, calendar
+ 
+DISCORDIAN_SEASONS = ["Chaos", "Discord", "Confusion", "Bureaucracy", "The Aftermath"]
+ 
+def ddate(year, month, day):
+    today = datetime.date(year, month, day)
+    is_leap_year = calendar.isleap(year)
+    if is_leap_year and month == 2 and day == 29:
+        return "St. Tib's Day, YOLD " + (year + 1166)
+ 
+    day_of_year = today.timetuple().tm_yday - 1
+ 
+    if is_leap_year and day_of_year >= 60:
+        day_of_year -= 1 # Compensate for St. Tib's Day
+ 
+    season, dday = divmod(day_of_year, 73)
+    return "%s %d, YOLD %d" % (DISCORDIAN_SEASONS[season], dday + 1, year + 1166)
+ 
+

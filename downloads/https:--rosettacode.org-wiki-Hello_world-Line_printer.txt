@@ -1,0 +1,18 @@
+====RUBY=====
+open("| lpr", "w") { |f| f.puts "Hello World!" }
+
+====RUBY=====
+Sys.open(\var fh, '>', '/dev/lp0') \
+    && fh.say("Hello World!")      \
+    && fh.close
+
+====PYTHON=====
+lp = open("/dev/lp0")
+lp.write("Hello World!\n")
+lp.close()
+
+====PYTHON=====
+lp = open("/dev/lp0","w")
+lp.write("Hello World!\n")
+lp.close()
+

@@ -1,0 +1,220 @@
+====RUBY=====
+class LastL_FirstL
+  def initialize(names)
+    @names = names.dup
+    @first = names.group_by {|name| name[0]}
+    @sequences = []
+  end
+ 
+  def add_name(seq)
+    last_letter = seq[-1][-1]
+    potentials = @first.include?(last_letter) ? (@first[last_letter] - seq) : []
+    if potentials.empty?
+      @sequences << seq
+    else
+      potentials.each {|name| add_name(seq + [name])}
+    end
+  end
+ 
+  def search
+    @names.each {|name| add_name [name]}
+    max = @sequences.max_by {|seq| seq.length}.length
+    max_seqs = @sequences.select {|seq| seq.length == max}
+    puts "there are #{@sequences.length} possible sequences"
+    puts "the longest is #{max} names long"
+    puts "there are #{max_seqs.length} such sequences. one is:"
+    max_seqs.last.each_with_index {|name, idx| puts "  %2d %s" % [idx+1, name]}
+  end
+end
+ 
+names = %w{
+  audino bagon baltoy banette bidoof braviary bronzor carracosta charmeleon
+  cresselia croagunk darmanitan deino emboar emolga exeggcute gabite
+  girafarig gulpin haxorus heatmor heatran ivysaur jellicent jumpluff kangaskhan
+  kricketune landorus ledyba loudred lumineon lunatone machamp magnezone mamoswine
+  nosepass petilil pidgeotto pikachu pinsir poliwrath poochyena porygon2
+  porygonz registeel relicanth remoraid rufflet sableye scolipede scrafty seaking
+  sealeo silcoon simisear snivy snorlax spoink starly tirtouga trapinch treecko
+  tyrogue vigoroth vulpix wailord wartortle whismur wingull yamask
+}
+ 
+lf = LastL_FirstL.new(names)
+lf.search
+
+====RUBY=====
+class LLFL(Array words) {
+ 
+    has f = Hash()
+ 
+    method init {
+        words.each {|w|
+            var m = w.match(/^(.).*(.)$/)
+            f{m[0]}{w} = m[1]
+        }
+    }
+ 
+    method longest_chain {
+ 
+        var stack   = []
+        var longest = []
+ 
+        func poke(c) {
+            var h = f{c}
+ 
+            h.each_k { |word|
+                var v = h.delete(word)
+                stack.push(word)
+                longest[] = stack[] if (stack.len > longest.len)
+                __FUNC__(v) if f.exists(v)
+                stack.pop
+                h{word} = v
+            }
+        }
+ 
+        f.each_k { poke(_) }
+        return longest
+    }
+}
+ 
+var words = %w(
+  audino bagon baltoy banette bidoof braviary bronzor carracosta charmeleon
+  cresselia croagunk darmanitan deino emboar emolga exeggcute gabite
+  girafarig gulpin haxorus heatmor heatran ivysaur jellicent jumpluff kangaskhan
+  kricketune landorus ledyba loudred lumineon lunatone machamp magnezone mamoswine
+  nosepass petilil pidgeotto pikachu pinsir poliwrath poochyena porygon2
+  porygonz registeel relicanth remoraid rufflet sableye scolipede scrafty seaking
+  sealeo silcoon simisear snivy snorlax spoink starly tirtouga trapinch treecko
+  tyrogue vigoroth vulpix wailord wartortle whismur wingull yamask
+)
+ 
+var obj = LLFL(words)
+var longest = obj.longest_chain()
+ 
+say "#{longest.len}: #{longest.join(' ')}"
+
+====PYTHON=====
+from collections import defaultdict
+ 
+def order_words(words):
+    byfirst = defaultdict(set)
+    for word in words:
+        byfirst[word[0]].add( word )
+    #byfirst = dict(byfirst)
+    return byfirst
+ 
+def linkfirst(byfirst, sofar):
+    '''\
+    For all words matching last char of last word in sofar as FIRST char and not in sofar,
+    return longest chain as sofar + chain
+    '''
+ 
+    assert sofar
+    chmatch = sofar[-1][-1]
+    options = byfirst[chmatch] - set(sofar)
+    #print('  linkfirst options: %r %r' % (chmatch, options))
+    if not options:
+        return sofar
+    else:
+        alternatives = ( linkfirst(byfirst, list(sofar) + [word])
+                         for word in options )
+        mx = max( alternatives, key=len )
+        #input('linkfirst: %r' % mx)
+        return mx
+ 
+def llfl(words):
+ 
+    byfirst = order_words(words)
+    return max( (linkfirst(byfirst, [word]) for word in words), key=len )
+ 
+if __name__ == '__main__':
+    pokemon = '''audino bagon baltoy banette bidoof braviary bronzor carracosta charmeleon
+cresselia croagunk darmanitan deino emboar emolga exeggcute gabite
+girafarig gulpin haxorus heatmor heatran ivysaur jellicent jumpluff kangaskhan
+kricketune landorus ledyba loudred lumineon lunatone machamp magnezone mamoswine
+nosepass petilil pidgeotto pikachu pinsir poliwrath poochyena porygon2
+porygonz registeel relicanth remoraid rufflet sableye scolipede scrafty seaking
+sealeo silcoon simisear snivy snorlax spoink starly tirtouga trapinch treecko
+tyrogue vigoroth vulpix wailord wartortle whismur wingull yamask'''
+    pokemon = pokemon.strip().lower().split()
+    pokemon = sorted(set(pokemon))    
+    l = llfl(pokemon)
+    for i in range(0, len(l), 8): print(' '.join(l[i:i+8]))
+    print(len(l))
+
+====PYTHON=====
+import psyco
+ 
+nsolutions = 0
+ 
+def search(sequences, ord_minc, curr_word, current_path,
+           current_path_len, longest_path):
+    global nsolutions
+ 
+    current_path[current_path_len] = curr_word
+    current_path_len += 1
+ 
+    if current_path_len == len(longest_path):
+        nsolutions += 1
+    elif current_path_len > len(longest_path):
+        nsolutions = 1
+        longest_path[:] = current_path[:current_path_len]
+ 
+    # recursive search
+    last_char_index = ord(curr_word[-1]) - ord_minc
+    if last_char_index >= 0 and last_char_index < len(sequences):
+        for pair in sequences[last_char_index]:
+            if not pair[1]:
+                pair[1] = True
+                search(sequences, ord_minc, pair[0], current_path,
+                       current_path_len, longest_path)
+                pair[1] = False
+ 
+ 
+def find_longest_chain(words):
+    ord_minc = ord(min(word[0] for word in words))
+    ord_maxc = ord(max(word[0] for word in words))
+    sequences = [[] for _ in xrange(ord_maxc - ord_minc + 1)]
+    for word in words:
+        sequences[ord(word[0]) - ord_minc].append([word, False])
+ 
+    current_path = [None] * len(words)
+    longest_path = []
+ 
+    # try each item as possible start
+    for seq in sequences:
+        for pair in seq:
+            pair[1] = True
+            search(sequences, ord_minc, pair[0],
+                   current_path, 0, longest_path)
+            pair[1] = False
+ 
+    return longest_path
+ 
+ 
+def main():
+    global nsolutions
+ 
+    pokemon = """audino bagon baltoy banette bidoof braviary
+bronzor carracosta charmeleon cresselia croagunk darmanitan deino
+emboar emolga exeggcute gabite girafarig gulpin haxorus heatmor
+heatran ivysaur jellicent jumpluff kangaskhan kricketune landorus
+ledyba loudred lumineon lunatone machamp magnezone mamoswine nosepass
+petilil pidgeotto pikachu pinsir poliwrath poochyena porygon2
+porygonz registeel relicanth remoraid rufflet sableye scolipede
+scrafty seaking sealeo silcoon simisear snivy snorlax spoink starly
+tirtouga trapinch treecko tyrogue vigoroth vulpix wailord wartortle
+whismur wingull yamask""".lower().split()
+ 
+    # remove duplicates
+    pokemon = sorted(set(pokemon))
+ 
+    sol = find_longest_chain(pokemon)
+    print "Maximum path length:", len(sol)
+    print "Paths of that length:", nsolutions
+    print "Example path of that length:"
+    for i in xrange(0, len(sol), 7):
+        print " ", " ".join(sol[i : i+7])
+ 
+psyco.full()
+main()
+

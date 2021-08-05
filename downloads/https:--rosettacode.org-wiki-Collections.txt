@@ -1,0 +1,204 @@
+====RUBY=====
+# creating an empty array and adding values
+a = []              #=> []
+a[0] = 1            #=> [1]
+a[3] = "abc"        #=> [1, nil, nil, "abc"]
+a << 3.14           #=> [1, nil, nil, "abc", 3.14]
+ 
+# creating an array with the constructor
+a = Array.new               #=> []
+a = Array.new(3)            #=> [nil, nil, nil]
+a = Array.new(3, 0)         #=> [0, 0, 0]
+a = Array.new(3){|i| i*2}   #=> [0, 2, 4]
+
+====RUBY=====
+# creating an empty hash
+h = {}              #=> {}
+h["a"] = 1          #=> {"a"=>1}
+h["test"] = 2.4     #=> {"a"=>1, "test"=>2.4}
+h[3] = "Hello"      #=> {"a"=>1, "test"=>2.4, 3=>"Hello"}
+h = {a:1, test:2.4, World!:"Hello"}
+                    #=> {:a=>1, :test=>2.4, :World!=>"Hello"}
+ 
+# creating a hash with the constructor
+h = Hash.new        #=> {}   (default value : nil)
+p h[1]              #=> nil
+h = Hash.new(0)     #=> {}   (default value : 0)
+p h[1]              #=> 0
+p h                 #=> {}
+h = Hash.new{|hash, key| key.to_s}
+                    #=> {}
+p h[123]            #=> "123"
+p h                 #=> {}
+h = Hash.new{|hash, key| hash[key] = "foo#{key}"}
+                    #=> {}
+p h[1]              #=> "foo1"
+p h                 #=> {1=>"foo1"}
+
+====RUBY=====
+# creating a struct
+ 
+Person = Struct.new(:name, :age, :sex)
+ 
+a = Person.new("Peter", 15, :Man)
+p a[0]              #=> "Peter"
+p a[:age]           #=> 15
+p a.sex             #=> :Man
+p a.to_a            #=> ["Peter", 15, :Man]
+p a.to_h            #=> {:name=>"Peter", :age=>15, :sex=>:Man}
+ 
+b = Person.new
+p b                 #=> #<struct Person name=nil, age=nil, sex=nil>
+b.name = "Margaret"
+b["age"] = 18
+b[-1] = :Woman
+p b.values          #=> ["Margaret", 18, :Woman]
+p b.members         #=> [:name, :age, :sex]
+p b.size            #=> 3
+ 
+c = Person["Daniel", 22, :Man]
+p c.to_h            #=> {:name=>"Daniel", :age=>22, :sex=>:Man}
+
+====RUBY=====
+require 'set'
+ 
+# different ways of creating a set
+p s1 = Set[1, 2, 3, 4]          #=> #<Set: {1, 2, 3, 4}>
+p s2 = [8, 6, 4, 2].to_set      #=> #<Set: {8, 6, 4, 2}>
+p s3 = Set.new(1..4) {|x| x*2}  #=> #<Set: {2, 4, 6, 8}>
+ 
+# Union
+p s1 | s2                       #=> #<Set: {1, 2, 3, 4, 8, 6}>
+# Intersection
+p s1 & s2                       #=> #<Set: {4, 2}>
+# Difference
+p s1 - s2                       #=> #<Set: {1, 3}>
+ 
+p s1 ^ s2                       #=> #<Set: {8, 6, 1, 3}>
+ 
+p s2 == s3                      #=> true
+ 
+p s1.add(5)                     #=> #<Set: {1, 2, 3, 4, 5}>
+p s1 << 0                       #=> #<Set: {1, 2, 3, 4, 5, 0}>
+p s1.delete(3)                  #=> #<Set: {1, 2, 4, 5, 0}>
+
+====RUBY=====
+require 'matrix'
+ 
+# creating a matrix
+p m0 = Matrix.zero(3)       #=> Matrix[[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+p m1 = Matrix.identity(3)   #=> Matrix[[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+p m2 = Matrix[[11, 12], [21, 22]]
+                            #=> Matrix[[11, 12], [21, 22]]
+p m3 = Matrix.build(3) {|row, col| row - col}
+                            #=> Matrix[[0, -1, -2], [1, 0, -1], [2, 1, 0]]
+ 
+p m2[0,0]               #=> 11
+p m1 * 5                #=> Matrix[[5, 0, 0], [0, 5, 0], [0, 0, 5]]
+p m1 + m3               #=> Matrix[[1, -1, -2], [1, 1, -1], [2, 1, 1]]
+p m1 * m3               #=> Matrix[[0, -1, -2], [1, 0, -1], [2, 1, 0]]
+ 
+# creating a Vector
+p v1 = Vector[1,3,5]    #=> Vector[1, 3, 5]
+p v2 = Vector[0,1,2]    #=> Vector[0, 1, 2]
+p v1[1]                 #=> 3
+p v1 * 2                #=> Vector[2, 6, 10]
+p v1 + v2               #=> Vector[1, 4, 7]
+ 
+p m1 * v1               #=> Vector[1, 3, 5]
+p m3 * v1               #=> Vector[-13, -4, 5]
+
+====RUBY=====
+require 'ostruct'
+ 
+# creating a OpenStruct
+ab = OpenStruct.new
+p ab                #=> #<OpenStruct>
+ab.foo = 25
+p ab.foo            #=> 25
+ab[:bar] = 2
+p ab["bar"]         #=> 2
+p ab                #=> #<OpenStruct foo=25, bar=2>
+ab.delete_field("foo")
+p ab.foo            #=> nil
+p ab                #=> #<OpenStruct bar=2>
+ 
+p son = OpenStruct.new({ :name => "Thomas", :age => 3 })
+                    #=> #<OpenStruct name="Thomas", age=3>
+p son.name          #=> "Thomas"
+p son[:age]         #=> 3
+son.age += 1
+p son.age           #=> 4
+son.items = ["candy","toy"]
+p son.items         #=> ["candy","toy"]
+p son               #=> #<OpenStruct name="Thomas", age=4, items=["candy", "toy"]
+
+====RUBY=====
+# creating an empty array and adding values
+var a = []          #=> []
+a[0] = 1            #=> [1]
+a[3] = "abc"        #=> [1, nil, nil, "abc"]
+a << 3.14           #=> [1, nil, nil, "abc", 3.14]
+
+====RUBY=====
+# creating an empty hash
+var h = Hash()    #=> Hash()
+h{:foo} = 1       #=> Hash("foo"=>1)
+h{:bar} = 2.4     #=> Hash("foo"=>1, "bar"=>2.4)
+h{:bar} += 3      #=> Hash("foo"=>1, "bar"=>5.4)
+
+====RUBY=====
+# create a simple pair
+var p = Pair('a', 'b')
+say p.first;            #=> 'a'
+say p.second;           #=> 'b'
+ 
+# create a pair of pairs
+var pair = 'foo':'bar':'baz':();   # => Pair('foo', Pair('bar', Pair('baz', nil)))
+ 
+# iterate over the values of a pair of pairs
+loop {
+    say pair.first;                #=> 'foo', 'bar', 'baz'
+    pair = pair.second;
+    pair == nil && break;
+}
+
+====RUBY=====
+# creating a struct
+struct Person {
+    String name,
+    Number age,
+    String sex
+}
+ 
+var a = Person("John Smith", 41, :man)
+ 
+a.age += 1                  # increment age
+a.name = "Dr. #{a.name}"    # update name
+ 
+say a.name          #=> "Dr. John Smith"
+say a.age           #=> 42
+say a.sex           #=> "man"
+
+====PYTHON=====
+collection = [0, '1']                 # Lists are mutable (editable) and can be sorted in place
+x = collection[0]                     # accessing an item (which happens to be a numeric 0 (zero)
+collection.append(2)                  # adding something to the end of the list
+collection.insert(0, '-1')            # inserting a value into the beginning
+y = collection[0]                     # now returns a string of "-1"
+collection.extend([2,'3'])            # same as [collection.append(i) for i in [2,'3']] ... but faster
+collection += [2,'3']                 # same as previous line
+collection[2:6]                       # a "slice" (collection of the list elements from the third up to but not including the sixth)
+len(collection)                       # get the length of (number of elements in) the collection
+collection = (0, 1)                   # Tuples are immutable (not editable)
+collection[:]                         # ... slices work on these too; and this is equivalent to collection[0:len(collection)]
+collection[-4:-1]                     # negative slices count from the end of the string
+collection[::2]                       # slices can also specify a stride --- this returns all even elements of the collection
+collection="some string"              # strings are treated as sequences of characters
+x = collection[::-1]                  # slice with negative step returns reversed sequence (string in this case).
+collection[::2] == "some string"[::2] # True, literal objects don't need to be bound to name/variable to access slices or object methods
+collection.__getitem__(slice(0,len(collection),2))  # same as previous expressions.
+collection = {0: "zero", 1: "one"}    # Dictionaries (Hash)
+collection['zero'] = 2                # Dictionary members accessed using same syntax as list/array indexes.
+collection = set([0, '1'])            # sets (Hash)
+

@@ -1,0 +1,36 @@
+====RUBY=====
+#Get modification time:
+modtime = File.mtime('filename')
+ 
+#Set the access and modification times:
+File.utime(actime, mtime, 'path')
+ 
+#Set just the modification time:
+File.utime(File.atime('path'), mtime, 'path')
+ 
+#Set the access and modification times to the current time:
+File.utime(nil, nil, 'path')
+
+====RUBY=====
+var file = File.new(__FILE__);
+say file.stat.mtime;            # seconds since the epoch
+ 
+# keep atime unchanged
+# set mtime to current time
+file.utime(file.stat.atime, Time.now);
+
+====PYTHON=====
+import os
+ 
+#Get modification time:
+modtime = os.path.getmtime('filename')
+ 
+#Set the access and modification times:
+os.utime('path', (actime, mtime))
+ 
+#Set just the modification time:
+os.utime('path', (os.path.getatime('path'), mtime))
+ 
+#Set the access and modification times to the current time:
+os.utime('path', None)
+

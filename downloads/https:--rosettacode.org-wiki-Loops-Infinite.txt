@@ -1,0 +1,15 @@
+====RUBY=====
+loop {puts "SPAM"}
+ 
+
+====RUBY=====
+loop { say "SPAM!" };
+
+====PYTHON=====
+while 1:
+   print "SPAM"
+
+====PYTHON=====
+while 1:
+   print("SPAM")
+

@@ -1,0 +1,116 @@
+====RUBY=====
+require "spec"
+ 
+describe "palindrome" do
+  it "returns true for a word that's palindromic" do
+    palindrome("racecar").should be_true
+  end
+ 
+  it "returns false for a word that's not palindromic" do
+    palindrome("goodbye").should be_false
+  end
+end
+ 
+def palindrome(s)
+  s == s.reverse
+end
+
+====RUBY=====
+def palindrome?(s)
+  s == s.reverse
+end
+ 
+require 'test/unit'
+class MyTests < Test::Unit::TestCase
+  def test_palindrome_ok
+    assert(palindrome? "aba")
+  end
+ 
+  def test_palindrome_nok
+    assert_equal(false, palindrome?("ab"))
+  end
+ 
+  def test_object_without_reverse
+    assert_raise(NoMethodError) {palindrome? 42}
+  end
+ 
+  def test_wrong_number_args
+    assert_raise(ArgumentError) {palindrome? "a", "b"}
+  end
+ 
+  def test_show_failing_test
+    assert(palindrome?("ab"), "this test case fails on purpose")
+  end
+end
+
+====RUBY=====
+# palindrome.rb
+def palindrome?(s)
+  s == s.reverse
+end
+ 
+require 'minitest/spec'
+require 'minitest/autorun'
+describe "palindrome? function" do
+  it "returns true if arg is a palindrome" do
+    (palindrome? "aba").must_equal true
+  end
+ 
+  it "returns false if arg is not a palindrome" do
+    palindrome?("ab").must_equal false
+  end
+ 
+  it "raises NoMethodError if arg is without #reverse" do
+    proc { palindrome? 42 }.must_raise NoMethodError
+  end
+ 
+  it "raises ArgumentError if wrong number of args" do
+    proc { palindrome? "a", "b" }.must_raise ArgumentError
+  end
+ 
+  it "passes a failing test" do
+    palindrome?("ab").must_equal true, "this test case fails on purpose"
+  end
+end
+
+====PYTHON=====
+def is_palindrome(s):
+    '''
+        >>> is_palindrome('')
+        True
+        >>> is_palindrome('a')
+        True
+        >>> is_palindrome('aa')
+        True
+        >>> is_palindrome('baa')
+        False
+        >>> is_palindrome('baab')
+        True
+        >>> is_palindrome('ba_ab')
+        True
+        >>> is_palindrome('ba_ ab')
+        False
+        >>> is_palindrome('ba _ ab')
+        True
+        >>> is_palindrome('ab'*2)
+        False
+        >>> x = 'ab' *2**15
+        >>> len(x)
+        65536
+        >>> xreversed = x[::-1]
+        >>> is_palindrome(x+xreversed)
+        True
+        >>> len(x+xreversed)
+        131072
+        >>> 
+    '''
+    return s == s[::-1]
+ 
+def _test():
+    import doctest
+    doctest.testmod()
+    #doctest.testmod(verbose=True)
+ 
+if __name__ == "__main__":
+    _test()
+

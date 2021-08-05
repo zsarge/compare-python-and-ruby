@@ -1,0 +1,39 @@
+====RUBY=====
+2.step(8,2) {|n| print "#{n}, "}
+puts "who do we appreciate?"
+
+====RUBY=====
+(2..8).step(2) {|n| print "#{n}, "}
+puts "who do we appreciate?"
+
+====RUBY=====
+for n in (2..8).step(2)
+  print "#{n}, "
+end
+puts "who do we appreciate?"
+
+====RUBY=====
+for (var i = 2; i <= 8; i += 2) {
+    say i
+}
+
+====RUBY=====
+for i in (2 .. (8, 2)) {
+    say i
+}
+
+====RUBY=====
+2.to(8).by(2).each { |i|
+    say i
+}
+
+====PYTHON=====
+for i in xrange(2, 9, 2):
+    print "%d," % i,
+print "who do we appreciate?"
+
+====PYTHON=====
+for i in range(2, 9, 2):
+    print("%d, " % i, end="")
+print("who do we appreciate?")
+

@@ -1,0 +1,18 @@
+====RUBY=====
+irb(main):001:0> Time.at(0).utc
+=> 1970-01-01 00:00:00 UTC
+
+====RUBY=====
+require "date"
+Date.new # => #<Date: -4712-01-01 ((0j,0s,0n),+0s,2299161j)> 
+ 
+
+====RUBY=====
+say Time.new(0).gmtime.ctime;
+
+====PYTHON=====
+>>> import time
+>>> time.asctime(time.gmtime(0))
+'Thu Jan  1 00:00:00 1970'
+>>>
+

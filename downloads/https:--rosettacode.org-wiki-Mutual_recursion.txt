@@ -1,0 +1,29 @@
+====RUBY=====
+def F(n)
+  n == 0 ? 1 : n - M(F(n-1))
+end
+def M(n)
+  n == 0 ? 0 : n - F(M(n-1))
+end
+ 
+p (Array.new(20) {|n| F(n) })
+p (Array.new(20) {|n| M(n) })
+
+====RUBY=====
+func F(){}
+func M(){}
+ 
+F = func(n) { n > 0 ? (n - M(F(n-1))) : 1 }
+M = func(n) { n > 0 ? (n - F(M(n-1))) : 0 }
+ 
+[F, M].each { |seq|
+    {|i| seq.call(i)}.map(^20).join(' ').say
+}
+
+====PYTHON=====
+def F(n): return 1 if n == 0 else n - M(F(n-1))
+def M(n): return 0 if n == 0 else n - F(M(n-1))
+ 
+print ([ F(n) for n in range(20) ])
+print ([ M(n) for n in range(20) ])
+

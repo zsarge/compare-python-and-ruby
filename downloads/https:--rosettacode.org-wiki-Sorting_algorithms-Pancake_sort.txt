@@ -1,0 +1,74 @@
+====RUBY=====
+class Array
+  def pancake_sort!
+    num_flips = 0
+    (self.size-1).downto(1) do |end_idx|
+      max     = self[0..end_idx].max
+      max_idx = self[0..end_idx].index(max)
+      next if max_idx == end_idx
+ 
+      if max_idx > 0
+        self[0..max_idx] = self[0..max_idx].reverse 
+        p [num_flips += 1, self]  if $DEBUG
+      end
+ 
+      self[0..end_idx] = self[0..end_idx].reverse 
+      p [num_flips += 1, self]  if $DEBUG
+    end
+    self
+  end
+end
+ 
+p a = (1..9).to_a.shuffle
+p a.pancake_sort!
+
+====RUBY=====
+func pancake(a) {
+    for idx in ^(a.end) {
+        var min = idx
+        for i in (idx+1 .. a.end) { min = i if (a[min] > a[i]) }
+        next if (a[min] == a[idx])
+        a[min..a.end] = [a[min..a.end]].reverse...
+        a[idx..a.end] = [a[idx..a.end]].reverse...
+    }
+    return a
+}
+ 
+var arr = 10.of{ 100.irand }
+say "Before: #{arr}"
+say "After:  #{pancake(arr)}"
+
+====PYTHON=====
+tutor = False
+ 
+def pancakesort(data):
+    if len(data) <= 1:
+        return data
+    if tutor: print()
+    for size in range(len(data), 1, -1):
+        maxindex = max(range(size), key=data.__getitem__)
+        if maxindex+1 != size:
+            # This indexed max needs moving
+            if maxindex != 0:
+                # Flip the max item to the left
+                if tutor: print('With: %r doflip  %i'
+                                % ( ' '.join(str(x) for x in data), maxindex+1 ))
+                data[:maxindex+1] = reversed(data[:maxindex+1])
+            # Flip it into its final position
+            if tutor: print('With: %r  doflip %i'
+                                % ( ' '.join(str(x) for x in data), size ))
+            data[:size] = reversed(data[:size])
+    if tutor: print()
+
+====PYTHON=====
+if __name__ == '__main__':
+    import random
+ 
+    tutor = True
+    data = list('123456789')
+    while data == sorted(data):
+        random.shuffle(data)
+    print('Original List: %r' % ' '.join(data))
+    pancakesort(data)
+    print('Pancake Sorted List: %r' % ' '.join(data))
+

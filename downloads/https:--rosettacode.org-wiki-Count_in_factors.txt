@@ -1,0 +1,111 @@
+====RUBY=====
+require 'optparse'
+require 'prime'
+ 
+maximum = 10
+OptionParser.new do |o|
+  o.banner = "Usage: #{File.basename $0} [-m MAXIMUM]"
+  o.on("-m MAXIMUM", Integer,
+       "Count up to MAXIMUM [#{maximum}]") { |m| maximum = m }
+  o.parse! rescue ($stderr.puts $!, o; exit 1)
+  ($stderr.puts o; exit 1) unless ARGV.size == 0
+end
+ 
+# 1 has no prime factors
+puts "1 is 1" unless maximum < 1
+ 
+2.upto(maximum) do |i|
+  # i is 504 => i.prime_division is [[2, 3], [3, 2], [7, 1]]
+  f = i.prime_division.map! do |factor, exponent|
+    # convert [2, 3] to "2 x 2 x 2"
+    ([factor] * exponent).join " x "
+  end.join " x "
+  puts "#{i} is #{f}"
+end
+
+====RUBY=====
+class Counter {
+    method factors(n, p=2) {
+        var a = gather {
+            while (n >= p*p) {
+                while (p `divides` n) {
+                    take(p)
+                    n //= p
+                }
+                p = self.next_prime(p)
+            }
+        }
+        (n > 1 || a.is_empty) ? (a << n) : a
+    }
+ 
+    method is_prime(n) {
+        self.factors(n).len == 1
+    }
+ 
+    method next_prime(p) {
+        do {
+            p == 2 ? (p = 3) : (p+=2)
+        } while (!self.is_prime(p))
+        return p
+    }
+}
+ 
+for i in (1..100) {
+    say "#{i} = #{Counter().factors(i).join(' × ')}"
+}
+
+====PYTHON=====
+from functools import lru_cache
+ 
+primes = [2, 3, 5, 7, 11, 13, 17]    # Will be extended
+ 
+@lru_cache(maxsize=2000)
+def pfactor(n):
+    if n == 1:
+        return [1]
+    n2 = n // 2 + 1
+    for p in primes:
+        if p <= n2:
+            d, m = divmod(n, p)
+            if m == 0:
+                if d > 1:
+                    return [p] + pfactor(d)
+                else:
+                    return [p]
+        else:
+            if n > primes[-1]:
+                primes.append(n)
+            return [n]
+ 
+if __name__ == '__main__':
+    mx = 5000
+    for n in range(1, mx + 1):
+        factors = pfactor(n)
+        if n <= 10 or n >= mx - 20:
+            print( '%4i %5s %s' % (n,
+                                   '' if factors != [n] or n == 1 else 'prime',
+                                   'x'.join(str(i) for i in factors)) )
+        if n == 11:
+            print('...')
+ 
+    print('\nNumber of primes gathered up to', n, 'is', len(primes))
+    print(pfactor.cache_info())
+
+====PYTHON=====
+def count_in_factors(n):
+    if is_prime(n) or n == 1: 
+        print(n,end="")
+        return
+    while n != 1:
+        p = next_prime(1)
+        while n % p != 0:
+            p = next_prime(p)
+        print(p,end="")
+        n = n / p
+        if n != 1: print(" x",end=" ")
+ 
+for i in range(1, 101):
+    print(i,"=",end=" ")
+    count_in_factors(i)
+    print("")
+

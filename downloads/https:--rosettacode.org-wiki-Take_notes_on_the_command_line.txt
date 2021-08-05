@@ -1,0 +1,34 @@
+====RUBY=====
+notes = 'NOTES.TXT'
+if ARGV.empty?
+  File.copy_stream(notes, $stdout) rescue nil
+else
+  File.open(notes, 'a') {|file| file.puts "%s\n\t%s" % [Time.now, ARGV.join(' ')]}
+end
+
+====RUBY=====
+var file = %f'notes.txt'
+ 
+if (ARGV.len > 0) {
+    var fh = file.open_a
+    fh.say(Time.local.ctime + "\n\t" + ARGV.join(" "))
+    fh.close
+} else {
+    var fh = file.open_r
+    fh && fh.each { .say }
+}
+
+====PYTHON=====
+import sys, datetime, shutil
+ 
+if len(sys.argv) == 1:
+    try:
+        with open('notes.txt', 'r') as f:
+            shutil.copyfileobj(f, sys.stdout)
+    except IOError:
+        pass
+else:
+    with open('notes.txt', 'a') as f:
+        f.write(datetime.datetime.now().isoformat() + '\n')
+        f.write("\t%s\n" % ' '.join(sys.argv[1:]))
+

@@ -1,0 +1,54 @@
+====RUBY=====
+def add(x,y) x + y end
+def mul(x,y) x * y end
+ 
+def sumEq(s,p) s.select{|q| add(*p) == add(*q)} end
+def mulEq(s,p) s.select{|q| mul(*p) == mul(*q)} end
+ 
+s1 = (a = *2...100).product(a).select{|x,y| x<y && x+y<100}
+s2 = s1.select{|p| sumEq(s1,p).all?{|q| mulEq(s1,q).size != 1} }
+s3 = s2.select{|p| (mulEq(s1,p) & s2).size == 1}
+p    s3.select{|p| (sumEq(s1,p) & s3).size == 1}
+
+====RUBY=====
+func grep_uniq(a, by) { a.group_by{ .(by) }.values.grep{.len == 1}.map{_[0]} }
+func sums     (n)     { 2 .. n//2 -> map {|i| [i, n-i] } }
+ 
+var pairs = (2..97 -> map {|i| ([i] ~X (i+1 .. 98))... })
+ 
+var p_uniq = Hash()
+p_uniq{grep_uniq(pairs, :prod).map { .to_s }...} = ()
+ 
+var s_pairs = pairs.grep {|p| sums(p.sum).all { !p_uniq.contains(.to_s) } }
+var p_pairs = grep_uniq(s_pairs, :prod)
+var f_pairs = grep_uniq(p_pairs, :sum)
+ 
+f_pairs.each { |p| printf("X = %d, Y = %d\n", p...) }
+
+====PYTHON=====
+#!/usr/bin/env python
+ 
+from collections import Counter
+ 
+def decompose_sum(s):
+    return [(a,s-a) for a in range(2,int(s/2+1))]
+ 
+# Generate all possible pairs
+all_pairs = set((a,b) for a in range(2,100) for b in range(a+1,100) if a+b<100)
+ 
+# Fact 1 --> Select pairs for which all sum decompositions have non-unique product
+product_counts = Counter(c*d for c,d in all_pairs)
+unique_products = set((a,b) for a,b in all_pairs if product_counts[a*b]==1)
+s_pairs = [(a,b) for a,b in all_pairs if
+    all((x,y) not in unique_products for (x,y) in decompose_sum(a+b))]
+ 
+# Fact 2 --> Select pairs for which the product is unique
+product_counts = Counter(c*d for c,d in s_pairs)
+p_pairs = [(a,b) for a,b in s_pairs if product_counts[a*b]==1]
+ 
+# Fact 3 --> Select pairs for which the sum is unique
+sum_counts = Counter(c+d for c,d in p_pairs)
+final_pairs = [(a,b) for a,b in p_pairs if sum_counts[a+b]==1]
+ 
+print(final_pairs)
+

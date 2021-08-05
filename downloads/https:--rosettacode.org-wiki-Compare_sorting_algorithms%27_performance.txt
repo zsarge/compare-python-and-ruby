@@ -1,0 +1,214 @@
+====RUBY=====
+class Array
+  def radix_sort(base=10)       # negative value is inapplicable.
+    ary = dup
+    rounds = (Math.log(ary.max)/Math.log(base)).ceil
+    rounds.times do |i|
+      buckets = Array.new(base){[]}
+      base_i = base**i
+      ary.each do |n|
+        digit = (n/base_i) % base
+        buckets[digit] << n
+      end
+      ary = buckets.flatten
+    end
+    ary
+  end
+ 
+  def quick_sort
+    return self  if size <= 1
+    pivot = sample
+    g = group_by{|x| x<=>pivot}
+    g.default = []
+    g[-1].quick_sort + g[0] + g[1].quick_sort
+  end
+ 
+  def shell_sort
+    inc = size / 2
+    while inc > 0
+      (inc...size).each do |i|
+        value = self[i]
+        while i >= inc and self[i - inc] > value
+          self[i] = self[i - inc]
+          i -= inc
+        end
+        self[i] = value
+      end
+      inc = (inc == 2 ? 1 : (inc * 5.0 / 11).to_i)
+    end
+    self
+  end
+ 
+  def insertion_sort
+    (1...size).each do |i|
+      value = self[i]
+      j = i - 1
+      while j >= 0 and self[j] > value
+        self[j+1] = self[j]
+        j -= 1
+      end
+      self[j+1] = value
+    end
+    self
+  end
+ 
+  def bubble_sort
+    (1...size).each do |i|
+      (0...size-i).each do |j|
+        self[j], self[j+1] = self[j+1], self[j]  if self[j] > self[j+1]
+      end
+    end
+    self
+  end
+end
+ 
+data_size = [1000, 10000, 100000, 1000000]
+data = []
+data_size.each do |size|
+  ary = *1..size
+  data << [ [1]*size, ary, ary.shuffle, ary.reverse ]
+end
+data = data.transpose
+ 
+data_type = ["set to all ones", "ascending sequence", "randomly shuffled", "descending sequence"]
+print "Array size:          "
+puts data_size.map{|size| "%9d" % size}.join
+ 
+data.each_with_index do |arys,i|
+  puts "\nData #{data_type[i]}:"
+  [:sort, :radix_sort, :quick_sort, :shell_sort, :insertion_sort, :bubble_sort].each do |m|
+    printf "%20s ", m
+    flag = true
+    arys.each do |ary|
+      if flag
+        t0 = Time.now
+        ary.dup.send(m)
+        printf "  %7.3f", (t1 = Time.now - t0)
+        flag = false  if t1 > 2
+      else
+        print "   --.---"
+      end
+    end
+    puts
+  end
+end
+
+====PYTHON=====
+def builtinsort(x):
+    x.sort()
+ 
+def partition(seq, pivot):
+   low, middle, up = [], [], []
+   for x in seq:
+       if x < pivot:
+           low.append(x)
+       elif x == pivot:
+           middle.append(x)
+       else:
+           up.append(x)
+   return low, middle, up
+import random
+def qsortranpart(seq):
+   size = len(seq)
+   if size < 2: return seq
+   low, middle, up = partition(seq, random.choice(seq))
+   return qsortranpart(low) + middle + qsortranpart(up)
+
+====PYTHON=====
+def ones(n):
+    return [1]*n
+ 
+def reversedrange(n):
+    return reversed(range(n))
+ 
+def shuffledrange(n):
+    x = range(n)
+    random.shuffle(x)
+    return x
+
+====PYTHON=====
+def write_timings(npoints=10, maxN=10**4, sort_functions=(builtinsort,insertion_sort, qsort), 
+                  sequence_creators = (ones, range, shuffledrange)):    
+   Ns = range(2, maxN, maxN//npoints)
+   for sort in sort_functions:
+       for make_seq in sequence_creators:
+           Ts = [usec(sort, (make_seq(n),)) for n in Ns]
+           writedat('%s-%s-%d-%d.xy' % (sort.__name__,  make_seq.__name__, len(Ns), max(Ns)), Ns, Ts)
+
+====PYTHON=====
+import operator
+import numpy, pylab
+def plotdd(dictplotdict):
+   """See ``plot_timings()`` below."""
+   symbols = ('o', '^', 'v', '<', '>', 's', '+', 'x', 'D', 'd',
+              '1', '2', '3', '4', 'h', 'H', 'p', '|', '_')
+   colors = list('bgrcmyk') # split string on distinct characters
+   for npoints, plotdict in dictplotdict.iteritems():
+       for ttle, lst in plotdict.iteritems():            
+           pylab.hold(False)                                
+           for i, (label, polynom, x, y) in enumerate(sorted(lst,key=operator.itemgetter(0))):
+               pylab.plot(x, y, colors[i % len(colors)] + symbols[i % len(symbols)], label='%s %s' % (polynom, label))
+               pylab.hold(True)
+               y = numpy.polyval(polynom, x)
+               pylab.plot(x, y, colors[i % len(colors)], label= '_nolegend_')                
+           pylab.legend(loc='upper left')
+           pylab.xlabel(polynom.variable)
+           pylab.ylabel('log2( time in microseconds )')                
+           pylab.title(ttle, verticalalignment='bottom')
+           figname = '_%(npoints)03d%(ttle)s' % vars()
+           pylab.savefig(figname+'.png')
+           pylab.savefig(figname+'.pdf')
+           print figname
+
+====PYTHON=====
+import collections, itertools, glob, re
+import numpy
+def plot_timings():
+   makedict = lambda: collections.defaultdict(lambda: collections.defaultdict(list))
+   df = makedict()
+   ds = makedict()
+   # populate plot dictionaries
+   for filename in glob.glob('*.xy'):
+       m = re.match(r'([^-]+)-([^-]+)-(\d+)-(\d+)\.xy', filename)
+       print filename
+       assert m, filename
+       funcname, seqname, npoints, maxN = m.groups()
+       npoints, maxN = int(npoints), int(maxN)        
+       a = numpy.fromiter(itertools.imap(float, open(filename).read().split()), dtype='f')
+       Ns = a[::2]  # sequences lengths
+       Ts = a[1::2] # corresponding times 
+       assert len(Ns) == len(Ts) == npoints
+       assert max(Ns) <= maxN
+       #
+       logsafe = numpy.logical_and(Ns>0, Ts>0)
+       Ts = numpy.log2(Ts[logsafe])
+       Ns = numpy.log2(Ns[logsafe])
+       coeffs = numpy.polyfit(Ns, Ts, deg=1)
+       poly = numpy.poly1d(coeffs, variable='log2(N)')
+       #
+       df[npoints][funcname].append((seqname, poly, Ns, Ts))
+       ds[npoints][seqname].append((funcname, poly, Ns, Ts))
+   # actual plotting
+   plotdd(df)
+   plotdd(ds) # see ``plotdd()`` above
+
+====PYTHON=====
+sort_functions = [
+    builtinsort,         # see implementation above
+    insertion_sort,      # see [[Insertion sort]]
+    insertion_sort_lowb, # ''insertion_sort'', where sequential search is replaced
+                         #     by lower_bound() function
+    qsort,               # see [[Quicksort]]
+    qsortranlc,          # ''qsort'' with randomly choosen ''pivot''
+                         #     and the filtering via list comprehension
+    qsortranpart,        # ''qsortranlc'' with filtering via ''partition'' function
+    qsortranpartis,      # ''qsortranpart'', where for a small input sequence lengths
+    ]                    #     ''insertion_sort'' is called
+if __name__=="__main__":
+   import sys
+   sys.setrecursionlimit(10000)
+   write_timings(npoints=100, maxN=1024, # 1 <= N <= 2**10 an input sequence length
+                 sort_functions=sort_functions,
+                 sequence_creators = (ones, range, shuffledrange))
+   plot_timings()
+

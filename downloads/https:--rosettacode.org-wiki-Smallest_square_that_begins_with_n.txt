@@ -1,0 +1,69 @@
+====RUBY=====
+def f(n)
+    if n < 1 then
+        return
+    end
+ 
+    i = 1
+    while true do
+        sq = i * i
+        while sq > n do
+            sq = (sq / 10).floor
+        end
+        if sq == n then
+            print "%3d %9d %4d\n" % [n, i * i, i]
+            return
+        end
+        i = i + 1
+    end
+end
+ 
+print("Prefix    n^2    n\n")
+print()
+for i in 1 .. 49
+    f(i)
+end
+
+====RUBY=====
+1..49 -> map {|n|
+    [n, n.isqrt..Inf -> first {|j| Str(j**2).starts_with(n) }]
+}.slices(5).each {|a|
+    say a.map { '%2d: %5d %-8s' % (_[0], _[1]**2, "(#{_[1]}^2)") }.join(' ')
+}
+
+====PYTHON=====
+'''First square prefixed by digits of N'''
+ 
+from itertools import count
+ 
+ 
+# firstSquareWithPrefix :: Int -> Int
+def firstSquareWithPrefix(n):
+    '''The first perfect square prefixed (in decimal)
+       by the decimal digits of N.
+    '''
+    pfx = str(n)
+    lng = len(pfx)
+    return int(
+        next(
+            s for s in (
+                str(x * x) for x in count(0)
+            )
+            if pfx == s[0:lng]
+        )
+    )
+ 
+ 
+# ------------------------- TEST -------------------------
+def main():
+    '''First matches for the range [1..49]'''
+ 
+    print('\n'.join([
+        str(firstSquareWithPrefix(x)) for x in range(1, 50)
+    ]))
+ 
+ 
+# MAIN ---
+if __name__ == '__main__':
+    main()
+

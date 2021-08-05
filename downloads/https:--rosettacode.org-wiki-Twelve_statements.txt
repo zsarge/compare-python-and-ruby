@@ -1,0 +1,102 @@
+====RUBY=====
+constraints = [
+  ->(st) { st.size == 12 }, 
+  ->(st) { st.last(6).count(true) == 3 },
+  ->(st) { st.each_slice(2).map(&:last).count(true) == 2 },
+  ->(st) { st[4] ? (st[5] & st[6]) : true },
+  ->(st) { st[1..3].none? },
+  ->(st) { st.each_slice(2).map(&:first).count(true) == 4 },
+  ->(st) { st[1] ^ st[2] },
+  ->(st) { st[6] ? (st[4] & st[5]) : true  }, 
+  ->(st) { st.first(6).count(true) == 3 },
+  ->(st) { st[10] & st[11] },
+  ->(st) { st[6..8].one? },
+  ->(st) { st[0,11].count(true) == 4 },
+]
+ 
+Result = Struct.new(:truths, :consistency)
+ 
+results = [true, false].repeated_permutation(12).map do |truths|
+  Result.new(truths, constraints.zip(truths).map {|cn,truth| cn[truths] == truth })
+end
+ 
+puts "solution:", 
+  results.find {|r| r.consistency.all? }.truths.to_s
+ 
+puts "\nnear misses: "
+near_misses = results.select {|r| r.consistency.count(false) == 1 }
+near_misses.each do |r|
+  puts "missed by statement #{r.consistency.index(false) + 1}", r.truths.to_s
+end
+
+====RUBY=====
+var conditions = [
+    { false },
+    {|a| a.len == 13 },
+    {|a| [a[7..12]].count(true) == 3 },
+    {|a| [a[2..12 `by` 2]].count(true) == 2 },
+    {|a| a[5] ? (a[6] && a[7]) : true },
+    {|a| !a[2] && !a[3] && !a[4] },
+    {|a| [a[1..11 `by` 2]].count(true) == 4 },
+    {|a| a[2] == true^a[3] },
+    {|a| a[7] ? (a[5] && a[6]) : true },
+    {|a| [a[1..6]].count(true)  == 3 },
+    {|a| [a[11,12]].count(true) == 2 },
+    {|a| [a[7..9]].count(true)  == 1 },
+    {|a| [a[1..11]].count(true) == 4 },
+]
+ 
+func miss(args) {
+    1..12 -> grep {|i| conditions[i](args) != args[i] }
+}
+ 
+for k in (^(1<<12)) {
+  var t  = ("0%012b" % k -> chars.map {|bit| bit == '1' })
+  var no = miss(t)
+  no.len == 0 && say "Solution: true statements are #{1..12->grep{t[_]}.join(' ')}"
+  no.len == 1 && say "1 miss (#{no[0]}): true statements are #{1..12->grep{t[_]}.join(' ')}"
+}
+
+====PYTHON=====
+ 
+from itertools import product
+#from pprint import pprint as pp
+ 
+constraintinfo = (  
+  (lambda st: len(st) == 12                 ,(1, 'This is a numbered list of twelve statements')),
+  (lambda st: sum(st[-6:]) == 3             ,(2, 'Exactly 3 of the last 6 statements are true')),
+  (lambda st: sum(st[1::2]) == 2            ,(3, 'Exactly 2 of the even-numbered statements are true')),
+  (lambda st: (st[5]&st[6]) if st[4] else 1 ,(4, 'If statement 5 is true, then statements 6 and 7 are both true')),
+  (lambda st: sum(st[1:4]) == 0             ,(5, 'The 3 preceding statements are all false')),
+  (lambda st: sum(st[0::2]) == 4            ,(6, 'Exactly 4 of the odd-numbered statements are true')),
+  (lambda st: sum(st[1:3]) == 1             ,(7, 'Either statement 2 or 3 is true, but not both')),
+  (lambda st: (st[4]&st[5]) if st[6] else 1 ,(8, 'If statement 7 is true, then 5 and 6 are both true')),
+  (lambda st: sum(st[:6]) == 3              ,(9, 'Exactly 3 of the first 6 statements are true')),
+  (lambda st: (st[10]&st[11])               ,(10, 'The next two statements are both true')),
+  (lambda st: sum(st[6:9]) == 1             ,(11, 'Exactly 1 of statements 7, 8 and 9 are true')),
+  (lambda st: sum(st[0:11]) == 4            ,(12, 'Exactly 4 of the preceding statements are true')),
+)  
+ 
+def printer(st, matches):
+    if False in matches:
+        print('Missed by one statement: %i, %s' % docs[matches.index(False)])
+    else:
+        print('Full match:')
+    print('  ' + ', '.join('%i:%s' % (i, 'T' if t else 'F') for i, t in enumerate(st, 1)))
+ 
+funcs, docs = zip(*constraintinfo)
+ 
+full, partial = [], []
+ 
+for st in product( *([(False, True)] * 12) ):
+    truths = [bool(func(st)) for func in funcs]
+    matches = [s == t for s,t in zip(st, truths)]
+    mcount = sum(matches)
+    if mcount == 12:
+        full.append((st, matches))
+    elif mcount == 11:
+        partial.append((st, matches))
+ 
+for stm in full + partial:
+    printer(*stm)
+

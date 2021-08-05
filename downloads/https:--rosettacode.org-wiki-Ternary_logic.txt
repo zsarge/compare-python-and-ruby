@@ -1,0 +1,247 @@
+====RUBY=====
+# trit.rb - ternary logic
+# http://rosettacode.org/wiki/Ternary_logic
+ 
+require 'singleton'
+ 
+# MAYBE, the only instance of MaybeClass, enables a system of ternary
+# logic using TrueClass#trit, MaybeClass#trit and FalseClass#trit.
+#
+#  !a.trit      # ternary not
+#  a.trit & b   # ternary and
+#  a.trit | b   # ternary or
+#  a.trit ^ b   # ternary exclusive or
+#  a.trit == b  # ternary equal
+#
+# Though +true+ and +false+ are internal Ruby values, +MAYBE+ is not.
+# Programs may want to assign +maybe = MAYBE+ in scopes that use
+# ternary logic. Then programs can use +true+, +maybe+ and +false+.
+class MaybeClass
+  include Singleton
+ 
+  #  maybe.to_s  # => "maybe"
+  def to_s; "maybe"; end
+end
+ 
+MAYBE = MaybeClass.instance
+ 
+class TrueClass
+  TritMagic = Object.new
+  class << TritMagic
+    def index; 0; end
+    def !; false; end
+    def & other; other; end
+    def | other; true; end
+    def ^ other; [false, MAYBE, true][other.trit.index]; end
+    def == other; other; end
+  end
+ 
+  # Performs ternary logic. See MaybeClass.
+  #  !true.trit        # => false
+  #  true.trit & obj   # => obj
+  #  true.trit | obj   # => true
+  #  true.trit ^ obj   # => false, maybe or true
+  #  true.trit == obj  # => obj
+  def trit; TritMagic; end
+end
+ 
+class MaybeClass
+  TritMagic = Object.new
+  class << TritMagic
+    def index; 1; end
+    def !; MAYBE; end
+    def & other; [MAYBE, MAYBE, false][other.trit.index]; end
+    def | other; [true, MAYBE, MAYBE][other.trit.index]; end
+    def ^ other; MAYBE; end
+    def == other; MAYBE; end
+  end
+ 
+  # Performs ternary logic. See MaybeClass.
+  #  !maybe.trit        # => maybe
+  #  maybe.trit & obj   # => maybe or false
+  #  maybe.trit | obj   # => true or maybe
+  #  maybe.trit ^ obj   # => maybe
+  #  maybe.trit == obj  # => maybe
+  def trit; TritMagic; end
+end
+ 
+class FalseClass
+  TritMagic = Object.new
+  class << TritMagic
+    def index; 2; end
+    def !; true; end
+    def & other; false; end
+    def | other; other; end
+    def ^ other; other; end
+    def == other; [false, MAYBE, true][other.trit.index]; end
+  end
+ 
+  # Performs ternary logic. See MaybeClass.
+  #  !false.trit        # => true
+  #  false.trit & obj   # => false
+  #  false.trit | obj   # => obj
+  #  false.trit ^ obj   # => obj
+  #  false.trit == obj  # => false, maybe or true
+  def trit; TritMagic; end
+end
+
+====RUBY=====
+$ irb
+irb(main):001:0> require './trit'
+=> true
+irb(main):002:0> maybe = MAYBE
+=> maybe
+irb(main):003:0> !true.trit       
+=> false
+irb(main):004:0> !maybe.trit
+=> maybe
+irb(main):005:0> maybe.trit & false
+=> false
+irb(main):006:0> maybe.trit | true
+=> true
+irb(main):007:0> false.trit == true       
+=> false
+irb(main):008:0> false.trit == maybe
+=> maybe
+
+====RUBY=====
+require 'trit'
+maybe = MAYBE
+ 
+[true, maybe, false].each do |a|
+  [true, maybe, false].each do |b|
+    printf "%5s ^ %5s => %5s\n", a, b, a.trit ^ b
+  end
+end
+
+====PYTHON=====
+class Trit(int):
+    def __new__(cls, value):
+        if value == 'TRUE':
+            value = 1
+        elif value == 'FALSE':
+            value = 0
+        elif value == 'MAYBE':
+            value = -1
+        return super(Trit, cls).__new__(cls, value // (abs(value) or 1)) 
+ 
+    def __repr__(self):
+        if self > 0:
+            return 'TRUE'
+        elif self == 0:
+            return 'FALSE'
+        return 'MAYBE'
+ 
+    def __str__(self):
+        return repr(self)
+ 
+    def __bool__(self):
+        if self > 0:
+            return True
+        elif self == 0:
+            return False
+        else:
+            raise ValueError("invalid literal for bool(): '%s'" % self)
+ 
+    def __or__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][1]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][1]
+            except:
+                return NotImplemented
+ 
+    def __ror__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][1]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][1]
+            except:
+                return NotImplemented
+ 
+    def __and__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][0]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][0]
+            except:
+                return NotImplemented
+ 
+    def __rand__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][0]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][0]
+            except:
+                return NotImplemented
+ 
+    def __xor__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][2]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][2]
+            except:
+                return NotImplemented
+ 
+    def __rxor__(self, other):
+        if isinstance(other, Trit):
+            return _ttable[(self, other)][2]
+        else:
+            try:
+                return _ttable[(self, Trit(bool(other)))][2]
+            except:
+                return NotImplemented
+ 
+    def __invert__(self):
+        return _ttable[self]
+ 
+    def __getattr__(self, name):
+        if name in ('_n', 'flip'):
+            # So you can do x._n == x.flip; the inverse of x
+            # In Python 'not' is strictly boolean so we can't write `not x`
+            # Same applies to keywords 'and' and 'or'.
+            return _ttable[self]
+        else:
+            raise AttributeError 
+ 
+ 
+ 
+TRUE, FALSE, MAYBE = Trit(1), Trit(0), Trit(-1)
+ 
+_ttable = {
+    #    A: -> flip_A
+         TRUE: FALSE,
+        FALSE:  TRUE,
+        MAYBE: MAYBE,
+    #     (A, B): -> (A_and_B, A_or_B, A_xor_B)
+        (MAYBE, MAYBE): (MAYBE, MAYBE, MAYBE),
+        (MAYBE, FALSE): (FALSE, MAYBE, MAYBE),
+        (MAYBE,  TRUE): (MAYBE,  TRUE, MAYBE),
+        (FALSE, MAYBE): (FALSE, MAYBE, MAYBE),
+        (FALSE, FALSE): (FALSE, FALSE, FALSE),
+        (FALSE,  TRUE): (FALSE,  TRUE,  TRUE),
+        ( TRUE, MAYBE): (MAYBE,  TRUE, MAYBE),
+        ( TRUE, FALSE): (FALSE,  TRUE,  TRUE),
+        ( TRUE,  TRUE): ( TRUE,  TRUE, FALSE),
+    }
+ 
+ 
+values = ('FALSE', 'TRUE ', 'MAYBE')
+ 
+print("\nTrit logical inverse, '~'")
+for a in values:
+    expr = '~%s' % a
+    print('  %s = %s' % (expr, eval(expr)))
+ 
+for op, ophelp in (('&', 'and'), ('|', 'or'), ('^', 'exclusive-or')):
+    print("\nTrit logical %s, '%s'" % (ophelp, op))
+    for a in values:
+        for b in values:
+            expr = '%s %s %s' % (a, op, b)
+            print('  %s = %s' % (expr, eval(expr)))
+

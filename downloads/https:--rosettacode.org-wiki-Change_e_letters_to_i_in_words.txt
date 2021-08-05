@@ -1,0 +1,19 @@
+====PYTHON=====
+unixdict = ['analyses','atlantes','bellow','breton','clench','convect','crises','diagnoses','enfant','enquiry','frances','galatea','harden','heckman','inequity','inflect','jacobean','marten','module','pegging','psychoses','rabbet','sterling','synopses','vector','welles']
+ 
+strOfUD = str(unixdict)
+replacestr = strOfUD.replace("e","i")
+print(replacestr)
+
+====PYTHON=====
+unixdict = ['analyses','atlantes','bellow','breton','clench','convect','crises','diagnoses','enfant','enquiry','frances','galatea','harden','heckman','inequity','inflect','jacobean','marten','module','pegging','psychoses','rabbet','sterling','synopses','vector','welles']
+ 
+newdict = []
+ 
+for xx in range(0,len(unixdict)):
+	strOfUD = unixdict[xx]
+	replacestr = strOfUD.replace("e","i")
+	newdict.append(strOfUD + " ==> " + replacestr)
+finaloutput = '\n'.join(newdict)
+print(finaloutput)
+

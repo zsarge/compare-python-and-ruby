@@ -1,0 +1,100 @@
+====RUBY=====
+# currently, Crystal only supports single-line comments
+ 
+# This is a doc comment. Any line *directly* above (no blank lines) a module, class, or method is considered a doc comment
+# Doc comments are used to generate documentation with `crystal docs`
+class Foo
+end
+
+====RUBY=====
+x = "code" # I am a comment
+ 
+=begin hello
+I a POD documentation comment like Perl
+=end puts "code"
+
+====RUBY=====
+# this is commented
+
+====RUBY=====
+var i = 1; # this is the comment part
+
+====RUBY=====
+var distance #`{in meters} = (30 #`{meters} * 100 #`{seconds});
+say distance; # prints: 3000
+
+====RUBY=====
+/*
+    This is a multi-line comment
+*/
+
+====PYTHON=====
+# Nim supports single-line comments
+ 
+var x = 0 ## Documentation comments start with double hash characters.
+ 
+var y = 0 ## Documentation comments are a proper part of the syntax (they're not discarded by parser, and a real part of AST).
+ 
+#[
+There are also multi-line comments
+Everything inside of #[]# is commented.
+]#
+ 
+# You can also discard multiline statements:
+ 
+discard """This can be considered as a "comment" too
+This is multi-line"""
+ 
+
+====PYTHON=====
+# a single-line comment
+ 
+"""
+Not strictly a comment, bare multi-line strings are used
+in Python as multi-line comments. They are also used as
+documentation strings or 'docstrings' when placed as the
+first element inside function or class definitions.
+"""
+ 
+# comment out a code line
+# println("foo")
+ 
+# comment at the end of a line
+println("foo bar") # "baz"
+ 
+# there is no way to make an inline comment
+
+====PYTHON=====
+# This is a comment
+foo = 5 # You can also append comments to statements
+
+====PYTHON=====
+"""Un-assigned strings in triple-quotes might be used 
+   as multi-line comments
+"""
+ 
+'''
+   "triple quoted strings" can be delimited by either 'single' or "double" quote marks; and they can contain mixtures
+   of other quote marks without any need to \escape\ them using any special characters.  They also may span multiple
+   lines without special escape characters.
+'''
+
+====PYTHON=====
+#!/usr/bin/env python
+# Example of using doc strings
+"""My Doc-string example"""
+ 
+class Foo:
+     '''Some documentation for the Foo class'''
+     def __init__(self):
+        "Foo's initialization method's documentation"
+ 
+def bar():
+    """documentation for the bar function"""
+ 
+if __name__ == "__main__":
+    print (__doc__)
+    print (Foo.__doc__)
+    print (Foo.__init__.__doc__)
+    print (bar.__doc__)
+

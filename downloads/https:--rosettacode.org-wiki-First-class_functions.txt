@@ -1,0 +1,104 @@
+====RUBY=====
+cube = proc{|x| x ** 3}
+croot = proc{|x| x ** (1.quo 3)}
+compose = proc {|f,g| proc {|x| f[g[x]]}}
+funclist = [Math.method(:sin), Math.method(:cos), cube]
+invlist = [Math.method(:asin), Math.method(:acos), croot]
+ 
+puts funclist.zip(invlist).map {|f, invf| compose[invf, f][0.5]}
+
+====RUBY=====
+func compose(f,g) {
+    func (*args) {
+        f(g(args...))
+    }
+}
+ 
+var cube  = func(a) { a.pow(3) }
+var croot = func(a) { a.root(3) }
+ 
+var flist1 = [Num.method(:sin),  Num.method(:cos),  cube]
+var flist2 = [Num.method(:asin), Num.method(:acos), croot]
+ 
+for a,b (flist1 ~Z flist2) {
+    say compose(a, b)(0.5)
+}
+
+====PYTHON=====
+>>> # Some built in functions and their inverses
+>>> from math import sin, cos, acos, asin
+>>> # Add a user defined function and its inverse
+>>> cube = lambda x: x * x * x
+>>> croot = lambda x: x ** (1/3.0)
+>>> # First class functions allow run-time creation of functions from functions
+>>> # return function compose(f,g)(x) == f(g(x))
+>>> compose = lambda f1, f2: ( lambda x: f1(f2(x)) )
+>>> # first class functions should be able to be members of collection types
+>>> funclist = [sin, cos, cube]
+>>> funclisti = [asin, acos, croot]
+>>> # Apply functions from lists as easily as integers
+>>> [compose(inversef, f)(.5) for f, inversef in zip(funclist, funclisti)]
+[0.5, 0.4999999999999999, 0.5]
+>>>
+
+====PYTHON=====
+'''First-class functions'''
+ 
+from math import (acos, cos, asin, sin)
+from inspect import signature
+ 
+ 
+# main :: IO ()
+def main():
+    '''Composition of several functions.'''
+ 
+    pwr = flip(curry(pow))
+ 
+    fs = [sin, cos, pwr(3.0)]
+    ifs = [asin, acos, pwr(1 / 3.0)]
+ 
+    print([
+        f(0.5) for f in
+        zipWith(compose)(fs)(ifs)
+    ])
+ 
+ 
+# GENERIC FUNCTIONS ------------------------------
+ 
+ 
+# compose (<<<) :: (b -> c) -> (a -> b) -> a -> c
+def compose(g):
+    '''Right to left function composition.'''
+    return lambda f: lambda x: g(f(x))
+ 
+ 
+# curry :: ((a, b) -> c) -> a -> b -> c
+def curry(f):
+    '''A curried function derived
+       from an uncurried function.'''
+    return lambda a: lambda b: f(a, b)
+ 
+ 
+# flip :: (a -> b -> c) -> b -> a -> c
+def flip(f):
+    '''The (curried or uncurried) function f with its
+       two arguments reversed.'''
+    if 1 < len(signature(f).parameters):
+        return lambda a, b: f(b, a)
+    else:
+        return lambda a: lambda b: f(b)(a)
+ 
+ 
+# zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+def zipWith(f):
+    '''A list constructed by zipping with a
+       custom function, rather than with the
+       default tuple constructor.'''
+    return lambda xs: lambda ys: [
+        f(a)(b) for (a, b) in zip(xs, ys)
+    ]
+ 
+ 
+if __name__ == '__main__':
+    main()
+

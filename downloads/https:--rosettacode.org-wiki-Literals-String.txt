@@ -1,0 +1,66 @@
+====RUBY=====
+'single quotes with \'embedded quote\' and \\backslash'
+%q(not interpolating with (nested) parentheses
+and newline)
+
+====RUBY=====
+a = 42
+"double quotes with \"embedded quote\"\nnewline and variable interpolation: #{a} % 10 = #{a % 10}"
+%Q(same as above)
+%|same as above|
+
+====RUBY=====
+print <<HERE
+With an unquoted delimiter, this interpolates:
+a = #{a}
+HERE
+print <<-INDENTED
+   This delimiter can have whitespace before it
+   INDENTED
+print <<'NON_INTERPOLATING'
+This will not interpolate: #{a}
+NON_INTERPOLATING
+
+====RUBY=====
+'single quotes with \'embedded quote\' and \\backslash';
+‚unicode single quoted’;
+%q(not interpolating with (nested) parentheses
+and newline);
+
+====RUBY=====
+var a = 42;
+"double \Uquotes\E with \"embedded quote\"\nnewline and variable interpolation: #{a} % 10 = #{a % 10}";
+„same as above”;
+%Q(same as above);
+
+====RUBY=====
+print <<EOT
+Implicit double-quoted (interpolates):
+a = #{a}
+EOT
+ 
+print <<"EOD"
+Explicit double-quoted with interpolation:
+a = #{a}
+EOD
+ 
+print <<'NON_INTERPOLATING'
+This will not interpolate: #{a}
+NON_INTERPOLATING
+
+====PYTHON=====
+'c' == "c" # character
+'text' == "text"
+' " '
+" ' "
+'\x20' == ' '
+u'unicode string'
+u'\u05d0' # unicode literal
+
+====PYTHON=====
+r'\x20' == '\\x20'
+
+====PYTHON=====
+''' single triple quote '''
+""" double triple quote """
+

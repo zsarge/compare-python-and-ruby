@@ -1,0 +1,400 @@
+====RUBY=====
+def eratosthenes(n)
+  nums = [nil, nil, *2..n]
+  (2..Math.sqrt(n)).each do |i|
+    (i**2..n).step(i){|m| nums[m] = nil}  if nums[i]
+  end
+  nums.compact
+end
+ 
+p eratosthenes(100)
+
+====RUBY=====
+def eratosthenes2(n)
+  # For odd i, if i is prime, nums[i >> 1] is true.
+  # Set false for all multiples of 3.
+  nums = [true, false, true] * ((n + 5) / 6)
+  nums[0] = false  # 1 is not prime.
+  nums[1] = true   # 3 is prime.
+ 
+  # Outer loop and both inner loops are skipping multiples of 2 and 3.
+  # Outer loop checks i * i > n, same as i > Math.sqrt(n).
+  i = 5
+  until (m = i * i) > n
+    if nums[i >> 1]
+      i_times_2 = i << 1
+      i_times_4 = i << 2
+      while m <= n
+        nums[m >> 1] = false
+        m += i_times_2
+        nums[m >> 1] = false
+        m += i_times_4  # When i = 5, skip 45, 75, 105, ...
+      end
+    end
+    i += 2
+    if nums[i >> 1]
+      m = i * i
+      i_times_2 = i << 1
+      i_times_4 = i << 2
+      while m <= n
+        nums[m >> 1] = false
+        m += i_times_4  # When i = 7, skip 63, 105, 147, ...
+        nums[m >> 1] = false
+        m += i_times_2
+      end
+    end
+    i += 4
+  end
+ 
+  primes = [2]
+  nums.each_index {|i| primes << (i * 2 + 1) if nums[i]}
+  primes.pop while primes.last > n
+  primes
+end
+ 
+p eratosthenes2(100)
+
+====RUBY=====
+require 'benchmark'
+Benchmark.bmbm {|x|
+  x.report("eratosthenes") { eratosthenes(1_000_000) }
+  x.report("eratosthenes2") { eratosthenes2(1_000_000) }
+}
+
+====RUBY=====
+require 'prime'
+p Prime::EratosthenesGenerator.new.take_while {|i| i <= 100}
+
+====RUBY=====
+func sieve(limit) {
+    var sieve_arr = [false, false, (limit-1).of(true)...]
+    gather {
+        sieve_arr.each_kv { |number, is_prime|
+            if (is_prime) {
+                take(number)
+                for i in (number**2 .. limit `by` number) {
+                    sieve_arr[i] = false
+                }
+            }
+        }
+    }
+}
+ 
+say sieve(100).join(",")
+
+====RUBY=====
+func sieve(limit) {
+    var composite = []
+    for n in (2 .. limit.isqrt) {
+        for i in (n**2 .. limit `by` n) {
+            composite[i] = true
+        }
+    }
+    2..limit -> grep{ !composite[_] }
+}
+ 
+say sieve(100).join(",")
+
+====PYTHON=====
+from __future__ import print_function
+ 
+i = 2
+ 
+def setup():
+    size(1000, 1000)
+    # frameRate(2)
+    global maxx, maxy, max_num, sieve
+    maxx = width
+    maxy = height
+    max_num = width * height
+    sieve = [False] * (max_num + 1)
+ 
+    sieve[1] = False
+    plot(0, False)
+    plot(1, False)
+    for i in range(2, max_num + 1):
+        sieve[i] = True
+        plot(i, True)
+ 
+ 
+def draw():
+    global i
+    if not sieve[i]:
+        while (i * i < max_num and not sieve[i]):
+            i += 1
+ 
+    if sieve[i]:
+        print("{} ".format(i), end = '')
+        for j in range(i * i, max_num + 1, i):
+            if sieve[j]:
+                sieve[j] = False
+                plot(j, False)
+ 
+    if i * i < max_num:
+        i += 1
+    else:
+        noLoop()
+        println("finished")
+ 
+ 
+def plot(pos, active):
+    set(pos % maxx, pos / maxx, color(0) if active else color(255))
+
+====PYTHON=====
+def eratosthenes2(n):
+    multiples = set()
+    for i in range(2, n+1):
+        if i not in multiples:
+            yield i
+            multiples.update(range(i*i, n+1, i))
+ 
+print(list(eratosthenes2(100)))
+
+====PYTHON=====
+def primes_upto(limit):
+    is_prime = [False] * 2 + [True] * (limit - 1) 
+    for n in range(int(limit**0.5 + 1.5)): # stop at ``sqrt(limit)``
+        if is_prime[n]:
+            for i in range(n*n, limit+1, n):
+                is_prime[i] = False
+    return [i for i, prime in enumerate(is_prime) if prime]
+
+====PYTHON=====
+def iprimes_upto(limit):
+    is_prime = [False] * 2 + [True] * (limit - 1)
+    for n in xrange(int(limit**0.5 + 1.5)): # stop at ``sqrt(limit)``
+        if is_prime[n]:
+            for i in range(n * n, limit + 1, n): # start at ``n`` squared
+                is_prime[i] = False
+    for i in xrange(limit + 1):
+        if is_prime[i]: yield i
+
+====PYTHON=====
+>>> list(iprimes_upto(15))
+[2, 3, 5, 7, 11, 13]
+
+====PYTHON=====
+def primes2(limit):
+    if limit < 2: return []
+    if limit < 3: return [2]
+    lmtbf = (limit - 3) // 2
+    buf = [True] * (lmtbf + 1)
+    for i in range((int(limit ** 0.5) - 3) // 2 + 1):
+        if buf[i]:
+            p = i + i + 3
+            s = p * (i + 1) + i
+            buf[s::p] = [False] * ((lmtbf - s) // p + 1)
+    return [2] + [i + i + 3 for i, v in enumerate(buf) if v]
+
+====PYTHON=====
+def iprimes2(limit):
+    yield 2
+    if limit < 3: return
+    lmtbf = (limit - 3) // 2
+    buf = [True] * (lmtbf + 1)
+    for i in range((int(limit ** 0.5) - 3) // 2 + 1):
+        if buf[i]:
+            p = i + i + 3
+            s = p * (i + 1) + i
+            buf[s::p] = [False] * ((lmtbf - s) // p + 1)
+    for i in range(lmtbf + 1):
+        if buf[i]: yield (i + i + 3)
+
+====PYTHON=====
+def primes235(limit):
+    yield 2; yield 3; yield 5
+    if limit < 7: return
+    modPrms = [7,11,13,17,19,23,29,31]
+    gaps = [4,2,4,2,4,6,2,6,4,2,4,2,4,6,2,6] # 2 loops for overflow
+    ndxs = [0,0,0,0,1,1,2,2,2,2,3,3,4,4,4,4,5,5,5,5,5,5,6,6,7,7,7,7,7,7]
+    lmtbf = (limit + 23) // 30 * 8 - 1 # integral number of wheels rounded up
+    lmtsqrt = (int(limit ** 0.5) - 7)
+    lmtsqrt = lmtsqrt // 30 * 8 + ndxs[lmtsqrt % 30] # round down on the wheel
+    buf = [True] * (lmtbf + 1)
+    for i in range(lmtsqrt + 1):
+        if buf[i]:
+            ci = i & 7; p = 30 * (i >> 3) + modPrms[ci]
+            s = p * p - 7; p8 = p << 3
+            for j in range(8):
+                c = s // 30 * 8 + ndxs[s % 30]
+                buf[c::p8] = [False] * ((lmtbf - c) // p8 + 1)
+                s += p * gaps[ci]; ci += 1
+    for i in range(lmtbf - 6 + (ndxs[(limit - 7) % 30])): # adjust for extras
+        if buf[i]: yield (30 * (i >> 3) + modPrms[i & 7])
+
+====PYTHON=====
+import numpy
+def primes_upto2(limit):
+    is_prime = numpy.ones(limit + 1, dtype=numpy.bool)
+    for n in xrange(2, int(limit**0.5 + 1.5)): 
+        if is_prime[n]:
+            is_prime[n*n::n] = 0
+    return numpy.nonzero(is_prime)[0][2:]
+
+====PYTHON=====
+from numpy import array, bool_, multiply, nonzero, ones, put, resize
+#
+def makepattern(smallprimes):
+    pattern = ones(multiply.reduce(smallprimes), dtype=bool_)
+    pattern[0] = 0
+    for p in smallprimes:
+        pattern[p::p] = 0
+    return pattern
+#
+def primes_upto3(limit, smallprimes=(2,3,5,7,11)):    
+    sp = array(smallprimes)
+    if limit <= sp.max(): return sp[sp <= limit]
+    #
+    isprime = resize(makepattern(sp), limit + 1) 
+    isprime[:2] = 0; put(isprime, sp, 1) 
+    #
+    for n in range(sp.max() + 2, int(limit**0.5 + 1.5), 2): 
+        if isprime[n]:
+            isprime[n*n::n] = 0 
+    return nonzero(isprime)[0]
+
+====PYTHON=====
+>>> primes_upto3(10**6, smallprimes=(2,3)) # Wall time: 0.17
+array([     2,      3,      5, ..., 999961, 999979, 999983])
+>>> primes_upto3(10**7, smallprimes=(2,3))            # Wall time: '''2.13'''
+array([      2,       3,       5, ..., 9999971, 9999973, 9999991])
+>>> primes_upto3(15)
+array([ 2,  3,  5,  7, 11, 13])
+>>> primes_upto3(10**7, smallprimes=primes_upto3(15)) # Wall time: '''1.31'''
+array([      2,       3,       5, ..., 9999971, 9999973, 9999991])
+>>> primes_upto2(10**7)                               # Wall time: '''1.39''' <-- version ''without'' wheels
+array([      2,       3,       5, ..., 9999971, 9999973, 9999991])
+>>> primes_upto3(10**7)                               # Wall time: '''1.30'''
+array([      2,       3,       5, ..., 9999971, 9999973, 9999991])
+
+====PYTHON=====
+import heapq
+ 
+# generates all prime numbers
+def sieve():
+    # priority queue of the sequences of non-primes
+    # the priority queue allows us to get the "next" non-prime quickly
+    nonprimes = []
+ 
+    i = 2
+    while True:
+        if nonprimes and i == nonprimes[0][0]: # non-prime
+            while nonprimes[0][0] == i:
+                # for each sequence that generates this number,
+                # have it go to the next number (simply add the prime)
+                # and re-position it in the priority queue
+                x = nonprimes[0]
+                x[0] += x[1]
+                heapq.heapreplace(nonprimes, x)
+ 
+        else: # prime
+            # insert a 2-element list into the priority queue:
+            # [current multiple, prime]
+            # the first element allows sorting by value of current multiple
+            # we start with i^2
+            heapq.heappush(nonprimes, [i*i, i])
+            yield i
+ 
+        i += 1
+
+====PYTHON=====
+def primes():
+    yield 2; yield 3; yield 5; yield 7;
+    bps = (p for p in primes())             # separate supply of "base" primes (b.p.)
+    p = next(bps) and next(bps)             # discard 2, then get 3
+    q = p * p                               # 9 - square of next base prime to keep track of,
+    sieve = {}                              #                       in the sieve dict
+    n = 9                                   # n is the next candidate number
+    while True:
+        if n not in sieve:                  # n is not a multiple of any of base primes,
+            if n < q:                       # below next base prime's square, so
+                yield n                     # n is prime
+            else:
+                p2 = p + p                  # n == p * p: for prime p, add p * p + 2 * p
+                sieve[q + p2] = p2          #   to the dict, with 2 * p as the increment step
+                p = next(bps); q = p * p    # pull next base prime, and get its square
+        else:
+            s = sieve.pop(n); nxt = n + s   # n's a multiple of some b.p., find next multiple
+            while nxt in sieve: nxt += s    # ensure each entry is unique
+            sieve[nxt] = s                  # nxt is next non-marked multiple of this prime
+        n += 2                              # work on odds only
+ 
+import itertools
+def primes_up_to(limit):
+    return list(itertools.takewhile(lambda p: p <= limit, primes()))
+
+====PYTHON=====
+def primes():
+    for p in [2,3,5,7]: yield p                 # base wheel primes
+    gaps1 = [ 2,4,2,4,6,2,6,4,2,4,6,6,2,6,4,2,6,4,6,8,4,2,4,2,4,8 ]
+    gaps = gaps1 + [ 6,4,6,2,4,6,2,6,6,4,2,4,6,2,6,4,2,4,2,10,2,10 ] # wheel2357
+    def wheel_prime_pairs():
+        yield (11,0); bps = wheel_prime_pairs() # additional primes supply
+        p, pi = next(bps); q = p * p            # adv to get 11 sqr'd is 121 as next square to put
+        sieve = {}; n = 13; ni = 1              #   into sieve dict; init cndidate, wheel ndx
+        while True:
+            if n not in sieve:                  # is not a multiple of previously recorded primes
+                if n < q: yield (n, ni)         # n is prime with wheel modulo index
+                else:
+                    npi = pi + 1                # advance wheel index
+                    if npi > 47: npi = 0
+                    sieve[q + p * gaps[pi]] = (p, npi) # n == p * p: put next cull position on wheel
+                    p, pi = next(bps); q = p * p  # advance next prime and prime square to put
+            else:
+                s, si = sieve.pop(n)
+                nxt = n + s * gaps[si]          # move current cull position up the wheel
+                si = si + 1                     # advance wheel index
+                if si > 47: si = 0
+                while nxt in sieve:             # ensure each entry is unique by wheel
+                    nxt += s * gaps[si]
+                    si = si + 1                 # advance wheel index
+                    if si > 47: si = 0
+                sieve[nxt] = (s, si)            # next non-marked multiple of a prime
+            nni = ni + 1                        # advance wheel index
+            if nni > 47: nni = 0
+            n += gaps[ni]; ni = nni             # advance on the wheel
+    for p, pi in wheel_prime_pairs(): yield p   # strip out indexes
+
+====PYTHON=====
+def primes():
+    whlPrms = [2,3,5,7,11,13,17]                # base wheel primes
+    for p in whlPrms: yield p
+    def makeGaps():
+        buf = [True] * (3 * 5 * 7 * 11 * 13 * 17 + 1) # all odds plus extra for o/f
+        for p in whlPrms:
+            if p < 3:
+                continue              # no need to handle evens
+            strt = (p * p - 19) >> 1            # start position (divided by 2 using shift)
+            while strt < 0: strt += p
+            buf[strt::p] = [False] * ((len(buf) - strt - 1) // p + 1) # cull for p
+        whlPsns = [i + i for i,v in enumerate(buf) if v]
+        return [whlPsns[i + 1] - whlPsns[i] for i in range(len(whlPsns) - 1)]
+    gaps = makeGaps()                           # big wheel gaps
+    def wheel_prime_pairs():
+        yield (19,0); bps = wheel_prime_pairs() # additional primes supply
+        p, pi = next(bps); q = p * p            # adv to get 11 sqr'd is 121 as next square to put
+        sieve = {}; n = 23; ni = 1              #   into sieve dict; init cndidate, wheel ndx
+        while True:
+            if n not in sieve:                  # is not a multiple of previously recorded primes
+                if n < q: yield (n, ni)         # n is prime with wheel modulo index
+                else:
+                    npi = pi + 1                # advance wheel index
+                    if npi > 92159: npi = 0
+                    sieve[q + p * gaps[pi]] = (p, npi) # n == p * p: put next cull position on wheel
+                    p, pi = next(bps); q = p * p  # advance next prime and prime square to put
+            else:
+                s, si = sieve.pop(n)
+                nxt = n + s * gaps[si]          # move current cull position up the wheel
+                si = si + 1                     # advance wheel index
+                if si > 92159: si = 0
+                while nxt in sieve:             # ensure each entry is unique by wheel
+                    nxt += s * gaps[si]
+                    si = si + 1                 # advance wheel index
+                    if si > 92159: si = 0
+                sieve[nxt] = (s, si)            # next non-marked multiple of a prime
+            nni = ni + 1                        # advance wheel index
+            if nni > 92159: nni = 0
+            n += gaps[ni]; ni = nni             # advance on the wheel
+    for p, pi in wheel_prime_pairs(): yield p   # strip out indexes
+ 
+

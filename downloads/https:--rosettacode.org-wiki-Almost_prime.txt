@@ -1,0 +1,98 @@
+====RUBY=====
+require 'prime'
+ 
+def almost_primes(k=2)
+  return to_enum(:almost_primes, k) unless block_given?
+  1.step {|n| yield n if n.prime_division.sum( &:last ) == k }
+end
+ 
+(1..5).each{|k| puts almost_primes(k).take(10).join(", ")}
+
+====RUBY=====
+require 'prime'
+ 
+p ar = pr = Prime.take(10)
+4.times{p ar = ar.product(pr).map{|(a,b)| a*b}.uniq.sort.take(10)}
+
+====RUBY=====
+func is_k_almost_prime(n, k) {
+    for (var (p, f) = (2, 0); (f < k) && (p*p <= n); ++p) {
+        (n /= p; ++f) while (p `divides` n)
+    }
+    n > 1 ? (f.inc == k) : (f == k)
+}
+ 
+{ |k|
+    var x = 10
+    say gather {
+        { |i|
+            if (is_k_almost_prime(i, k)) {
+                take(i)
+                --x == 0 && break
+            }
+        } << 1..Inf
+    }
+} << 1..5
+
+====PYTHON=====
+from prime_decomposition import decompose
+from itertools import islice, count
+try: 
+    from functools import reduce
+except: 
+    pass
+ 
+ 
+def almostprime(n, k=2):
+    d = decompose(n)
+    try:
+        terms = [next(d) for i in range(k)]
+        return reduce(int.__mul__, terms, 1) == n
+    except:
+        return False
+ 
+if __name__ == '__main__':
+    for k in range(1,6):
+        print('%i: %r' % (k, list(islice((n for n in count() if almostprime(n, k)), 10))))
+
+====PYTHON=====
+ 
+# k-Almost-primes
+# Python 3.6.3
+# no imports
+ 
+def prime_factors(m=2):
+ 
+    for i in range(2, m):
+        r, q = divmod(m, i)
+        if not q:
+            return [i] + prime_factors(r)
+    return [m]
+ 
+def k_almost_primes(n, k=2):
+    multiples = set()
+    lists = list()
+    for x in range(k+1):
+        lists.append([])
+ 
+    for i in range(2, n+1):
+        if i not in multiples:
+            if len(lists[1]) < 10:
+                lists[1].append(i)
+            multiples.update(range(i*i, n+1, i))
+    print("k=1: {}".format(lists[1]))
+ 
+    for j in range(2, k+1):
+        for m in multiples:
+            l = prime_factors(m)
+            ll = len(l)
+            if ll == j and len(lists[j]) < 10:
+                lists[j].append(m)
+ 
+        print("k={}: {}".format(j, lists[j]))
+ 
+k_almost_primes(200, 5)
+# try:
+#k_almost_primes(6000, 10)
+ 
+

@@ -1,0 +1,35 @@
+====RUBY=====
+class AssertionError < Exception
+end
+ 
+def assert(predicate : Bool, msg = "The asserted condition was false")
+  raise AssertionError.new(msg) unless predicate
+end
+ 
+assert(12 == 42, "It appears that 12 doesn't equal 42")
+
+====RUBY=====
+require "test/unit/assertions"
+include Test::Unit::Assertions
+ 
+n = 5
+begin
+  assert_equal(42, n)
+rescue Exception => e
+  # Ruby 1.8: e is a Test::Unit::AssertionFailedError
+  # Ruby 1.9: e is a MiniTest::Assertion
+  puts e
+end
+
+====RUBY=====
+var num = pick(0..100);
+assert_eq(num, 42);         # dies when "num" is not 42
+
+====PYTHON=====
+a = 5
+#...input or change a here
+assert a == 42 # throws an AssertionError when a is not 42
+assert a == 42, "Error message" # throws an AssertionError
+       # when a is not 42 with "Error message" for the message
+       # the error message can be any expression
+
